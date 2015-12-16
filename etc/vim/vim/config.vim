@@ -105,6 +105,10 @@ let g:gundo_right = 1
 let g:gundo_width = 25
 let g:gundo_preview_height = 15
 
+" python-mode
+let g:pymode_folding = 0
+let g:pymode_lint_ignore = "E203,E221,E301"
+
 " ctags.vim
 set tags =./tags,tags
 "set tagbsearch " binary search
@@ -130,10 +134,6 @@ if has("cscope")
 
     " show msg when any other cscope db added
     set csverb
-endif
-
-if exists("g:pymode")
-    let g:pymode_folding = 0
 endif
 
 " auto-command setting.
