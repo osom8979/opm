@@ -20,11 +20,11 @@ function getScriptDirectory {
 }
 
 WORKING=$PWD
-FIND_OPM_HOME=`getScriptDirectory`
+SCRIPT_PATH=`getScriptDirectory`
 
-INSTALL_DIR=$FIND_OPM_HOME/etc/install.d
-PROFILE_PATH=$FIND_OPM_HOME/profile
-PROPERTY_PATH=$FIND_OPM_HOME/property
+INSTALL_DIR=$SCRIPT_PATH/etc/install.d
+PROFILE_PATH=$SCRIPT_PATH/profile
+PROPERTY_PATH=$SCRIPT_PATH/property
 INSTALL_NAME=INSTALL
 USE_COLOR=true
 
@@ -75,7 +75,7 @@ if [[ ! -z "$OPM_HOME" || ! -z $(cat "$BASH_PROFILE_PATH" | grep "OPM_HOME") ]];
     stderr '[WARNING] OPM_HOME variable is already the declared.'
 else
     echo '## OSOM Common Script.'                >> $BASH_PROFILE_PATH
-    echo "export OPM_HOME=$FIND_OPM_HOME"        >> $BASH_PROFILE_PATH
+    echo "export OPM_HOME=$SCRIPT_PATH"        >> $BASH_PROFILE_PATH
     echo 'if [[ -f "$OPM_HOME/profile" ]]; then' >> $BASH_PROFILE_PATH
     echo '    . "$OPM_HOME/profile"'             >> $BASH_PROFILE_PATH
     echo 'fi'                                    >> $BASH_PROFILE_PATH
@@ -83,7 +83,7 @@ else
 fi
 
 if [[ -z "$OPM_HOME" ]]; then
-OPM_HOME=$FIND_OPM_HOME
+OPM_HOME=$SCRIPT_PATH
 fi
 
 ## -----------------
