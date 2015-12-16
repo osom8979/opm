@@ -1,3 +1,8 @@
+""" OPM Config library.
+@file   config.py
+@author zer0
+@date   2015-12-16
+"""
 # -*- coding: utf-8 -*-
 
 import xml.etree.ElementTree as ET
@@ -13,7 +18,6 @@ TAG_PATH     = 'path'
 
 ATTR_VERSION = 'version'
 ATTR_NAME    = 'name'
-
 
 DEFAULT_NAME     = 'origin'
 DEFAULT_PROTOCOL = 'sftp'
