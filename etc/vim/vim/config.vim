@@ -35,6 +35,8 @@ set autoindent   " auto indent.
 "set smartindent " auto indent.
 set shiftwidth=4 " indent size.
 
+set nofoldenable " no folding.
+
 set noswapfile   " no swap file.
 "set nobackup    " no backup.
 
