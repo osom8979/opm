@@ -133,7 +133,7 @@ if has("cscope")
 endif
 
 if exists("g:pymode")
-let g:pymode_folding=0
+    let g:pymode_folding = 0
 endif
 
 " auto-command setting.
