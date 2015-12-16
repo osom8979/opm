@@ -1,0 +1,7 @@
+" Vim setting.
+
+scriptencoding utf-8
+source ~/.vim/plugin.vim
+source ~/.vim/config.vim
+source ~/.vim/keymap.vim
+source ~/.vim/macro.vim

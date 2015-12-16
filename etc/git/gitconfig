@@ -1,0 +1,26 @@
+[core]
+	autocrlf = false
+	safecrlf = true
+	eol = lf
+[color]
+	ui = auto
+	diff = auto
+	status = auto
+	branch = auto
+	interactive = true
+[alias]
+	log10 = log --all --graph --decorate --oneline -10
+	log20 = log --all --graph --decorate --oneline -20
+	logc = log --all --graph --decorate --oneline
+	logf = log --all --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s'
+	logw = log --all --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s' --since=1weeks
+	showf = show --oneline --name-only
+	count = rev-list --count HEAD
+	st = status
+[user]
+	name = zer0
+	email = osom8979@gmail.com
+[push]
+	default = simple
+[http]
+	sslVerify = false
