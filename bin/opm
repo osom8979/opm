@@ -1,17 +1,13 @@
 #!/bin/bash
 
-function getScriptDirectory {
-    local src=${BASH_SOURCE[0]}
-    local dir=$(dirname "$src")
-    local prev=$PWD
-    cd "$dir"
-    echo $PWD
-    cd "$prev"
-}
-
 WORKING=$PWD
-SCRIPT_PATH=`getScriptDirectory`
-OPM_PATH=$SCRIPT_PATH/opm.py
+SCRIPT_PATH=`getpath ${BASH_SOURCE[0]}`
+OPM_SCRIPT=$SCRIPT_PATH/opm.py
 
-python $OPM_PATH $@
+if [[ ! -f $OPM_SCRIPT ]]; then
+    echo "Not found $OPM_SCRIPT" 
+    exit 1
+fi
+
+python $OPM_SCRIPT $@
 
