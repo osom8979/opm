@@ -59,16 +59,23 @@ endif
 
 " gui font setting.
 if has("gui_running")
-    set guifont=Bitstream_Vera_Sans_Mono:h9:cANSI
-    set guifontwide=NanumGothicCoding:h10:cDEFAULT
+    if has('gui_win32')
+        set guifont=Bitstream_Vera_Sans_Mono:h9:cANSI
+        set guifontwide=NanumGothicCoding:h10:cDEFAULT
+    else
+        set guifont=DejaVu\ Sans\ Mono\ 10
+        set guifontwide=NanumGothicCoding\ 10
+    endif
 
     " whitespace setting.
     set listchars=eol:¶,tab:»·,trail:·,extends:»,precedes:«,conceal:×,nbsp:·
     set list
 
-    set lines=50     " vim line size.
-    set columns=150  " vim column size.
-    winpos 0 0       " vim window position.
+    set guioptions-=T  " no toolbar.
+    set linespace=0    " vim line space.
+    set lines=50       " vim line size.
+    set columns=150    " vim column size.
+    winpos 0 0         " vim window position.
 endif
 
 " NERDTree
