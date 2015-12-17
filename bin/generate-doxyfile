@@ -1,0 +1,116 @@
+#!/bin/bash
+
+DOXYGEN_CMD=doxygen
+DOXYGEN_FILE=Doxyfile
+
+if [[ -z "$(which $DOXYGEN_CMD)" ]]; then
+    echo "Not found $DOXYGEN_CMD"
+    exit 1
+fi
+
+VERBOSE_FLAG=false
+
+for arg in $@; do
+    case $arg in
+    --verbose)
+        VERBOSE_FLAG=true
+        ;;
+    esac
+done
+
+
+## GENERAL
+PROJECT_NAME='Unknown'
+PROJECT_NUMBER='0.1'
+PROJECT_BRIEF='Unknown project'
+OUTPUT_LANGUAGE='Korean-en'
+ALIASES='translate{2}="<dl class='\''section remarks'\''><dt>Translate-\1</dt><dd>\2</dd></dl>"'
+WARN_IF_UNDOCUMENTED=NO
+
+## INPUT
+INPUT='src'
+FILE_PATTERNS="*.c *.cc *.cxx *.cpp *.c++ *.d *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx *.hpp *.h++ "
+FILE_PATTERNS="$FILE_PATTERNS *.idl *.odl *.cs *.php *.php3 *.inc *.m *.markdown *.md *.mm *.dox *.py *.f90 "
+FILE_PATTERNS="$FILE_PATTERNS *.f *.for *.vhd *.vhdl"
+RECURSIVE=YES
+EXCLUDE_PATTERNS='*/3rd/*'
+
+## OUTPUT
+HTML_TIMESTAMP=YES
+GENERATE_LATEX=NO
+RTF_SOURCE_CODE=NO
+
+## MACRO
+MACRO_EXPANSION=YES
+INCLUDE_PATH='src'
+INCLUDE_FILE_PATTERNS='*.h *.hpp'
+
+
+## -----------
+## USER INPUT.
+## -----------
+
+read -p 'PROJECT_NAME: '   INPUT_PROJECT_NAME
+read -p 'PROJECT_NUMBER: ' INPUT_PROJECT_NUMBER
+read -p 'PROJECT_BRIEF: '  INPUT_PROJECT_BRIEF
+
+if [[ ! -z $INPUT_PROJECT_NAME ]]; then
+PROJECT_NAME=$INPUT_PROJECT_NAME
+fi
+if [[ ! -z $INPUT_PROJECT_NUMBER ]]; then
+PROJECT_NUMBER=$INPUT_PROJECT_NUMBER
+fi
+if [[ ! -z $INPUT_PROJECT_BRIEF ]]; then
+PROJECT_BRIEF=$INPUT_PROJECT_BRIEF
+fi
+
+## Darwin or Linux
+KERNEL_NAME=`uname -s`
+
+if [[ $KERNEL_NAME == Darwin ]]; then
+IN_PLACE_FLAG='-i .tmp'
+else
+IN_PLACE_FLAG='-i'
+fi
+
+function replaceDoxygenParam {
+    local param=$1
+    local text=$2
+    local line=`egrep -n "^$param[ \\t]*=.*" $DOXYGEN_FILE | awk -F ':' '{print $1}'`
+
+    # Insert comment:
+    sed $IN_PLACE_FLAG "${line}s/\\(.*\\)/#\\1/g" $DOXYGEN_FILE
+
+    if [[ $VERBOSE_FLAG == true ]]; then
+        echo "Insert $param = $text"
+    fi
+    echo "$param = $text" >> $DOXYGEN_FILE
+}
+
+
+## -----
+## MAIN.
+## -----
+
+$DOXYGEN_CMD -g $DOXYGEN_FILE
+
+echo -e '\n## AUTO GENERATE CODE:' >> $DOXYGEN_FILE
+replaceDoxygenParam PROJECT_NAME          "$PROJECT_NAME"
+replaceDoxygenParam PROJECT_NUMBER        "$PROJECT_NUMBER"
+replaceDoxygenParam PROJECT_BRIEF         "$PROJECT_BRIEF"
+replaceDoxygenParam OUTPUT_LANGUAGE       "$OUTPUT_LANGUAGE"
+replaceDoxygenParam ALIASES               "$ALIASES"
+replaceDoxygenParam WARN_IF_UNDOCUMENTED  "$WARN_IF_UNDOCUMENTED"
+replaceDoxygenParam INPUT                 "$INPUT"
+replaceDoxygenParam FILE_PATTERNS         "$FILE_PATTERNS"
+replaceDoxygenParam RECURSIVE             "$RECURSIVE"
+replaceDoxygenParam EXCLUDE_PATTERNS      "$EXCLUDE_PATTERNS"
+replaceDoxygenParam HTML_TIMESTAMP        "$HTML_TIMESTAMP"
+replaceDoxygenParam GENERATE_LATEX        "$GENERATE_LATEX"
+replaceDoxygenParam RTF_SOURCE_CODE       "$RTF_SOURCE_CODE"
+replaceDoxygenParam MACRO_EXPANSION       "$MACRO_EXPANSION"
+replaceDoxygenParam INCLUDE_PATH          "$INCLUDE_PATH"
+replaceDoxygenParam INCLUDE_FILE_PATTERNS "$INCLUDE_FILE_PATTERNS"
+
+echo 'Done.'
+
