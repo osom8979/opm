@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
 """! OPM Config library.
 @author zer0
 @date   2015-12-16
 """
-# -*- coding: utf-8 -*-
 
 import xml.etree.ElementTree as ET
 import xml.dom.minidom

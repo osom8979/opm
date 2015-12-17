@@ -1,8 +1,8 @@
+# -*- coding: utf-8 -*-
 """! OPM Archive library.
 @author zer0
 @date   2015-12-16
 """
-# -*- coding: utf-8 -*-
 
 import tarfile
 
