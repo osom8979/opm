@@ -1,5 +1,4 @@
-""" OPM Config library.
-@file   config.py
+"""! OPM Config library.
 @author zer0
 @date   2015-12-16
 """
@@ -32,7 +31,7 @@ VERSION_MIN = '{}.{}'.format(VERSION_MIN_MAJOR, VERSION_MIN_MINOR)
 
 
 class ConfigException(Exception):
-    """ Config exception class.
+    """! Config exception class.
     @author zer0
     @date   2015-12-04
     """
@@ -55,7 +54,7 @@ def appendElement(parent, tag, text):
 # ------------
 
 def getConfigXmlString(version, name, protocol, user, host, port, path):
-    """ Arguments -> XML String. """
+    """! Arguments -> XML String. """
     tag_root = ET.Element(TAG_ROOT)
     tag_root.set(ATTR_VERSION, version)
 
@@ -73,7 +72,7 @@ def getConfigXmlString(version, name, protocol, user, host, port, path):
 
 
 def getDefaultConfigXmlString():
-    """ Default settings -> XML String. """
+    """! Default settings -> XML String. """
     return getConfigXmlString(VERSION_MIN,
                               DEFAULT_NAME,
                               DEFAULT_PROTOCOL,
@@ -84,7 +83,7 @@ def getDefaultConfigXmlString():
 
 
 def getConfigXmlStringWithMap(config_map):
-    """ Configure map -> XML String. """
+    """! Configure map -> XML String. """
     return getConfigXmlString(config_map[ATTR_VERSION],
                               config_map[ATTR_NAME],
                               config_map[TAG_PROTOCOL],
@@ -99,7 +98,7 @@ def getConfigXmlStringWithMap(config_map):
 # ---------------
 
 def getConfigMap(version, name, protocol, user, host, port, path):
-    """ Arguments -> Configure map. """
+    """! Arguments -> Configure map. """
     return {
         ATTR_VERSION: version,
         ATTR_NAME   : name,
@@ -112,7 +111,7 @@ def getConfigMap(version, name, protocol, user, host, port, path):
 
 
 def getDefaultConfigMap():
-    """ Default settings -> Configure map. """
+    """! Default settings -> Configure map. """
     return getConfigMap(VERSION_MIN,
                         DEFAULT_NAME,
                         DEFAULT_PROTOCOL,
@@ -123,7 +122,7 @@ def getDefaultConfigMap():
 
 
 def getConfigMapWithInteractive():
-    """ Interactive -> Configure map. """
+    """! Interactive -> Configure map. """
     version  = VERSION_MIN
     name     = raw_input('Remote name [{}]:'.format(DEFAULT_NAME))
     protocol = raw_input('Protocol name [{}]:'.format(DEFAULT_PROTOCOL))
@@ -153,7 +152,7 @@ def getConfigMapWithInteractive():
 # -------------
 
 def writeConfigXmlWithMap(xml_path, config_map=None):
-    """ Configure map -> XML file.
+    """! Configure map -> XML file.
     @param xml_path   [in] XML file path.
     @param config_map [in] Configure map.
     """
@@ -170,7 +169,7 @@ def writeConfigXmlWithMap(xml_path, config_map=None):
 
 
 def readConfigXml(xml_path):
-    """ XML file -> Configure map.
+    """! XML file -> Configure map.
     @param xml_path   [in] XML file path.
     @return Configure map.
     """
@@ -202,7 +201,7 @@ def readConfigXml(xml_path):
 # ------
 
 class Config(object):
-    """ Configure class.
+    """! Configure class.
     @author zer0
     @date   2015-12-05
     """

@@ -1,5 +1,4 @@
-""" Test OPM Archive library.
-@file   test_archive.py
+"""! Test OPM Archive library.
 @author zer0
 @date   2015-12-16
 """

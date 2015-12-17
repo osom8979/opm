@@ -1,5 +1,4 @@
-""" OPM Archive library.
-@file   archive.py
+"""! OPM Archive library.
 @author zer0
 @date   2015-12-16
 """
@@ -14,7 +13,7 @@ WRITE_ARCHIVE_TYPE = 'w:' + ARCHIVE_TYPE
 
 
 class ArchiveInfo(object):
-    """ Single node information with archive.
+    """! Single node information with archive.
     @author zer0
     @date   2015-12-06
     """
@@ -38,7 +37,7 @@ class ArchiveInfo(object):
 
 
 def readFileListWithArchive(path):
-    """ Read archive file list.
+    """! Read archive file list.
     @param path [in] archive file path.
     @return If successful, it returns a ArchiveInfo array.
     """
@@ -50,7 +49,7 @@ def readFileListWithArchive(path):
 
 
 def readStringWithArchive(path, name):
-    """ Read a single file in the archive file.
+    """! Read a single file in the archive file.
     @param path [in] archive file path.
     @param name [in] Read filename.
     @return If successful, it returns string.

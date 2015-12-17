@@ -69,6 +69,11 @@ Session.vim
 .netrwhist
 *~
 
+###############
+### Doxygen ###
+html
+latex
+
 ###########
 ### C++ ###
 
