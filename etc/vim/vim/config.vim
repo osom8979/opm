@@ -63,8 +63,8 @@ if has("gui_running")
         set guifont=Bitstream_Vera_Sans_Mono:h9:cANSI
         set guifontwide=NanumGothicCoding:h10:cDEFAULT
     else
-        set guifont=DejaVu\ Sans\ Mono\ 10
-        set guifontwide=NanumGothicCoding\ 10
+        set guifont=DejaVu\ Sans\ Mono\ 9
+        set guifontwide=NanumGothicCoding\ 9
     endif
 
     " whitespace setting.
