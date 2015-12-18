@@ -23,3 +23,14 @@ if [[ -f $GET_PIP_NAME ]]; then
     rm $GET_PIP_NAME
 fi
 
+REQUIREMENTS=requirements
+
+if [[ ! -z $REQUIREMENTS ]]; then
+    for cursor in $(cat "$REQUIREMENTS"); do
+        echo "Install $cursor"
+        pip install $cursor
+    done
+else
+    echo "Not found $REQUIREMENTS file."
+fi
+
