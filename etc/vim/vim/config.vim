@@ -83,8 +83,9 @@ let g:NERDTreeWinPos = "left"
 let g:NERDTreeWinSize = 25
 let g:NERDTreeShowBookmarks = 1
 let NERDTreeShowHidden = 1
-let NERDTreeIgnore  = ['^\.$', '^\.\.$', '\~$']
+let NERDTreeIgnore  = ['^\..*', '^\.$', '^\.\.$', '\~$']
 let NERDTreeIgnore += ['.*\.[oO]$', '.*\.[eE][xX][eE]$']
+let NERDTreeIgnore += ['.*\.pyc']
 
 " vim-airline
 let g:airline_powerline_fonts = 0
