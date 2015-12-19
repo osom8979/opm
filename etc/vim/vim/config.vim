@@ -115,7 +115,7 @@ let g:gundo_preview_height = 15
 
 " python-mode
 let g:pymode_folding = 0
-let g:pymode_lint_ignore = "E203,E221,E301"
+let g:pymode_lint_ignore = "E203,E221,E272,E301"
 
 " ctags.vim
 set tags =./tags,tags
