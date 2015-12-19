@@ -21,21 +21,19 @@ OPM_CACHE = os.path.join(OPM_TMP,  'cache')
 CONFIG_XML_NAME = 'config.xml'
 CONFIG_XML_PATH = os.path.join(OPM_TMP, CONFIG_XML_NAME)
 
-CMD_HELP   = 'help'
-CMD_INFO   = 'info'
-CMD_CONFIG = 'config'
+CMD_HELP = 'help'
 
 CMD_MAP = {
-    CMD_HELP:   'show this help message and exit.',
-    CMD_INFO:   'show opm information.',
-    CMD_CONFIG: 'create a config file.'
+    CMD_HELP: 'show this help message and exit.',
+    'info':   'show opm information.',
+    'config': 'create a config file.',
+    'list':   'show cached file list.'
 }
 
 CMD_MESSAGE = "\nCommand list:\n"
 
 for key, val in CMD_MAP.iteritems():
     CMD_MESSAGE += '{}\t{}\n'.format(key, val)
-
 
 
 def printCommandHelp():
@@ -60,12 +58,14 @@ def parseArguments(argv, print_help=True):
 
     parser = OptionParser(add_help_option=ENABLE_DEFAULT_HELP_MESSAGE)
     parser.set_usage('Usage: opm {COMMAND} {OPTIONS}')
-    parser.add_option('-c', '--config-path'
-        , dest='config_path', metavar='PATH', default=CONFIG_XML_PATH
-        , help='Set the configure file path.')
+    parser.add_option('-c', '--config-path',
+                      dest='config_path',
+                      metavar='PATH',
+                      default=CONFIG_XML_PATH,
+                      help='Set the configure file path.')
     options, args = parser.parse_args(argv)
 
-    if print_help == True and (command == None or command == CMD_HELP):
+    if print_help is True and (command is None or command == CMD_HELP):
         parser.print_help()
         printCommandHelp()
 

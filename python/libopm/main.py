@@ -14,22 +14,27 @@ import environment as ENV
 import version     as VERSION
 
 
-def main_info(options):
-    #print 'OPTIONS: ' + str(options)
+def main_list(options):
+    pass
 
+
+def main_info(options):
     # CONFIG:
     print 'CONFIG PATH: ' + options.config_path
     if os.path.exists(options.config_path):
         config_map = CONFIG.readConfigXml(options.config_path)
-        print '> VERSION: '  + config_map[CONFIG.ATTR_VERSION]
-        print '> NAME: '     + config_map[CONFIG.ATTR_NAME]
-        print '> PROTOCOL: ' + config_map[CONFIG.TAG_PROTOCOL]
-        print '> USER: '     + config_map[CONFIG.TAG_USER]
-        print '> HOST: '     + config_map[CONFIG.TAG_HOST]
-        print '> PORT: '     + config_map[CONFIG.TAG_PORT]
-        print '> PATH: '     + config_map[CONFIG.TAG_PATH]
+        print '> VERSION: '   + config_map[CONFIG.ATTR_VERSION]
+        print '> NAME: '      + config_map[CONFIG.ATTR_NAME]
+        print '> PROTOCOL: '  + config_map[CONFIG.TAG_PROTOCOL]
+        print '> USER: '      + config_map[CONFIG.TAG_USER]
+        print '> HOST: '      + config_map[CONFIG.TAG_HOST]
+        print '> PORT: '      + config_map[CONFIG.TAG_PORT]
+        print '> PATH: '      + config_map[CONFIG.TAG_PATH]
     else:
         print '> Not found config file.'
+
+    print 'OPM VERSION: ' + VERSION.version()
+
 
 def main_config(options):
     config_path = options.config_path
@@ -41,6 +46,7 @@ def main_config(options):
         print 'Succeeded in configuration write.'
     except:
         print 'Failed in configuration write.'
+
 
 # ------------
 # ENTRY-POINT.
