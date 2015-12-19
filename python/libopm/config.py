@@ -6,6 +6,8 @@
 
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
+import version as VER
+
 
 TAG_ROOT     = 'opm'
 TAG_REMOTE   = 'remote'
@@ -18,16 +20,13 @@ TAG_PATH     = 'path'
 ATTR_VERSION = 'version'
 ATTR_NAME    = 'name'
 
+DEFAULT_VERSION  = VER.version()
 DEFAULT_NAME     = 'origin'
 DEFAULT_PROTOCOL = 'sftp'
 DEFAULT_USER     = 'root'
 DEFAULT_HOST     = 'localhost'
 DEFAULT_PORT     = '22'
 DEFAULT_PATH     = '/var/opm'
-
-VERSION_MIN_MAJOR = 0
-VERSION_MIN_MINOR = 1
-VERSION_MIN = '{}.{}'.format(VERSION_MIN_MAJOR, VERSION_MIN_MINOR)
 
 
 class ConfigException(Exception):
@@ -73,7 +72,7 @@ def getConfigXmlString(version, name, protocol, user, host, port, path):
 
 def getDefaultConfigXmlString():
     """! Default settings -> XML String. """
-    return getConfigXmlString(VERSION_MIN,
+    return getConfigXmlString(DEFAULT_VERSION,
                               DEFAULT_NAME,
                               DEFAULT_PROTOCOL,
                               DEFAULT_USER,
@@ -112,7 +111,7 @@ def getConfigMap(version, name, protocol, user, host, port, path):
 
 def getDefaultConfigMap():
     """! Default settings -> Configure map. """
-    return getConfigMap(VERSION_MIN,
+    return getConfigMap(DEFAULT_VERSION,
                         DEFAULT_NAME,
                         DEFAULT_PROTOCOL,
                         DEFAULT_USER,
@@ -123,7 +122,7 @@ def getDefaultConfigMap():
 
 def getConfigMapWithInteractive():
     """! Interactive -> Configure map. """
-    version  = VERSION_MIN
+    version  = DEFAULT_VERSION
     name     = raw_input('Remote name [{}]:'.format(DEFAULT_NAME))
     protocol = raw_input('Protocol name [{}]:'.format(DEFAULT_PROTOCOL))
     user     = raw_input('User name [{}]:'.format(DEFAULT_USER))

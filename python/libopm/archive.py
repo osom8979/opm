@@ -6,8 +6,8 @@
 
 import tarfile
 
-ARCHIVE_TYPE = 'gz'
 
+ARCHIVE_TYPE = 'gz'
 READ_ARCHIVE_TYPE  = 'r:' + ARCHIVE_TYPE
 WRITE_ARCHIVE_TYPE = 'w:' + ARCHIVE_TYPE
 

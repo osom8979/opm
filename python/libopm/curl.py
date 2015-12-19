@@ -8,7 +8,6 @@ import os
 import re
 import subprocess
 
-
 CURL_COMMAND  = 'curl'
 CURL_INSECURE = '--insecure'
 CURL_SILENT   = '--silent'
