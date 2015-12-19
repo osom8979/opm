@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-__add__ = ['']
+import main as MAIN
+
+__add__ = ['main']
 
 
 def main():
-    pass
+    MAIN.main()
