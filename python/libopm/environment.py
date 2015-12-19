@@ -21,12 +21,14 @@ OPM_CACHE = os.path.join(OPM_TMP,  'cache')
 CONFIG_XML_NAME = 'config.xml'
 CONFIG_XML_PATH = os.path.join(OPM_TMP, CONFIG_XML_NAME)
 
-CMD_HELP = 'help'
-CMD_INFO = 'info'
+CMD_HELP   = 'help'
+CMD_INFO   = 'info'
+CMD_CONFIG = 'config'
 
 CMD_MAP = {
-    CMD_HELP: 'show this help message and exit.',
-    CMD_INFO: 'show opm information.'
+    CMD_HELP:   'show this help message and exit.',
+    CMD_INFO:   'show opm information.',
+    CMD_CONFIG: 'create a config file.'
 }
 
 CMD_MESSAGE = "\nCommand list:\n"

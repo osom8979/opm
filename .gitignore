@@ -176,5 +176,7 @@ target/
 ###########
 ### OPM ###
 /property
+/tmp/*
+!/tmp/.keep
 *.tmp
 
