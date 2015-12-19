@@ -11,6 +11,10 @@ ARCHIVE_TYPE = 'gz'
 READ_ARCHIVE_TYPE  = 'r:' + ARCHIVE_TYPE
 WRITE_ARCHIVE_TYPE = 'w:' + ARCHIVE_TYPE
 
+TAR_NAME  = 'tar'
+GZIP_NAME = 'gz'
+ARCHIVE_EXTENSION = '.{}.{}'.format(TAR_NAME, GZIP_NAME)
+
 
 class ArchiveInfo(object):
     """! Single node information with archive.

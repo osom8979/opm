@@ -15,12 +15,7 @@ OPM_BIN  = os.path.join(OPM_HOME, 'bin')
 OPM_INC  = os.path.join(OPM_HOME, 'include')
 OPM_LIB  = os.path.join(OPM_HOME, 'lib')
 
-TAR_NAME  = 'tar'
-GZIP_NAME = 'gz'
-ARCHIVE_EXTENSION = '.{}.{}'.format(TAR_NAME, GZIP_NAME)
-
 CONFIG_XML_NAME  = 'config.xml'
-PKGINFO_XML_NAME = 'pkginfo.xml'
 
 
 def getEnvironmentPath():
