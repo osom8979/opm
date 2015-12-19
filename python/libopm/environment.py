@@ -25,9 +25,9 @@ CMD_HELP = 'help'
 
 CMD_MAP = {
     CMD_HELP: 'show this help message and exit.',
-    'info':   'show opm information.',
+    'info'  : 'show opm information.',
     'config': 'create a config file.',
-    'list':   'show cached file list.'
+    'list'  : 'show cached file list.',
 }
 
 CMD_MESSAGE = "\nCommand list:\n"

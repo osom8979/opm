@@ -6,34 +6,48 @@
 
 import os
 import sys
+import getpass
 
 import archive     as ARCHIVE
 import config      as CONFIG
 import curl        as CURL
 import environment as ENV
 import version     as VERSION
+import file        as FILE
+
+
+def getPassword():
+    return getpass.getpass('Password:')
 
 
 def main_list(options):
-    pass
+    regexp = '.*' + ARCHIVE.ARCHIVE_EXTENSION.replace('.', r'\.')
+    for cursor in FILE.getChildrenWithMatch(ENV.OPM_CACHE, regexp):
+        cache_length     = len(ENV.OPM_CACHE)
+        extension_length = len(ARCHIVE.ARCHIVE_EXTENSION)
+        print cursor[cache_length+1:][:(-1)*extension_length]
 
 
 def main_info(options):
-    # CONFIG:
-    print 'CONFIG PATH: ' + options.config_path
-    if os.path.exists(options.config_path):
-        config_map = CONFIG.readConfigXml(options.config_path)
-        print '> VERSION: '   + config_map[CONFIG.ATTR_VERSION]
-        print '> NAME: '      + config_map[CONFIG.ATTR_NAME]
-        print '> PROTOCOL: '  + config_map[CONFIG.TAG_PROTOCOL]
-        print '> USER: '      + config_map[CONFIG.TAG_USER]
-        print '> HOST: '      + config_map[CONFIG.TAG_HOST]
-        print '> PORT: '      + config_map[CONFIG.TAG_PORT]
-        print '> PATH: '      + config_map[CONFIG.TAG_PATH]
-    else:
-        print '> Not found config file.'
-
     print 'OPM VERSION: ' + VERSION.version()
+    print 'CONFIG PATH: ' + options.config_path
+    print 'OPM CACHE: '   + ENV.OPM_CACHE
+
+    if not os.path.exists(options.config_path):
+        print '> Not found config file.'
+        return
+
+    config = CONFIG.Config()
+    config.readConfigXml(options.config_path)
+
+    print '> VERSION: '   + config.getVersion()
+    print '> NAME: '      + config.getName()
+    print '> PROTOCOL: '  + config.getProtocol()
+    print '> USER: '      + config.getUser()
+    print '> HOST: '      + config.getHost()
+    print '> PORT: '      + config.getPort()
+    print '> PATH: '      + config.getPath()
+    print '> URI: '       + config.getUri()
 
 
 def main_config(options):
@@ -54,7 +68,7 @@ def main_config(options):
 
 def main():
     command, options = ENV.parseArguments(sys.argv)
-    if command == None or command == ENV.CMD_HELP:
+    if command is None or command == ENV.CMD_HELP:
         return
     eval('main_{}(options)'.format(command))
 
