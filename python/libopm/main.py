@@ -10,10 +10,9 @@ import getpass
 
 import archive     as ARCHIVE
 import config      as CONFIG
-import curl        as CURL
 import environment as ENV
 import version     as VERSION
-import file        as FILE
+import cache       as CACHE
 
 
 def getPassword():
@@ -22,7 +21,7 @@ def getPassword():
 
 def main_list(options):
     regexp = '.*' + ARCHIVE.ARCHIVE_EXTENSION.replace('.', r'\.')
-    for cursor in FILE.getChildrenWithMatch(ENV.OPM_CACHE, regexp):
+    for cursor in CACHE.getChildrenWithMatch(ENV.OPM_CACHE, regexp):
         cache_length     = len(ENV.OPM_CACHE)
         extension_length = len(ARCHIVE.ARCHIVE_EXTENSION)
         print cursor[cache_length+1:][:(-1)*extension_length]

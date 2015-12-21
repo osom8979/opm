@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""! OPM File manager.
+"""! OPM Cache file manager.
 @author zer0
 @date   2015-12-19
 """

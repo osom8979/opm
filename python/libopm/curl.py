@@ -2,6 +2,7 @@
 """! OPM cURL wrapper.
 @author zer0
 @date   2015-12-17
+@deprecated
 """
 
 import os
