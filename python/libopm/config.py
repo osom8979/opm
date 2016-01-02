@@ -14,7 +14,7 @@ TAG_REMOTE   = 'remote'
 TAG_PROTOCOL = 'protocol'
 TAG_USER     = 'user'
 TAG_HOST     = 'host'
-TAG_PORT     = 'root'
+TAG_PORT     = 'port'
 TAG_PATH     = 'path'
 
 ATTR_VERSION = 'version'
