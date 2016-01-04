@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<setup:Product
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:setup="http://www.eclipse.org/oomph/setup/1.0"
+    xmlns:setup.p2="http://www.eclipse.org/oomph/setup/p2/1.0"
+    name="osom.cdt"
+    label="osom cdt">
+  <annotation
+      source="http://www.eclipse.org/oomph/setup/BrandingInfo">
+    <detail
+        key="folderName">
+      <value>eclipse</value>
+    </detail>
+    <detail
+        key="folderName.macosx">
+      <value>Eclipse</value>
+    </detail>
+  </annotation>
+  <setupTask
+      xsi:type="setup:InstallationTask"
+      id="installation"/>
+  <setupTask
+      xsi:type="setup:EclipseIniTask"
+      option="-XX:MaxPermSize="
+      value="512m"
+      vm="true">
+    <description></description>
+  </setupTask>
+  <setupTask
+      xsi:type="setup:EclipseIniTask"
+      option="-Xms"
+      value="512m"
+      vm="true"/>
+  <setupTask
+      xsi:type="setup:EclipseIniTask"
+      option="-Xmx"
+      value="2g"
+      vm="true"/>
+  <version name="mars"
+      label="Mars"
+      requiredJavaVersion="1.7">
+    <setupTask
+        xsi:type="setup.p2:P2Task"
+        label="${scope.product.label} (${scope.product.version.label})">
+      <requirement
+          name="org.eclipse.platform.ide"
+          versionRange="[4.5.0,4.6.0)"/>
+      <requirement
+          name="org.eclipse.platform.feature.group"
+          versionRange="[4.5.0,4.6.0)"/>
+      <requirement
+          name="org.eclipse.rcp.feature.group"
+          versionRange="[4.5.0,4.6.0)"/>
+      <requirement
+          name="org.eclipse.oomph.setup.feature.group"/>
+      <requirement
+          name="org.eclipse.egit.feature.group"/>
+      <requirement
+          name="org.eclipse.cdt.feature.group"/>
+      <requirement
+          name="org.eclipse.cdt.debug.ui.memory.feature.group"/>
+      <requirement
+          name="org.eclipse.linuxtools.cdt.libhover.feature.feature.group"/>
+      <repository
+          url="http://download.eclipse.org/releases/mars"/>
+    </setupTask>
+    <description>osom cdt for Mars.</description>
+  </version>
+  <description>osom cdt.</description>
+</setup:Product>
