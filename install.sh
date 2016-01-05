@@ -74,11 +74,11 @@ function exists {
 if [[ ! -z "$OPM_HOME" || ! -z $(cat "$BASH_PROFILE_PATH" | grep "OPM_HOME") ]]; then
     stderr '[WARNING] OPM_HOME variable is already the declared.'
 else
-    echo '## OSOM Common Script.'                >> $BASH_PROFILE_PATH
-    echo "export OPM_HOME=$SCRIPT_PATH"        >> $BASH_PROFILE_PATH
-    echo 'if [[ -f "$OPM_HOME/profile" ]]; then' >> $BASH_PROFILE_PATH
-    echo '    . "$OPM_HOME/profile"'             >> $BASH_PROFILE_PATH
-    echo 'fi'                                    >> $BASH_PROFILE_PATH
+    echo '## OSOM Common Script.'                   >> $BASH_PROFILE_PATH
+    echo "export OPM_HOME=$SCRIPT_PATH"             >> $BASH_PROFILE_PATH
+    echo 'if [[ -f "$OPM_HOME/profile.sh" ]]; then' >> $BASH_PROFILE_PATH
+    echo '    . "$OPM_HOME/profile.sh"'             >> $BASH_PROFILE_PATH
+    echo 'fi'                                       >> $BASH_PROFILE_PATH
     stdout "Update $BASH_PROFILE_PATH file."
 fi
 
