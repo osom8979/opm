@@ -122,10 +122,10 @@ MacOSX)
     $MACOSX_LAMBDA
     ;;
 Linux)
-    $WINDOWS_LAMBDA
+    $LINUX_LAMBDA
     ;;
 Windows)
-    $LINUX_LAMBDA
+    $WINDOWS_LAMBDA
     ;;
 *)
     stderr "Unknown platform."
