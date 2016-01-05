@@ -26,11 +26,11 @@ function testCommand {
     fi
 }
 
-NAME='zlib-1.2.8'
-URL='http://zlib.net/zlib-1.2.8.tar.gz'
-MD5='44d667c142d7cda120332623eab69f40'
+NAME='jpeg-9a'
+URL='http://www.ijg.org/files/jpegsrc.v9a.tar.gz'
+MD5='3353992aecaee1805ef4109aadd433e7'
 DEST="$OPM_TMP/$NAME.tar.gz"
-ALREADY="$OPM_LOCAL_LIB/libz.a"
+ALREADY="$OPM_LOCAL_LIB/libjpeg.a"
 
 WORKING=$PWD
 PLATFORM=`platform`
@@ -87,31 +87,14 @@ checkExitError
 
 echo 'Build.'
 cd "$BUILD_DIR"
-if [[ "$PLATFORM" == "Windows" ]]; then
-    export BINARY_PATH=$OPM_LOCAL_BIN
-    export INCLUDE_PATH=$OPM_LOCAL_INC
-    export LIBRARY_PATH=$OPM_LOCAL_LIB
 
-    $MAKE_CMD all -f win32/Makefile.gcc >> $LOG_PATH
+./configure --prefix=$OPM_LOCAL >> $LOG_PATH
 
-    # To use the asm code, type:
-    #   cp contrib/asm?86/match.S ./match.S
-    #   make LOC=-DASMV OBJA=match.o -fwin32/Makefile.gcc
+checkExitError
+$MAKE_CMD >> $LOG_PATH
 
-    checkExitError
-    $MAKE_CMD test testdll -f win32/Makefile.gcc >> $LOG_PATH
-
-    checkExitError
-    $MAKE_CMD install -f win32/Makefile.gcc SHARED_MODE=1 >> $LOG_PATH
-else
-    ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
-
-    checkExitError
-    $MAKE_CMD >> $LOG_PATH
-
-    checkExitError
-    $MAKE_CMD install >> $LOG_PATH
-fi
+checkExitError
+$MAKE_CMD install >> $LOG_PATH
 
 cd "$WORKING"
 echo "Done."

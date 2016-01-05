@@ -18,10 +18,19 @@ function checkExitError {
     fi
 }
 
+function testCommand {
+    local command=$1
+    if [[ $(test-command $command) != 'True' ]]; then
+        echo "Not found $command command."
+        exit 1
+    fi
+}
+
 NAME='libpng-1.6.20'
 URL='http://jaist.dl.sourceforge.net/project/libpng/libpng16/1.6.20/libpng-1.6.20.tar.gz'
 MD5='53166795d924950988a5513d3e605333'
 DEST="$OPM_TMP/$NAME.tar.gz"
+ALREADY="$OPM_LOCAL_LIB/libpng16.a"
 
 WORKING=$PWD
 PLATFORM=`platform`
@@ -34,7 +43,13 @@ MAKE_CMD=make
 CURL_CMD=curl
 CURL_FLAGS="-k -o"
 
-if [[ -f $OPM_LOCAL_LIB/libpng16.a ]]; then
+testCommand $MAKE_CMD
+testCommand $CURL_CMD
+testCommand gcc
+testCommand tar
+testCommand unzip
+
+if [[ -f "$ALREADY" ]]; then
     echo 'Already installed.'
     return 0
 fi
