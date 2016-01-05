@@ -65,5 +65,5 @@ $EXT_TAR_BZ2)
     ;;
 esac
 
-$COMMAND $FLAGS $FILE
+$COMMAND $FLAGS "$FILE"
 
