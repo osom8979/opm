@@ -1,0 +1,69 @@
+#!/bin/bash
+
+FILE=$1
+
+if [[ -z "$FILE" ]]; then
+    echo 'extract {path}'
+    exit 1
+fi
+
+if [[ ! -f "$FILE" ]]; then
+    echo "Not found $FILE file."
+    exit 1
+fi
+
+EXT_ZIP='.zip'
+EXT_TAR='.tar'
+EXT_GZ='.gz'
+EXT_XZ='.xz'
+EXT_TGZ='.tgz'
+EXT_BZ2='.bz2'
+EXT_TAR_GZ=$EXT_TAR$EXT_GZ
+EXT_TAR_XZ=$EXT_TAR$EXT_XZ
+EXT_TAR_BZ2=$EXT_TAR$EXT_BZ2
+
+function getFileExtension {
+    local name=$1
+    local ext=`echo "${name#${name%${EXT_TAR}.*}}"`
+
+    if [[ -z $ext ]]; then
+        echo "${name#${name%.*}}"
+    else
+        echo $ext
+    fi
+}
+
+function getFileName {
+    local name=$1
+    local ext=`getFileExtension $name`
+    echo "${name%${ext}}"
+}
+
+FILE_EXT=`getFileExtension $FILE`
+FILE_NAME=`getFileName $FILE`
+
+case $FILE_EXT in
+$EXT_ZIP)
+    COMMAND=unzip
+    FLAGS=-o
+    ;;
+$EXT_TAR_GZ|$EXT_TGZ)
+    COMMAND=tar
+    FLAGS=xzf
+    ;;
+$EXT_TAR_XZ)
+    COMMAND=tar
+    FLAGS=xJf
+    ;;
+$EXT_TAR_BZ2)
+    COMMAND=tar
+    FLAGS=xjf
+    ;;
+*)
+    COMMAND=tar
+    FLAGS=xf
+    ;;
+esac
+
+$COMMAND $FLAGS $FILE
+
