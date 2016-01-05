@@ -11,7 +11,7 @@ function getScriptDirectory {
 
 if [[ -z $OPM_HOME ]]; then
     # Not found OPM_HOME variable.
-    OPM_HOME=`getScriptDirectory`
+    export OPM_HOME=`getScriptDirectory`
 fi
 
 export OPM_BIN=$OPM_HOME/bin
