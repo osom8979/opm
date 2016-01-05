@@ -102,7 +102,7 @@ else
 IN_PLACE_FLAG="-i"
 fi
 
-for cursor in $INSTALL_DIR/*.sh; do
+for cursor in "$INSTALL_DIR/*.sh"; do
     filename=${cursor##*/}
     check=`exists $INSTALL_LIST $filename`
 
