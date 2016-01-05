@@ -16,21 +16,12 @@ else
 fi
 
 echo "Use the $USE_GET_PIP_SCRIPT file."
-python "$USE_GET_PIP_SCRIPT"
+sudo -H python "$USE_GET_PIP_SCRIPT"
 
 if [[ -f $GET_PIP_NAME ]]; then
     echo "Remove $GET_PIP_NAME"
     rm $GET_PIP_NAME
 fi
 
-REQUIREMENTS=requirements
-
-if [[ ! -z $REQUIREMENTS ]]; then
-    for cursor in $(cat "$REQUIREMENTS"); do
-        echo "Install $cursor"
-        pip install $cursor
-    done
-else
-    echo "Not found $REQUIREMENTS file."
-fi
+echo 'Done.'
 
