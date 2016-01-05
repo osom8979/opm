@@ -46,7 +46,9 @@ export LD_LIBRARY_PATH=$OPM_LIB:$OPM_LOCAL_LIB:$LD_LIBRARY_PATH
 
 ## Extension.
 OPM_ETC_PROFILE_DIR=$OPM_HOME/etc/profile.d
-for cursor in "$OPM_ETC_PROFILE_DIR/*.sh"; do
+
+## Warning: Don't use the quoting("...").
+for cursor in $OPM_ETC_PROFILE_DIR/*.sh; do
     . $cursor
 done
 

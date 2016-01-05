@@ -19,7 +19,8 @@ if [[ ! -d "$PREFIX" ]]; then
     mkdir "$PREFIX"
 fi
 
-for cursor in "$INSTALL_DIR/*.sh"; do
+## Warning: Don't use the quoting("...").
+for cursor in $INSTALL_DIR/*.sh; do
     echo 'Install:' $cursor
     source $cursor
     code=$?
