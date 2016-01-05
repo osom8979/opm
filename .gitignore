@@ -176,6 +176,7 @@ target/
 ###########
 ### OPM ###
 /property
+/local/*
 /tmp/*
 !/tmp/.keep
 *.tmp
