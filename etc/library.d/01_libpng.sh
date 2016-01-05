@@ -1,101 +1,36 @@
 #!/bin/bash
 
-if [[ $OPM_SETUP_COMPLETE != 1 ]]; then
-    echo 'Not complete opm setup.'
-    exit 1
-fi
-
-if [[ -z $OPM_TMP ]]; then
-    echo 'Not defined OPM_TMP variable.'
-    exit 1
-fi
-
-function checkExitError {
-    local ERROR_CODE=$?
-    if [[ "$ERROR_CODE" != "0" ]]; then
-        echo "Error signal ($ERROR_CODE)"
-        exit $ERROR_CODE
-    fi
-}
-
-function testCommand {
-    local command=$1
-    if [[ $(test-command $command) != 'True' ]]; then
-        echo "Not found $command command."
-        exit 1
-    fi
-}
-
 NAME='libpng-1.6.20'
 URL='http://jaist.dl.sourceforge.net/project/libpng/libpng16/1.6.20/libpng-1.6.20.tar.gz'
 MD5='53166795d924950988a5513d3e605333'
 DEST="$OPM_TMP/$NAME.tar.gz"
+BUILD_DIR="$OPM_TMP/$NAME"
 ALREADY="$OPM_LOCAL_LIB/libpng16.a"
+LOG_PATH="$OPM_TMP/$NAME-`datetime`.log"
 
-WORKING=$PWD
-PLATFORM=`platform`
-DATETIME=`datetime`
-BUILD_NAME=$NAME-$DATETIME
-BUILD_DIR=$OPM_TMP/$NAME
-LOG_PATH=$OPM_TMP/$BUILD_NAME.log
-
-MAKE_CMD=make
-CURL_CMD=curl
-CURL_FLAGS="-k -o"
-
-testCommand $MAKE_CMD
-testCommand $CURL_CMD
-testCommand gcc
-testCommand tar
-testCommand unzip
-
-if [[ -f "$ALREADY" ]]; then
-    echo 'Already installed.'
-    return 0
-fi
-
-echo 'Download.'
-if [[ -f "$DEST" ]]; then
-    echo "Skip download $NAME"
-else
-    echo "Download $NAME"
-    $CURL_CMD $CURL_FLAGS "$DEST" "$URL"
-
-    DOWNLOAD_RESULT=$?
-    if [[ $DOWNLOAD_RESULT != 0 ]]; then
-        echo 'Download error.'
-        exit 1
+function checkExitError {
+    local code=$?
+    if [[ $code != 0 ]]; then
+        echo " - Error signal ($code)" 1>&2
+        exit $code
     fi
-fi
+}
 
-echo 'Checksum.'
-CHECKSUM_RESULT=`checksum "$DEST" "$MD5"`
+function COMMON_LAMBDA {
+    ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
 
-if [[ $CHECKSUM_RESULT != 'True' ]]; then
-    echo 'Checksum error.'
-    exit 1
-fi
+    checkExitError
+    make >> $LOG_PATH
 
-echo 'Extract.'
-if [[ -d "$BUILD_DIR" ]]; then
-    rm -rf "$BUILD_DIR"
-fi
+    checkExitError
+    make install >> $LOG_PATH
+}
 
-cd "$OPM_TMP"
-extract "$DEST"
-checkExitError
+MACOSX_LAMBDA=COMMON_LAMBDA
+LINUX_LAMBDA=COMMON_LAMBDA
+WINDOWS_LAMBDA=COMMON_LAMBDA
 
-echo 'Build.'
-cd "$BUILD_DIR"
-
-./configure --prefix=$OPM_LOCAL >> $LOG_PATH
-
-checkExitError
-$MAKE_CMD >> $LOG_PATH
-
-checkExitError
-$MAKE_CMD install >> $LOG_PATH
-
-cd "$WORKING"
-echo "Done."
+GENERAL_BUILD=$OPM_HOME/etc/library.d/general-build
+. $GENERAL_BUILD "$NAME" "$URL" "$MD5" "$DEST" "$BUILD_DIR" "$ALREADY" \
+    "$MACOSX_LAMBDA" "$LINUX_LAMBDA" "$WINDOWS_LAMBDA" "$LOG_PATH"
 

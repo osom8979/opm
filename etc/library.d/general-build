@@ -1,0 +1,139 @@
+#!/bin/bash
+
+NAME=$1
+URL=$2
+MD5=$3
+DEST=$4
+BUILD_DIR=$5
+ALREADY=$6
+MACOSX_LAMBDA=$7
+LINUX_LAMBDA=$8
+WINDOWS_LAMBDA=$9
+LOG_PATH=${10}
+
+WORKING=$PWD
+PLATFORM=`platform`
+
+MAKE_CMD=make
+CURL_CMD=curl
+CURL_FLAGS="-k -o"
+
+function stdout {
+    echo " - $@"
+}
+
+function stderr {
+    if [[ $PLATFORM == Linux ]]; then
+        echo -e " - \e[31m$@\e[0m" 1>&2
+    else
+        echo " - $@" 1>&2
+    fi
+}
+
+function checkExitError {
+    local code=$?
+    if [[ $code != 0 ]]; then
+        stderr "Error signal ($code)"
+        exit $code
+    fi
+}
+
+function testCommand {
+    local command=$1
+    if [[ $(test-command $command) != 'True' ]]; then
+        stderr "Not found $command command."
+        exit 1
+    fi
+}
+
+if [[ $OPM_SETUP_COMPLETE != 1 ]]; then
+    stderr 'Not complete opm setup.'
+    exit 1
+fi
+
+if [[ -z $OPM_TMP ]]; then
+    stderr 'Not defined OPM_TMP variable.'
+    exit 1
+fi
+
+if [[ -z $LOG_PATH ]]; then
+    stderr 'general-build {name} {url} {md5} {dest} {build_dir} {already} {osx} {linux} {windows} {log}'
+    exit 1
+fi
+
+if [[ ! -d "$OPM_TMP" ]]; then
+    mkdir -p "$OPM_TMP"
+fi
+
+testCommand $MAKE_CMD
+testCommand $CURL_CMD
+testCommand gcc
+testCommand tar
+testCommand unzip
+
+## ALREADY:
+if [[ -f "$ALREADY" ]]; then
+    stdout "Already installed ($ALREADY)."
+    return 0
+fi
+
+## DOWNLOAD:
+if [[ -f "$DEST" ]]; then
+    stdout "Skip download $NAME"
+else
+    stdout "Download $NAME"
+    $CURL_CMD $CURL_FLAGS "$DEST" "$URL"
+
+    DOWNLOAD_RESULT=$?
+    if [[ $DOWNLOAD_RESULT != 0 ]]; then
+        stderr 'Download error.'
+        exit 1
+    fi
+fi
+
+## CHECKSUM:
+CHECKSUM_RESULT=`checksum "$DEST" "$MD5"`
+stdout "Checksum result: $CHECKSUM_RESULT"
+
+if [[ $CHECKSUM_RESULT != 'True' ]]; then
+    stderr 'Checksum error.'
+    exit 1
+fi
+
+## EXTRACT:
+if [[ -d "$BUILD_DIR" ]]; then
+    stdout "Remove $BUILD_DIR"
+    rm -rf "$BUILD_DIR"
+fi
+
+cd "$OPM_TMP"
+stdout "Extract $DEST"
+extract "$DEST"
+checkExitError
+
+## BUILD:
+stdout "Start build."
+stdout "Log file: $LOG_PATH"
+stdout "Platform: $PLATFORM"
+cd "$BUILD_DIR"
+
+case "$PLATFORM" in
+MacOSX)
+    $MACOSX_LAMBDA
+    ;;
+Linux)
+    $WINDOWS_LAMBDA
+    ;;
+Windows)
+    $LINUX_LAMBDA
+    ;;
+*)
+    stderr "Unknown platform."
+    exit 1
+    ;;
+esac
+
+## END:
+cd "$WORKING"
+stdout 'Done.'
+
