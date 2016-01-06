@@ -1,0 +1,4 @@
+#!/bin/bash
+
+find . -iname '*.c' -o -iname '*.cc' -o -iname '*.cxx' -o -iname '*.cpp' -o -iname '*.c++' -o -iname '*.h' -o -iname '*.hh' -o -iname '*.hxx' -o -iname '*.hpp' -o -iname '*.h++' | xargs wc -l
+
