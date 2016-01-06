@@ -33,6 +33,11 @@ if [[ -z $LSCOLORS ]]; then
     export LSCOLORS=ExFxBxDxCxegedabagacad
 fi
 
+## Grep setting.
+if [[ -z $GREP_OPTIONS ]]; then
+    export GREP_OPTIONS='--color=always'
+fi
+
 ## General setting.
 export PATH=$OPM_BIN:$OPM_LOCAL_BIN:$PATH
 
