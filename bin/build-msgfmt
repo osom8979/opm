@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo 'Build po files...'
+
+PO=`find . -iname '*.po'`
+PO_MO=`echo "$PO" | sed -e 's;\(.*\)\.po$;\1\.po:-o:\1.mo;g'`
+ARGS=`echo "$PO_MO" | awk -F':' '{print($1);print($2);print($3);}'`
+
+echo $ARGS | xargs -tn 3 msgfmt
+echo 'Done.'
+
