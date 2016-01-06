@@ -1,40 +1,46 @@
 #!/bin/bash
 
+if [[ -z $OPM_HOME ]]; then
+    echo 'Not defined OPM_HOME variable.'
+    exit 1
+fi
+
 NAME=$1
 URL=$2
 MD5=$3
-DEST=$4
-BUILD_DIR=$5
-ALREADY=$6
-MACOSX_LAMBDA=$7
-LINUX_LAMBDA=$8
-WINDOWS_LAMBDA=$9
-LOG_PATH=${10}
 
-WORKING=$PWD
+TEMP_DIR=$4
+DEST_NAME=$5
+WORK_NAME=$6
+ALREADY=$7
+LOG_PATH=$8
+
+LINUX_FUNC=$9
+MACOSX_FUNC=${10}
+WINDOWS_FUNC=${11}
+
+HELP="general-build {name} {url} {md5}"
+HELP="$HELP {temp} {dest} {work} {already} {log}"
+HELP="$HELP {osx} {linux} {windows}"
+
+WORKING="$PWD"
+DEST="$TEMP_DIR/$DEST_NAME"
+WORK_DIR="$TEMP_DIR/$WORK_NAME"
 PLATFORM=`platform`
 
-MAKE_CMD=make
-CURL_CMD=curl
-CURL_FLAGS="-k -o"
+## ---------------
+## Bash functions.
+## ---------------
 
 function stdout {
     echo " - $@"
 }
 
 function stderr {
-    if [[ $PLATFORM == Linux ]]; then
+    if [[ $PLATFORM == 'Linux' ]]; then
         echo -e " - \e[31m$@\e[0m" 1>&2
     else
         echo " - $@" 1>&2
-    fi
-}
-
-function checkExitError {
-    local code=$?
-    if [[ $code != 0 ]]; then
-        stderr "Error signal ($code)"
-        exit $code
     fi
 }
 
@@ -46,30 +52,28 @@ function testCommand {
     fi
 }
 
-if [[ $OPM_SETUP_COMPLETE != 1 ]]; then
-    stderr 'Not complete opm setup.'
+## -------
+## Exists.
+## -------
+
+if [[ -z $WINDOWS_FUNC ]]; then
+    stderr "$HELP"
     exit 1
 fi
 
-if [[ -z $OPM_TMP ]]; then
-    stderr 'Not defined OPM_TMP variable.'
-    exit 1
+if [[ ! -d "$TEMP_DIR" ]]; then
+    mkdir -p "$TEMP_DIR"
 fi
 
-if [[ -z $LOG_PATH ]]; then
-    stderr 'general-build {name} {url} {md5} {dest} {build_dir} {already} {osx} {linux} {windows} {log}'
-    exit 1
-fi
-
-if [[ ! -d "$OPM_TMP" ]]; then
-    mkdir -p "$OPM_TMP"
-fi
-
-testCommand $MAKE_CMD
-testCommand $CURL_CMD
+testCommand make
+testCommand curl
 testCommand gcc
 testCommand tar
 testCommand unzip
+
+## ------------
+## Entry-point.
+## ------------
 
 ## ALREADY:
 if [[ -f "$ALREADY" ]]; then
@@ -82,7 +86,7 @@ if [[ -f "$DEST" ]]; then
     stdout "Skip download $NAME"
 else
     stdout "Download $NAME"
-    $CURL_CMD $CURL_FLAGS "$DEST" "$URL"
+    curl -k -o "$DEST" "$URL"
 
     DOWNLOAD_RESULT=$?
     if [[ $DOWNLOAD_RESULT != 0 ]]; then
@@ -101,31 +105,29 @@ if [[ $CHECKSUM_RESULT != 'True' ]]; then
 fi
 
 ## EXTRACT:
-if [[ -d "$BUILD_DIR" ]]; then
-    stdout "Remove $BUILD_DIR"
-    rm -rf "$BUILD_DIR"
+if [[ -d "$WORK_DIR" ]]; then
+    stdout "Remove $WORK_DIR"
+    rm -rf "$WORK_DIR"
 fi
 
-cd "$OPM_TMP"
 stdout "Extract $DEST"
-extract "$DEST"
-checkExitError
+extract "$DEST" "$TEMP_DIR"
 
 ## BUILD:
 stdout "Start build."
 stdout "Log file: $LOG_PATH"
 stdout "Platform: $PLATFORM"
-cd "$BUILD_DIR"
+cd "$WORK_DIR"
 
 case "$PLATFORM" in
-MacOSX)
-    $MACOSX_LAMBDA
-    ;;
 Linux)
-    $LINUX_LAMBDA
+    $LINUX_FUNC
+    ;;
+MacOSX)
+    $MACOSX_FUNC
     ;;
 Windows)
-    $WINDOWS_LAMBDA
+    $WINDOWS_FUNC
     ;;
 *)
     stderr "Unknown platform."
