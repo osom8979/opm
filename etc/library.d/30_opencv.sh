@@ -1,0 +1,30 @@
+#!/bin/bash
+
+NAME='opencv-3.1.0'
+URL='https://codeload.github.com/Itseez/opencv/tar.gz/3.1.0'
+MD5='70e1dd07f0aa06606f1bc0e3fa15abd3'
+TEMP_DIR="$OPM_TMP/build"
+DEST_NAME="$NAME.tar.gz"
+WORK_NAME="$NAME"
+ALREADY="$OPM_LOCAL_LIB/libopencv.a"
+LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
+
+function runLinux {
+    check-exit
+    cmake -DCMAKE_INSTALL_PREFIX=$OPM_LOCAL -G 'Unix Makefiles' >> $LOG_PATH
+
+    check-exit
+    make >> $LOG_PATH
+
+    check-exit
+    make install >> $LOG_PATH
+}
+
+LINUX_FUNC=runLinux
+MACOSX_FUNC=runLinux
+WINDOWS_FUNC=runLinux
+
+. general-build "$NAME" "$URL" "$MD5" \
+    "$TEMP_DIR" "$DEST_NAME" "$WORK_NAME" "$ALREADY" "$LOG_PATH" \
+    "$LINUX_FUNC" "$MACOSX_FUNC" "$WINDOWS_FUNC"
+
