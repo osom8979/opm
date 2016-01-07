@@ -2,6 +2,9 @@
 
 let mapleader="\\"
 
+" Help message.
+map <leader>? <ESC>:call OpmHelp()<CR>
+
 " Clipboard setting.
 map  <F3> "+Y
 map  <F4> "+gp
