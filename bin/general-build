@@ -116,6 +116,7 @@ extract "$DEST" "$TEMP_DIR"
 ## BUILD:
 stdout "Start build."
 stdout "Log file: $LOG_PATH"
+stdout "Working: $WORK_DIR"
 stdout "Platform: $PLATFORM"
 cd "$WORK_DIR"
 
