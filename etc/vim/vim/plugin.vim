@@ -54,7 +54,7 @@ NeoBundle 'echofunc.vim'  " print function parameter information.
 NeoBundle 'a.vim'         " source <-> header.
 
 NeoBundle 'AutoComplPop'    " auto complete popup.
-"NeoBundle 'OmniCppComplete' " Ctags auto complete popup.
+NeoBundle 'OmniCppComplete' " Ctags auto complete popup.
 
 " Themes
 "NeoBundle 'nanotech/jellybeans.vim'
