@@ -1,0 +1,20 @@
+#!/bin/sh
+
+TAGSNAME=tags
+
+FLAGS=""
+FLAGS="$FLAGS --c++-kinds=+p --fields=+iaS --extra=+q"
+FLAGS="$FLAGS --exclude=boost"
+FLAGS="$FLAGS --tag-relative=no"
+FLAGS="$FLAGS -f $TAGSNAME"
+FLAGS="$FLAGS -R"
+
+if [[ -f "$TAGSNAME" ]]; then
+    rm "$TAGSNAME"
+fi
+
+echo "Create $TAGSNAME"
+ctags $FLAGS
+
+echo 'Done.'
+

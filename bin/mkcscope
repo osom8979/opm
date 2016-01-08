@@ -1,0 +1,23 @@
+#!/bin/sh
+
+WORKING="$PWD"
+LIST_FILE="$WORKING/cscope.files"
+CSCOPE_DB="$WORKING/cscope.out"
+
+# cleanup.
+if [[ -f "$LIST_FILE" ]]; then rm -f "$LIST_FILE"; fi
+if [[ -f "$CSCOPE_DB" ]]; then rm -f "$CSCOPE_DB"; fi
+
+# create find script.
+find-cpp > "$LIST_FILE"
+
+if [[ ! -f "$LIST_FILE" ]]; then
+    echo "Not found $LIST_FILE error."
+    exit 1
+fi
+
+echo "Create $CSCOPE_DB"
+cscope -b -i "$LIST_FILE" -f "$CSCOPE_DB"
+
+echo 'Done.'
+
