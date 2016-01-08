@@ -46,8 +46,8 @@ NeoBundle 'sjl/gundo.vim'             " undo tree.
 "NeoBundle 'zakj/vim-showmarks'       " show mark list bar.
 NeoBundle 'easymotion/vim-easymotion' " motions on speed.
 
-"NeoBundle 'ctags.vim'   " ctags plugin.
-"NeoBundle 'cscope.vim'  " cscope plugin.
+NeoBundle 'ctags.vim'   " ctags plugin.
+NeoBundle 'cscope.vim'  " cscope plugin.
 
 NeoBundle 'matchparenpp'  " blink match brace.
 NeoBundle 'echofunc.vim'  " print function parameter information.
