@@ -103,8 +103,8 @@ let g:tagbar_width = 25
 
 " source-explorer
 let g:SrcExpl_winHeight = 5
-let g:SrcExpl_updateTagsCmd = "ctags --c++-kinds=+p --fields=+iaS --extra=+q"
 let g:SrcExpl_refreshTime = 100
+"let g:SrcExpl_updateTagsCmd = "ctags --c++-kinds=+p --fields=+iaS --extra=+q"
 "let g:SrcExpl_jumpKey = "<ENTER>"
 "let g:SrcExpl_gobackKey = "<SPACE>"
 
