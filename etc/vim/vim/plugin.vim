@@ -42,9 +42,10 @@ NeoBundle 'bling/vim-airline'          " more beautiful Status bar.
 NeoBundle 'majutsushi/tagbar'          " tagbar window.
 "NeoBundle 'wesleyche/SrcExpl'         " displaying prototype (Conflict from the ctags.vim).
 NeoBundle 'scrooloose/syntastic'       " syntax checking.
-"NeoBundle 'sjl/gundo.vim'             " undo tree.
+NeoBundle 'sjl/gundo.vim'              " undo tree.
 "NeoBundle 'zakj/vim-showmarks'        " show mark list bar.
 NeoBundle 'easymotion/vim-easymotion'  " motions on speed.
+NeoBundle 'kshenoy/vim-signature'      " display marks.
 
 NeoBundle 'ctags.vim'   " ctags plugin (Conflict from the SrcExpl).
 NeoBundle 'cscope.vim'  " cscope plugin.
