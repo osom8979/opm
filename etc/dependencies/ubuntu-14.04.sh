@@ -1,5 +1,8 @@
 #!/bin/bash
 
+## libGL.so
 apt-get install libgl1-mesa-dri
-apt-get install exuberant-ctags cscope
+
+## Default editor.
+apt-get install vim exuberant-ctags cscope
 
