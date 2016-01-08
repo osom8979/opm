@@ -1,0 +1,39 @@
+#!/bin/bash
+
+declare -a CPP_EXT
+
+function addCppExtension {
+    local insert_index=${#CPP_EXT[*]}
+    local extension=$1
+    CPP_EXT[$insert_index]="'*.$extension'"
+}
+
+## Source
+addCppExtension 'c'
+addCppExtension 'cc'
+addCppExtension 'cxx'
+addCppExtension 'cpp'
+addCppExtension 'c++'
+
+## Header
+addCppExtension 'h'
+addCppExtension 'hh'
+addCppExtension 'hxx'
+addCppExtension 'hpp'
+addCppExtension 'h++'
+
+DIR='.'
+SIZE=${#CPP_EXT[*]}
+INDEX=0
+FLAGS=
+
+while [[ $INDEX -lt $SIZE ]]; do
+    if [[ $INDEX -gt 0 ]]; then
+        FLAGS=`printf "%s\n-o\n" "$FLAGS"`
+    fi
+    FLAGS=`printf "%s\n-iname\n%s" "$FLAGS" "${CPP_EXT[$INDEX]}"`
+    let 'INDEX = INDEX + 1'
+done
+
+echo $FLAGS | xargs find "$DIR"
+
