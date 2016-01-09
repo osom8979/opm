@@ -10,13 +10,13 @@ ALREADY="$OPM_LOCAL_LIB/libopencv_ts.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     cmake -DCMAKE_INSTALL_PREFIX=$OPM_LOCAL -G 'Unix Makefiles' >> $LOG_PATH
 
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     make >> $LOG_PATH
 
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     make install >> $LOG_PATH
 }
 

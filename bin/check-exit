@@ -1,9 +1,0 @@
-#!/bin/bash
-
-CODE=$?
-
-if [[ $CODE != 0 ]]; then
-    echo "Error signal ($CODE)" 1>&2
-    exit $CODE
-fi
-

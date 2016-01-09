@@ -10,10 +10,10 @@ ALREADY="$OPM_LOCAL_LIB/libboost_system.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     ./bootstrap.sh >> $LOG_PATH
 
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     ./b2 -j8 --prefix=$OPM_LOCAL --layout=system variant=release link=shared threading=multi install >> $LOG_PATH
 }
 

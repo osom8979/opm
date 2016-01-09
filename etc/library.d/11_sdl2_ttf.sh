@@ -10,13 +10,13 @@ ALREADY="$OPM_LOCAL_LIB/libSDL2_ttf.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
 
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     make >> $LOG_PATH
 
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     make install >> $LOG_PATH
 }
 

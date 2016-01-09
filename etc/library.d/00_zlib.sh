@@ -10,13 +10,13 @@ ALREADY="$OPM_LOCAL_LIB/libz.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
 
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     make >> $LOG_PATH
 
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     make install >> $LOG_PATH
 }
 
@@ -25,17 +25,17 @@ function runWindows {
     export INCLUDE_PATH=$OPM_LOCAL_INC
     export LIBRARY_PATH=$OPM_LOCAL_LIB
 
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     make all -f win32/Makefile.gcc >> $LOG_PATH
 
     # To use the asm code, type:
     #   cp contrib/asm?86/match.S ./match.S
     #   make LOC=-DASMV OBJA=match.o -fwin32/Makefile.gcc
 
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     make test testdll -f win32/Makefile.gcc >> $LOG_PATH
 
-    check-exit
+    code=$?; [[ $code != 0 ]] && exit $code
     make install -f win32/Makefile.gcc SHARED_MODE=1 >> $LOG_PATH
 }
 
