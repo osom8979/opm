@@ -5,18 +5,21 @@ let mapleader="\\"
 " Help message.
 map <leader>? <ESC>:call OpmHelp()<CR>
 
+" Buffer setting.
+map  <F1> :bp<CR>
+map  <F2> :bn<CR>
+vmap <F1> <ESC>:bp<CR>
+vmap <F2> <ESC>:bn<CR>
+imap <F1> <ESC>:bp<CR>
+imap <F2> <ESC>:bn<CR>
+map  <leader>w <ESC>:call CloseBufferAndMoveNext()<CR>
+
 " Clipboard setting.
 map  <F3> "+Y
-map  <F4> "+gp
+map  <F4> "+gP
 vmap <F3> "+y
-vmap <F4> "+gp
+vmap <F4> "+gP
 imap <F4> <ESC>"+gpi
-
-" Change window setting.
-map <leader>w <C-w>w
-map <leader>W <C-w>W
-imap <leader>w <ESC><C-w>w
-imap <leader>W <ESC><C-w>W
 
 " Ctags setting.
 nmap <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>

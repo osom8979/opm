@@ -41,7 +41,7 @@ NeoBundle 'bling/vim-airline'          " more beautiful Status bar.
 "NeoBundle 'tpope/vim-surround'        " quoting/parenthesizing made simple.
 NeoBundle 'majutsushi/tagbar'          " tagbar window.
 "NeoBundle 'wesleyche/SrcExpl'         " displaying prototype (Conflict from the ctags.vim).
-NeoBundle 'scrooloose/syntastic'       " syntax checking.
+"NeoBundle 'scrooloose/syntastic'      " syntax checking.
 NeoBundle 'sjl/gundo.vim'              " undo tree.
 "NeoBundle 'zakj/vim-showmarks'        " show mark list bar.
 NeoBundle 'easymotion/vim-easymotion'  " motions on speed.
