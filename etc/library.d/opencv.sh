@@ -1,7 +1,8 @@
 #!/bin/bash
 
-## Don't remove DEPENDENCY variable.
-DEPENDENCY=
+return
+## Don't remove DEPENDENCIES variable.
+DEPENDENCIES=
 
 if [[ -z $OPM_LOCAL ]]; then
     echo 'Not defined OPM_LOCAL variable.'
@@ -13,21 +14,21 @@ if [[ -z $OPM_TMP ]]; then
     exit 1
 fi
 
-NAME='libvorbis-1.3.5'
-URL='http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.xz'
-MD5='28cb28097c07a735d6af56e598e1c90f'
+NAME='opencv-3.1.0'
+URL='https://codeload.github.com/Itseez/opencv/tar.gz/3.1.0'
+MD5='70e1dd07f0aa06606f1bc0e3fa15abd3'
 TEMP_DIR="$OPM_TMP/build"
-DEST_NAME="$NAME.tar.xz"
+DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL/lib/libvorbis.a"
+ALREADY="$OPM_LOCAL/lib/libopencv_ts.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
     code=$?; [[ $code != 0 ]] && exit $code
-    ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
+    cmake -DCMAKE_INSTALL_PREFIX=$OPM_LOCAL -G 'Unix Makefiles' >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
-    make >> $LOG_PATH
+    make -j8 >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
     make install >> $LOG_PATH

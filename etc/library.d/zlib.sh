@@ -1,7 +1,7 @@
 #!/bin/bash
 
-## Don't remove DEPENDENCY variable.
-DEPENDENCY=
+## Don't remove DEPENDENCIES variable.
+DEPENDENCIES=
 
 if [[ -z $OPM_LOCAL ]]; then
     echo 'Not defined OPM_LOCAL variable.'

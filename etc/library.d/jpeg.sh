@@ -1,7 +1,7 @@
 #!/bin/bash
 
-## Don't remove DEPENDENCY variable.
-DEPENDENCY=
+## Don't remove DEPENDENCIES variable.
+DEPENDENCIES=
 
 if [[ -z $OPM_LOCAL ]]; then
     echo 'Not defined OPM_LOCAL variable.'
@@ -13,18 +13,18 @@ if [[ -z $OPM_TMP ]]; then
     exit 1
 fi
 
-NAME='flac-1.3.1'
-URL='http://downloads.xiph.org/releases/flac/flac-1.3.1.tar.xz'
-MD5='b9922c9a0378c88d3e901b234f852698'
+NAME='jpeg-9a'
+URL='http://www.ijg.org/files/jpegsrc.v9a.tar.gz'
+MD5='3353992aecaee1805ef4109aadd433e7'
 TEMP_DIR="$OPM_TMP/build"
-DEST_NAME="$NAME.tar.xz"
+DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL/lib/libFLAC.a"
+ALREADY="$OPM_LOCAL/lib/libjpeg.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
     code=$?; [[ $code != 0 ]] && exit $code
-    ./configure --prefix=$OPM_LOCAL --enable-static --enable-shared >> $LOG_PATH
+    ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
     make >> $LOG_PATH

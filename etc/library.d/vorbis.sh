@@ -1,7 +1,7 @@
 #!/bin/bash
 
-## Don't remove DEPENDENCY variable.
-DEPENDENCY=
+## Don't remove DEPENDENCIES variable.
+DEPENDENCIES=
 
 if [[ -z $OPM_LOCAL ]]; then
     echo 'Not defined OPM_LOCAL variable.'
@@ -13,13 +13,13 @@ if [[ -z $OPM_TMP ]]; then
     exit 1
 fi
 
-NAME='libogg-1.3.2'
-URL='http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.gz'
-MD5='b72e1a1dbadff3248e4ed62a4177e937'
+NAME='libvorbis-1.3.5'
+URL='http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.xz'
+MD5='28cb28097c07a735d6af56e598e1c90f'
 TEMP_DIR="$OPM_TMP/build"
-DEST_NAME="$NAME.tar.gz"
+DEST_NAME="$NAME.tar.xz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL/lib/libogg.a"
+ALREADY="$OPM_LOCAL/lib/libvorbis.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-## Don't remove DEPENDENCY variable.
-DEPENDENCY=
+## Don't remove DEPENDENCIES variable.
+DEPENDENCIES=zlib
 
 if [[ -z $OPM_LOCAL ]]; then
     echo 'Not defined OPM_LOCAL variable.'
@@ -13,13 +13,13 @@ if [[ -z $OPM_TMP ]]; then
     exit 1
 fi
 
-NAME='SDL2_mixer-2.0.1'
-URL='https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.1.tar.gz'
-MD5='c6c4f556d4415871f526248f5c9a627d'
+NAME='libpng-1.6.20'
+URL='http://jaist.dl.sourceforge.net/project/libpng/libpng16/1.6.20/libpng-1.6.20.tar.gz'
+MD5='53166795d924950988a5513d3e605333'
 TEMP_DIR="$OPM_TMP/build"
 DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL/lib/libSDL2_mixer.a"
+ALREADY="$OPM_LOCAL/lib/libpng16.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {

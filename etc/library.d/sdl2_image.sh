@@ -1,7 +1,7 @@
 #!/bin/bash
 
-## Don't remove DEPENDENCY variable.
-DEPENDENCY=
+## Don't remove DEPENDENCIES variable.
+DEPENDENCIES=sdl2:jpeg:libpng
 
 if [[ -z $OPM_LOCAL ]]; then
     echo 'Not defined OPM_LOCAL variable.'
@@ -13,13 +13,13 @@ if [[ -z $OPM_TMP ]]; then
     exit 1
 fi
 
-NAME='jpeg-9a'
-URL='http://www.ijg.org/files/jpegsrc.v9a.tar.gz'
-MD5='3353992aecaee1805ef4109aadd433e7'
+NAME='SDL2_image-2.0.1'
+URL='https://www.libsdl.org/projects/SDL_image/release/SDL2_image-2.0.1.tar.gz'
+MD5='d94b94555ba022fa249a53a021dc3606'
 TEMP_DIR="$OPM_TMP/build"
 DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL/lib/libjpeg.a"
+ALREADY="$OPM_LOCAL/lib/libSDL2_image.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
