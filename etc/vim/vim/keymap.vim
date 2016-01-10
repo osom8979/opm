@@ -12,14 +12,14 @@ vmap <F1> <ESC>:bp<CR>
 vmap <F2> <ESC>:bn<CR>
 imap <F1> <ESC>:bp<CR>
 imap <F2> <ESC>:bn<CR>
-map  <leader>w <ESC>:call CloseBufferAndMoveNext()<CR>
+map  <leader><leader>w <ESC>:call CloseBufferAndMoveNext()<CR>
 
 " Clipboard setting.
-map  <F3> "+Y
-map  <F4> "+gP
-vmap <F3> "+y
-vmap <F4> "+gP
-imap <F4> <ESC>"+gpi
+map  <F11> "+Y
+map  <F12> "+gP
+vmap <F11> "+y
+vmap <F12> "+gP
+imap <F12> <ESC>"+gpi
 
 " Ctags setting.
 nmap <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
