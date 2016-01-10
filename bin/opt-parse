@@ -1,0 +1,22 @@
+#!/bin/bash
+
+SCRIPT=$0
+INDEX=1
+SIZE=$#
+PREFIX='arg_'
+
+while [[ $INDEX -le $SIZE ]]; do
+    CURSOR=$1
+    TEST_VALUE=`echo "$CURSOR" | grep '='`
+
+    eval "export ${PREFIX}${INDEX}='${CURSOR}'"
+    if [[ $TEST_VALUE != '' ]]; then
+        NAME=`echo "$CURSOR" | awk -F'=' '{print($1);}' | sed -e 's/^--//g' | sed -e 's/-/_/g'`
+        VALUE=`echo "$CURSOR" | awk -F'=' '{print($2);}'`
+        eval "export ${PREFIX}${NAME}='${VALUE}'"
+    fi
+
+    let 'INDEX = INDEX + 1'
+    shift
+done
+
