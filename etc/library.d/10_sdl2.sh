@@ -1,5 +1,18 @@
 #!/bin/bash
 
+## Don't remove DEPENDENCY variable.
+DEPENDENCY=
+
+if [[ -z $OPM_LOCAL ]]; then
+    echo 'Not defined OPM_LOCAL variable.'
+    exit 1
+fi
+
+if [[ -z $OPM_TMP ]]; then
+    echo 'Not defined OPM_TMP variable.'
+    exit 1
+fi
+
 NAME='SDL2-2.0.4'
 URL='https://www.libsdl.org/release/SDL2-2.0.4.tar.gz'
 MD5='44fc4a023349933e7f5d7a582f7b886e'
@@ -11,7 +24,7 @@ MD5='44fc4a023349933e7f5d7a582f7b886e'
 TEMP_DIR="$OPM_TMP/build"
 DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL_LIB/libSDL2.a"
+ALREADY="$OPM_LOCAL/lib/libSDL2.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
@@ -56,7 +69,7 @@ function runMacOSX {
     done
 
     # install header files.
-    local header_dir="$OPM_LOCAL_INC/SDL2"
+    local header_dir="$OPM_LOCAL/include/SDL2"
     if [[ ! -d "$header_dir" ]]; then
         mkdir -p "$header_dir"
     fi

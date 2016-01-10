@@ -1,12 +1,25 @@
 #!/bin/bash
 
+## Don't remove DEPENDENCY variable.
+DEPENDENCY=
+
+if [[ -z $OPM_LOCAL ]]; then
+    echo 'Not defined OPM_LOCAL variable.'
+    exit 1
+fi
+
+if [[ -z $OPM_TMP ]]; then
+    echo 'Not defined OPM_TMP variable.'
+    exit 1
+fi
+
 NAME='flac-1.3.1'
 URL='http://downloads.xiph.org/releases/flac/flac-1.3.1.tar.xz'
 MD5='b9922c9a0378c88d3e901b234f852698'
 TEMP_DIR="$OPM_TMP/build"
 DEST_NAME="$NAME.tar.xz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL_LIB/libFLAC.a"
+ALREADY="$OPM_LOCAL/lib/libFLAC.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {

@@ -1,12 +1,25 @@
 #!/bin/bash
 
+## Don't remove DEPENDENCY variable.
+DEPENDENCY=
+
+if [[ -z $OPM_LOCAL ]]; then
+    echo 'Not defined OPM_LOCAL variable.'
+    exit 1
+fi
+
+if [[ -z $OPM_TMP ]]; then
+    echo 'Not defined OPM_TMP variable.'
+    exit 1
+fi
+
 NAME='boost_1_60_0'
 URL='http://jaist.dl.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.gz'
 MD5='28f58b9a33469388302110562bdf6188'
 TEMP_DIR="$OPM_TMP/build"
 DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL_LIB/libboost_system.a"
+ALREADY="$OPM_LOCAL/lib/libboost_system.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {

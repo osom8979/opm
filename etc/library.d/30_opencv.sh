@@ -1,12 +1,25 @@
 #!/bin/bash
 
+## Don't remove DEPENDENCY variable.
+DEPENDENCY=
+
+if [[ -z $OPM_LOCAL ]]; then
+    echo 'Not defined OPM_LOCAL variable.'
+    exit 1
+fi
+
+if [[ -z $OPM_TMP ]]; then
+    echo 'Not defined OPM_TMP variable.'
+    exit 1
+fi
+
 NAME='opencv-3.1.0'
 URL='https://codeload.github.com/Itseez/opencv/tar.gz/3.1.0'
 MD5='70e1dd07f0aa06606f1bc0e3fa15abd3'
 TEMP_DIR="$OPM_TMP/build"
 DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL_LIB/libopencv_ts.a"
+ALREADY="$OPM_LOCAL/lib/libopencv_ts.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {

@@ -1,12 +1,25 @@
 #!/bin/bash
 
+## Don't remove DEPENDENCY variable.
+DEPENDENCY=
+
+if [[ -z $OPM_LOCAL ]]; then
+    echo 'Not defined OPM_LOCAL variable.'
+    exit 1
+fi
+
+if [[ -z $OPM_TMP ]]; then
+    echo 'Not defined OPM_TMP variable.'
+    exit 1
+fi
+
 NAME='zlib-1.2.8'
 URL='http://zlib.net/zlib-1.2.8.tar.gz'
 MD5='44d667c142d7cda120332623eab69f40'
 TEMP_DIR="$OPM_TMP/build"
 DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL_LIB/libz.a"
+ALREADY="$OPM_LOCAL/lib/libz.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
@@ -21,9 +34,9 @@ function runLinux {
 }
 
 function runWindows {
-    export BINARY_PATH=$OPM_LOCAL_BIN
-    export INCLUDE_PATH=$OPM_LOCAL_INC
-    export LIBRARY_PATH=$OPM_LOCAL_LIB
+    export BINARY_PATH="$OPM_LOCAL/bin"
+    export INCLUDE_PATH="$OPM_LOCAL/include"
+    export LIBRARY_PATH="$OPM_LOCAL/lib"
 
     code=$?; [[ $code != 0 ]] && exit $code
     make all -f win32/Makefile.gcc >> $LOG_PATH
