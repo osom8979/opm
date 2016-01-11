@@ -15,7 +15,7 @@ noremap  <F11> "+Y
 noremap  <F12> "+gP
 vnoremap <F11> "+y
 vnoremap <F12> "+gP
-inoremap <F12> <ESC>"+gpi
+inoremap <F12> <ESC>"+gpa
 
 " Ctags setting.
 nnoremap <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
@@ -30,8 +30,8 @@ nnoremap  <C-\>f  :cs find f <C-R>=expand("<cfile>")<CR><CR>
 nnoremap  <C-\>i  :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
 nnoremap  <C-\>d  :cs find d <C-R>=expand("<cword>")<CR><CR>
 
-nnoremap  <leader>[ :cn
-nnoremap  <leader>] :cp
+nnoremap  <leader>[ :cn<CR>
+nnoremap  <leader>] :cp<CR>
 
 " ---------------
 " LEADER SETTING.
