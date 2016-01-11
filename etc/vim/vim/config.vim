@@ -136,8 +136,8 @@ if has("cscope")
         cscope add .fpath
     endfo
 
-    if filereadable("cscope.out")
-        cscope add "cscope.out"
+    if filereadable('cscope.out')
+        cscope add cscope.out
     endif
 
     " show msg when any other cscope db added

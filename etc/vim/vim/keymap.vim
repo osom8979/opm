@@ -59,5 +59,5 @@ nnoremap  <leader>2  :NERDTreeFocus<CR><C-w>w
 " COMMAND SETTING.
 " ----------------
 
-command Reload execute "source ~/.vimrc"
+command! Reload execute 'source ~/.vimrc'
 
