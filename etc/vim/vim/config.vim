@@ -8,10 +8,18 @@ set encoding=utf-8
 set fileformats=unix,dos
 "set fileformats=unix,dox,mac
 
-if has('gui_running')
-language message en_US
-"language message ko_KR
+if has('unix')
+    language messages C
+else
+    language messages en_US
 endif
+
+if has('gui_running')
+    "language messages ko_KR
+endif
+
+" Language to use for menu translation.
+"set langmenu=none
 
 " Reload menu.
 source $VIMRUNTIME/delmenu.vim
@@ -128,9 +136,9 @@ endfo
 
 " cscope.vim
 if has('cscope')
-    set cscopetag " use both cscope and ctag
+    "set cscopetag " use both cscope and ctag
     set csto=0    " cscope db search first.
-    " set nocsverb  " verbose off.
+    set nocsverb  " verbose off.
 
     for fpath in split(globpath("$HOME/.cache/cscope/", '*.out'), '\n')
         cscope add .fpath
@@ -144,8 +152,8 @@ if has('cscope')
         "set cscopequickfix=s-,g-,d-,c-,t-,e-,f-,i-
     endif
 
-    " show msg when any other cscope db added
-    set csverb
+    " show msg when any other cscope db added.
+    set csverb " verbose on.
 endif
 
 " auto-command setting.
