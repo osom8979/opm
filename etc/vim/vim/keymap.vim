@@ -3,50 +3,50 @@
 let mapleader="\\"
 
 " Help message.
-map <leader>? <ESC>:call OpmHelp()<CR>
+noremap <leader>? <ESC>:call OpmHelp()<CR>
 
 " Buffer setting.
-map  <F1> :bp<CR>
-map  <F2> :bn<CR>
-vmap <F1> <ESC>:bp<CR>
-vmap <F2> <ESC>:bn<CR>
-imap <F1> <ESC>:bp<CR>
-imap <F2> <ESC>:bn<CR>
-map  <leader><leader>w <ESC>:call CloseBufferAndMoveNext()<CR>
+noremap  <F1> <ESC>:bp<CR>
+noremap  <F2> <ESC>:bn<CR>
+nnoremap <leader>w :call CloseBufferAndMoveNext()<CR>
 
 " Clipboard setting.
-map  <F11> "+Y
-map  <F12> "+gP
-vmap <F11> "+y
-vmap <F12> "+gP
-imap <F12> <ESC>"+gpi
+noremap  <F11> "+Y
+noremap  <F12> "+gP
+vnoremap <F11> "+y
+vnoremap <F12> "+gP
+inoremap <F12> <ESC>"+gpi
 
 " Ctags setting.
-nmap <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
+nnoremap <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
 
 " Cscope setting.
-nmap  <C-\>s  :cs find s <C-R>=expand("<cword>")<CR><CR>
-nmap  <C-\>g  :cs find g <C-R>=expand("<cword>")<CR><CR>
-nmap  <C-\>c  :cs find c <C-R>=expand("<cword>")<CR><CR>
-nmap  <C-\>t  :cs find t <C-R>=expand("<cword>")<CR><CR>
-nmap  <C-\>e  :cs find e <C-R>=expand("<cword>")<CR><CR>
-nmap  <C-\>f  :cs find f <C-R>=expand("<cfile>")<CR><CR>
-nmap  <C-\>i  :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
-nmap  <C-\>d  :cs find d <C-R>=expand("<cword>")<CR><CR>
+nnoremap  <C-\>s  :cs find s <C-R>=expand("<cword>")<CR><CR>
+nnoremap  <C-\>g  :cs find g <C-R>=expand("<cword>")<CR><CR>
+nnoremap  <C-\>c  :cs find c <C-R>=expand("<cword>")<CR><CR>
+nnoremap  <C-\>t  :cs find t <C-R>=expand("<cword>")<CR><CR>
+nnoremap  <C-\>e  :cs find e <C-R>=expand("<cword>")<CR><CR>
+nnoremap  <C-\>f  :cs find f <C-R>=expand("<cfile>")<CR><CR>
+nnoremap  <C-\>i  :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+nnoremap  <C-\>d  :cs find d <C-R>=expand("<cword>")<CR><CR>
+
+nnoremap  <leader>[ :cn
+nnoremap  <leader>] :cp
 
 " ---------------
 " LEADER SETTING.
 " ---------------
 
 " Open window.
-map  <leader><leader>1  :NERDTreeToggle<CR>
-map  <leader><leader>2  :Tagbar<CR>
-map  <leader><leader>3  :GundoToggle<CR>
-"map <leader><leader>4  :SrcExplToggle<CR>
+nnoremap  <leader><leader>1  :NERDTreeToggle<CR>
+nnoremap  <leader><leader>2  :Tagbar<CR>
+nnoremap  <leader><leader>3  :cwindow<CR>
+"nnoremap <leader><leader>3  :GundoToggle<CR>
+"nnoremap <leader><leader>4  :SrcExplToggle<CR>
 
 " Jump window.
-map <leader>1 :NERDTreeFocus<CR>
+nnoremap  <leader>1  :NERDTreeFocus<CR>
 
 " Open ctrlp window.
-"map <leader><leader>o :CtrlP<CR>
+"noremap <leader><leader>o :CtrlP<CR>
 

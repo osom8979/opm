@@ -32,20 +32,22 @@ NeoBundle 'Shougo/vimproc.vim', {
     \   },
     \ }
 
+" Conflict list (Don't use this plugins).
+"NeoBundle 'wesleyche/SrcExpl'         " displaying prototype (Conflict from the ctags.vim).
+
 NeoBundle 'scrooloose/nerdtree'        " directory browser.
-"NeoBundle 'scrooloose/nerdcommenter'  " language dependent commenter.
-"NeoBundle 'tpope/vim-fugitive'        " git wrapper.
 NeoBundle 'kien/ctrlp.vim'             " full path fuzzy file, buffer, mru, tag, etc.
 NeoBundle 'bling/vim-airline'          " more beautiful Status bar.
-"NeoBundle 'edkolev/promptline.vim'    " generate a fast shell prompt.
-"NeoBundle 'tpope/vim-surround'        " quoting/parenthesizing made simple.
 NeoBundle 'majutsushi/tagbar'          " tagbar window.
-"NeoBundle 'wesleyche/SrcExpl'         " displaying prototype (Conflict from the ctags.vim).
-"NeoBundle 'scrooloose/syntastic'      " syntax checking.
-NeoBundle 'sjl/gundo.vim'              " undo tree.
-"NeoBundle 'zakj/vim-showmarks'        " show mark list bar.
 NeoBundle 'easymotion/vim-easymotion'  " motions on speed.
 NeoBundle 'kshenoy/vim-signature'      " display marks.
+"NeoBundle 'scrooloose/nerdcommenter'  " language dependent commenter.
+"NeoBundle 'tpope/vim-fugitive'        " git wrapper.
+"NeoBundle 'edkolev/promptline.vim'    " generate a fast shell prompt.
+"NeoBundle 'tpope/vim-surround'        " quoting/parenthesizing made simple.
+"NeoBundle 'scrooloose/syntastic'      " syntax checking.
+"NeoBundle 'sjl/gundo.vim'             " undo tree.
+"NeoBundle 'zakj/vim-showmarks'        " show mark list bar.
 
 NeoBundle 'ctags.vim'   " ctags plugin (Conflict from the SrcExpl).
 NeoBundle 'cscope.vim'  " cscope plugin.
@@ -54,6 +56,7 @@ NeoBundle 'matchparenpp'  " blink match brace.
 NeoBundle 'echofunc.vim'  " print function parameter information.
 NeoBundle 'a.vim'         " source <-> header.
 
+" Auto completion.
 NeoBundle 'AutoComplPop'    " auto complete popup.
 NeoBundle 'OmniCppComplete' " Ctags auto complete popup.
 

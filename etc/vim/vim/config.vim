@@ -133,7 +133,7 @@ if has("cscope")
     " set nocsverb  " verbose off.
 
     for fpath in split(globpath('$HOME/.cache/cscope/', '*.out'), '\n')
-        " cscope add .fpath
+        cscope add .fpath
     endfo
 
     if filereadable("cscope.out")
@@ -154,8 +154,5 @@ if has("autocmd")
 
     " Show Tagbar window.
     "autocmd VimEnter * Tagbar
-
-    " Show SourceExplorer window.
-    "autocmd VimEnter * SrcExpl
 endif
 
