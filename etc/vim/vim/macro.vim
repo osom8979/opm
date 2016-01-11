@@ -18,10 +18,42 @@ endfunction
 function GetListedBuffer()
     let result = []
     for cursor in split(GetBuffersOutput(), '\n')
-        let result += [matchstr(TrimLeft(cursor), '^[0-9]*')]
+        if match(tolower(cursor), 'quickfix list') == -1
+            let result += [matchstr(TrimLeft(cursor), '^[0-9]*')]
+        endif
     endfor
     " return a string list.
     return result
+endfunction
+
+function MoveListedBuffer(offset)
+    let buffers = GetListedBuffer()
+    let size = len(buffers)
+    let current = bufnr('%')
+
+    if size < 2
+        return
+    endif
+
+    " Switching another buffer!
+    let position = index(buffers, string(current))
+    if position == -1
+        echom 'Not found index error.'
+        return
+    endif
+
+    let next = position + a:offset
+    if 0 <= next && next < size
+        silent execute 'b ' . buffers[next]
+    endif
+endfunction
+
+function MovePrevListedBuffer()
+    call MoveListedBuffer(-1)
+endfunction
+
+function MoveNextListedBuffer()
+    call MoveListedBuffer(1)
 endfunction
 
 function CloseBufferAndMoveNext()

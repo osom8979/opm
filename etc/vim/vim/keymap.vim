@@ -6,8 +6,8 @@ let mapleader="\\"
 noremap <leader>? <ESC>:call OpmHelp()<CR>
 
 " Buffer setting.
-noremap  <F1> <ESC>:bp<CR>
-noremap  <F2> <ESC>:bn<CR>
+noremap  <F1>      :call MovePrevListedBuffer()<CR>
+noremap  <F2>      :call MoveNextListedBuffer()<CR>
 nnoremap <leader>w :call CloseBufferAndMoveNext()<CR>
 
 " Clipboard setting.
@@ -43,7 +43,7 @@ nnoremap  <leader>] :cn<CR>
 " Open window.
 nnoremap  <leader><leader>1  :NERDTreeToggle<CR>
 nnoremap  <leader><leader>2  :Tagbar<CR>
-nnoremap  <leader><leader>3  :cwindow<CR>
+"nnoremap <leader><leader>3  :cwindow<CR>
 "nnoremap <leader><leader>3  :GundoToggle<CR>
 "nnoremap <leader><leader>4  :SrcExplToggle<CR>
 
