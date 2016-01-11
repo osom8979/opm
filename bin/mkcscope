@@ -16,8 +16,6 @@ if [[ ! -f "$LIST_FILE" ]]; then
     exit 1
 fi
 
-echo "Create $CSCOPE_DB"
+echo "Create cscope database: $CSCOPE_DB"
 cscope -b -i "$LIST_FILE" -f "$CSCOPE_DB"
-
-echo 'Done.'
 

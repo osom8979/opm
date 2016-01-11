@@ -1,5 +1,6 @@
 #!/bin/bash
 
+WORKING=$PWD
 TAGSNAME=tags
 
 FLAGS=""
@@ -13,8 +14,6 @@ if [[ -f "$TAGSNAME" ]]; then
     rm "$TAGSNAME"
 fi
 
-echo "Create $TAGSNAME"
+echo "Create ctags: $WORKING/$TAGSNAME"
 ctags $FLAGS
-
-echo 'Done.'
 
