@@ -11,11 +11,11 @@ noremap  <F2>      :call MoveNextListedBuffer()<CR>
 nnoremap <leader>w :call CloseBufferAndMoveNext()<CR>
 
 " Clipboard setting.
-noremap  <F11> "+Y
-noremap  <F12> "+gP
-vnoremap <F11> "+y
-vnoremap <F12> "+gP
-inoremap <F12> <ESC>"+gpa
+noremap  <F3> "+Y
+noremap  <F4> "+gP
+vnoremap <F3> "+y
+vnoremap <F4> "+gP
+inoremap <F4> <ESC>"+gpa
 
 " Ctags setting.
 nnoremap <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
