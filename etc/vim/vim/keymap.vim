@@ -47,8 +47,10 @@ nnoremap  <leader><leader>2  :Tagbar<CR>
 "nnoremap <leader><leader>3  :GundoToggle<CR>
 "nnoremap <leader><leader>4  :SrcExplToggle<CR>
 
-" Jump window.
+" Jump NERDTree window.
 nnoremap  <leader>1  :NERDTreeFocus<CR>
+" Jump Editor window.
+nnoremap  <leader>2  :NERDTreeFocus<CR><C-w>w
 
 " Open ctrlp window.
 "noremap <leader><leader>o :CtrlP<CR>
