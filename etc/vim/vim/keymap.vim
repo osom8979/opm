@@ -20,6 +20,9 @@ inoremap <F12> <ESC>"+gpa
 " Ctags setting.
 nnoremap <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
 
+nnoremap  <leader>{ :tp<CR>
+nnoremap  <leader>} :tn<CR>
+
 " Cscope setting.
 nnoremap  <C-\>s  :cs find s <C-R>=expand("<cword>")<CR><CR>
 nnoremap  <C-\>g  :cs find g <C-R>=expand("<cword>")<CR><CR>
@@ -30,8 +33,8 @@ nnoremap  <C-\>f  :cs find f <C-R>=expand("<cfile>")<CR><CR>
 nnoremap  <C-\>i  :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
 nnoremap  <C-\>d  :cs find d <C-R>=expand("<cword>")<CR><CR>
 
-nnoremap  <leader>[ :cn<CR>
-nnoremap  <leader>] :cp<CR>
+nnoremap  <leader>[ :cp<CR>
+nnoremap  <leader>] :cn<CR>
 
 " ---------------
 " LEADER SETTING.
