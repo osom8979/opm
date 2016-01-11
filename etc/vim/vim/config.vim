@@ -58,11 +58,11 @@ set shell=$ComSpec
 endif
 
 " gui font setting.
-if has("gui_running")
+if has('gui_running')
     if has('gui_win32')
         set guifont=Bitstream_Vera_Sans_Mono:h9:cANSI
         set guifontwide=NanumGothicCoding:h10:cDEFAULT
-    else
+    elseif has('gui_gtk')
         set guifont=DejaVu\ Sans\ Mono\ 9
         set guifontwide=NanumGothicCoding\ 9
     endif
@@ -132,12 +132,12 @@ if has("cscope")
     set csto=0    " cscope db search first.
     " set nocsverb  " verbose off.
 
-    for fpath in split(globpath('$HOME/.cache/cscope/', '*.out'), '\n')
+    for fpath in split(globpath("$HOME/.cache/cscope/", '*.out'), '\n')
         cscope add .fpath
     endfo
 
     if filereadable("cscope.out")
-        cscope add cscope.out
+        cscope add "cscope.out"
     endif
 
     " show msg when any other cscope db added

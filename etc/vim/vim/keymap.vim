@@ -1,4 +1,4 @@
-"" Key map setting.
+"" Key-map & command setting.
 
 let mapleader="\\"
 
@@ -37,7 +37,7 @@ nnoremap  <leader>[ :cp<CR>
 nnoremap  <leader>] :cn<CR>
 
 " ---------------
-" LEADER SETTING.
+" WINDOW SETTING.
 " ---------------
 
 " Open window.
@@ -54,4 +54,10 @@ nnoremap  <leader>2  :NERDTreeFocus<CR><C-w>w
 
 " Open ctrlp window.
 "noremap <leader><leader>o :CtrlP<CR>
+
+" ----------------
+" COMMAND SETTING.
+" ----------------
+
+command Reload execute "source ~/.vimrc"
 
