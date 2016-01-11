@@ -8,7 +8,7 @@ set encoding=utf-8
 set fileformats=unix,dos
 "set fileformats=unix,dox,mac
 
-if has("gui_running")
+if has('gui_running')
 language message en_US
 "language message ko_KR
 endif
@@ -48,7 +48,7 @@ set backspace=indent,eol,start
 colorscheme desert
 
 " syntax highlight.
-if has("syntax")
+if has('syntax')
 syntax on
 endif
 
@@ -99,14 +99,14 @@ let g:tagbar_left = 0
 let g:tagbar_width = 25
 
 " YouCompleteMe
-"let g:ycm_global_ycm_extra_conf = "~/.vim/ycm_conf.py"
+let g:ycm_global_ycm_extra_conf = "~/.vim/ycm_conf.py"
 
 " source-explorer
 let g:SrcExpl_winHeight = 5
 let g:SrcExpl_refreshTime = 100
-"let g:SrcExpl_updateTagsCmd = "ctags --c++-kinds=+p --fields=+iaS --extra=+q"
-"let g:SrcExpl_jumpKey = "<ENTER>"
-"let g:SrcExpl_gobackKey = "<SPACE>"
+"let g:SrcExpl_updateTagsCmd = 'ctags --c++-kinds=+p --fields=+iaS --extra=+q'
+"let g:SrcExpl_jumpKey = '<ENTER>'
+"let g:SrcExpl_gobackKey = '<SPACE>'
 
 " Gundo
 let g:gundo_right = 1
@@ -115,19 +115,19 @@ let g:gundo_preview_height = 15
 
 " python-mode
 let g:pymode_folding = 0
-let g:pymode_lint_ignore = "E203,E221,E272,E301"
+let g:pymode_lint_ignore = 'E203,E221,E272,E301'
 
 " ctags.vim
-set tags =./tags,tags
+set tags=./tags,tags
 "set tagbsearch " binary search
-for fpath in split(globpath('$HOME/.cache/ctags/', '*.tags'), '\n')
+for fpath in split(globpath("$HOME/.cache/ctags/", '*.tags'), '\n')
     "echom fpath
     "let &tags+=','+fpath
     exe ":set tags+=".fpath
 endfo
 
 " cscope.vim
-if has("cscope")
+if has('cscope')
     set cscopetag " use both cscope and ctag
     set csto=0    " cscope db search first.
     " set nocsverb  " verbose off.
@@ -140,12 +140,16 @@ if has("cscope")
         cscope add cscope.out
     endif
 
+    if has('quickfix')
+        "set cscopequickfix=s-,g-,d-,c-,t-,e-,f-,i-
+    endif
+
     " show msg when any other cscope db added
     set csverb
 endif
 
 " auto-command setting.
-if has("autocmd")
+if has('autocmd')
     " Show NERDTree window.
     autocmd VimEnter * NERDTree
 

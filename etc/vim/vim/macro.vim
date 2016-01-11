@@ -1,7 +1,7 @@
 "" Macro setting.
 
 function! OpmHelp()
-    echom "OPM HELP!"
+    echom 'OPM HELP!'
 endfunction
 
 function! TrimLeft(text)
