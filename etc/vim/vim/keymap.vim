@@ -49,7 +49,6 @@ nnoremap  <leader><leader>2  :Tagbar<CR>
 
 " Jump NERDTree window.
 nnoremap  <leader>1  :NERDTreeFocus<CR>
-" Jump Editor window.
 nnoremap  <leader>2  :NERDTreeFocus<CR><C-w>w
 
 " Open ctrlp window.
