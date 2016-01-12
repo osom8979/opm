@@ -2,21 +2,25 @@
 
 CLEAN_FLAG=false
 
-for arg in $@; do
-    case $arg in
+ARG_INDEX=1
+ARG_SIZE=$#
+
+while [[ $ARG_INDEX -le $ARG_SIZE ]]; do
+    case $1 in
     --clean)
         CLEAN_FLAG=true
         ;;
     esac
+
+    let 'ARG_INDEX = ARG_INDEX + 1'
+    shift
 done
 
 function getScriptDirectory {
-    local src=${BASH_SOURCE[0]}
-    local dir=$(dirname "$src")
-    local prev=$PWD
-    cd "$dir"
+    local working=$PWD
+    cd "$(dirname "${BASH_SOURCE[0]}")"
     echo $PWD
-    cd "$prev"
+    cd "$working"
 }
 
 WORKING=$PWD

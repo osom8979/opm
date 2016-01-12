@@ -1,12 +1,10 @@
 #!/bin/bash
 
 function getScriptDirectory {
-    local src=${BASH_SOURCE[0]}
-    local dir=$(dirname "$src")
-    local prev=$PWD
-    cd "$dir"
+    local working=$PWD
+    cd "$(dirname "${BASH_SOURCE[0]}")"
     echo $PWD
-    cd "$prev"
+    cd "$working"
 }
 
 WORKING=$PWD
