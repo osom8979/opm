@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [[ $(which valgrind) == '' ]]; then
+    echo 'Not found valgrind.'
+    exit 1
+fi
+
+FLAGS=''
+FLAGS="$FLAGS --leak-check=yes"
+
+valgrind $FLAGS $@
+

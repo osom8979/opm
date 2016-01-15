@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [[ $(which cppcheck) == '' ]]; then
+    echo 'Not found cppcheck.'
+    exit 1
+fi
+
+FLAGS=''
+FLAGS="$FLAGS --std=c++11"
+FLAGS="$FLAGS --template=gcc"
+FLAGS="$FLAGS --platform=native"
+
+cppcheck $FLAGS $@
+
