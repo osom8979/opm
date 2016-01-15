@@ -1,5 +1,8 @@
 #!/bin/bash
 
+## Compiler & tools.
+apt-get install valgrind cppcheck
+
 ## FFmpeg dependency.
 apt-get install autoconf automake build-essential libtool pkg-config texinfo
 apt-get install zlib1g-dev libfreetype6-dev libsdl1.2-dev
