@@ -33,7 +33,7 @@ FILE_PATTERNS="*.c *.cc *.cxx *.cpp *.c++ *.d *.java *.ii *.ixx *.ipp *.i++ *.in
 FILE_PATTERNS="$FILE_PATTERNS *.idl *.odl *.cs *.php *.php3 *.inc *.m *.markdown *.md *.mm *.dox *.py *.f90 "
 FILE_PATTERNS="$FILE_PATTERNS *.f *.for *.vhd *.vhdl"
 RECURSIVE=YES
-EXCLUDE_PATTERNS='*/3rd/*'
+EXCLUDE_PATTERNS='*3rd/*'
 
 ## OUTPUT
 HTML_TIMESTAMP=YES
@@ -43,8 +43,10 @@ RTF_SOURCE_CODE=NO
 ## MACRO
 MACRO_EXPANSION=YES
 INCLUDE_PATH='src'
-INCLUDE_FILE_PATTERNS='*.h *.hpp'
+INCLUDE_FILE_PATTERNS='*.h *.hh *.hxx *.hpp *.h++'
 
+## TEX
+USE_MATHJAX=YES
 
 ## -----------
 ## USER INPUT.
@@ -93,11 +95,13 @@ function replaceDoxygenParam {
 ## -----
 
 $DOXYGEN_CMD -g $DOXYGEN_FILE
+sed $IN_PLACE_FLAG 's/^\#.*//g' $DOXYGEN_FILE
+sed $IN_PLACE_FLAG '/^$/d' $DOXYGEN_FILE
 
 echo -e '\n## AUTO GENERATE CODE:' >> $DOXYGEN_FILE
-replaceDoxygenParam PROJECT_NAME          "$PROJECT_NAME"
+replaceDoxygenParam PROJECT_NAME          "\"${PROJECT_NAME}\""
 replaceDoxygenParam PROJECT_NUMBER        "$PROJECT_NUMBER"
-replaceDoxygenParam PROJECT_BRIEF         "$PROJECT_BRIEF"
+replaceDoxygenParam PROJECT_BRIEF         "\"${PROJECT_BRIEF}\""
 replaceDoxygenParam OUTPUT_LANGUAGE       "$OUTPUT_LANGUAGE"
 replaceDoxygenParam ALIASES               "$ALIASES"
 replaceDoxygenParam WARN_IF_UNDOCUMENTED  "$WARN_IF_UNDOCUMENTED"
@@ -111,6 +115,7 @@ replaceDoxygenParam RTF_SOURCE_CODE       "$RTF_SOURCE_CODE"
 replaceDoxygenParam MACRO_EXPANSION       "$MACRO_EXPANSION"
 replaceDoxygenParam INCLUDE_PATH          "$INCLUDE_PATH"
 replaceDoxygenParam INCLUDE_FILE_PATTERNS "$INCLUDE_FILE_PATTERNS"
+replaceDoxygenParam USE_MATHJAX           "$USE_MATHJAX"
 
 echo 'Done.'
 
