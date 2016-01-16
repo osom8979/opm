@@ -83,7 +83,7 @@ if has('gui_running')
     set linespace=0    " vim line space.
     set lines=50       " vim line size.
     set columns=150    " vim column size.
-    winpos 0 0         " vim window position.
+    "winpos 0 0        " vim window position.
 endif
 
 " NERDTree
