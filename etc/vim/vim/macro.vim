@@ -35,6 +35,7 @@ endfunction
 function! FindQuickfixBufferNumber()
     let result = []
     for cursor in split(GetBuffersOutput(), '\n')
+        " Quickfix list name is '[Quickfix list]'
         if match(tolower(cursor), 'quickfix list') != -1
             return str2nr(matchstr(TrimLeft(cursor), '^[0-9]*'))
         endif
