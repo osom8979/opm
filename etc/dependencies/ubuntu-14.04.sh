@@ -2,6 +2,7 @@
 
 ## Compiler & tools.
 apt-get install valgrind cppcheck
+apt-get install doxygen
 
 ## FFmpeg dependency.
 apt-get install autoconf automake build-essential libtool pkg-config texinfo
