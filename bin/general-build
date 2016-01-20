@@ -38,7 +38,7 @@ function stdout {
 
 function stderr {
     if [[ $PLATFORM == 'Linux' ]]; then
-        echo -e " - \e[31m$@\e[0m" 1>&2
+        echo -e "\e[31m - $@\e[0m" 1>&2
     else
         echo " - $@" 1>&2
     fi
@@ -101,6 +101,8 @@ stdout "Checksum result: $CHECKSUM_RESULT"
 
 if [[ $CHECKSUM_RESULT != 'True' ]]; then
     stderr 'Checksum error.'
+    stderr "Remove: $DEST"
+    rm -f "$DEST"
     exit 1
 fi
 
