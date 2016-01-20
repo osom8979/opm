@@ -14,6 +14,12 @@ apt-get install libx264-dev
 apt-get install libmp3lame-dev
 apt-get install libopus-dev
 
+## OpenCV 3.x dependency.
+apt-get install build-essential
+apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev
+apt-get install python-dev python-numpy libtbb2 libtbb-dev 
+apt-get install libjpeg-dev libpng-dev libtiff-dev libjasper-dev libdc1394-22-dev
+
 ## libGL.so
 apt-get install libgl1-mesa-dri
 
