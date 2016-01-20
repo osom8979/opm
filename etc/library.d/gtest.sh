@@ -24,7 +24,7 @@ LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
     code=$?; [[ $code != 0 ]] && exit $code
-    autoreconf -ifv
+    autoreconf -ifv >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
     ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
