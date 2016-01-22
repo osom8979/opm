@@ -1,17 +1,15 @@
 #!/bin/bash
 
+if [[ -z $OPM_HOME ]]; then
+    echo 'Not defined OPM_HOME variable.'
+    exit 1
+fi
+
+OPM_LOCAL=$OPM_HOME/local
+OPM_TMP=$OPM_HOME/tmp
+
 ## Don't remove DEPENDENCIES variable.
 DEPENDENCIES=sdl2:ogg:flac:vorbis
-
-if [[ -z $OPM_LOCAL ]]; then
-    echo 'Not defined OPM_LOCAL variable.'
-    exit 1
-fi
-
-if [[ -z $OPM_TMP ]]; then
-    echo 'Not defined OPM_TMP variable.'
-    exit 1
-fi
 
 NAME='SDL2_mixer-2.0.1'
 URL='https://www.libsdl.org/projects/SDL_mixer/release/SDL2_mixer-2.0.1.tar.gz'

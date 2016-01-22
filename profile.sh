@@ -12,16 +12,16 @@ if [[ -z $OPM_HOME ]]; then
     export OPM_HOME=`getScriptDirectory`
 fi
 
-export OPM_BIN=$OPM_HOME/bin
-export OPM_INC=$OPM_HOME/include
-export OPM_LIB=$OPM_HOME/lib
-export OPM_TMP=$OPM_HOME/tmp
-export OPM_PYTHON=$OPM_HOME/python
+OPM_BIN=$OPM_HOME/bin
+OPM_INC=$OPM_HOME/include
+OPM_LIB=$OPM_HOME/lib
+OPM_TMP=$OPM_HOME/tmp
+OPM_PYTHON=$OPM_HOME/python
 
-export OPM_LOCAL=$OPM_HOME/local
-export OPM_LOCAL_BIN=$OPM_LOCAL/bin
-export OPM_LOCAL_INC=$OPM_LOCAL/include
-export OPM_LOCAL_LIB=$OPM_LOCAL/lib
+OPM_LOCAL=$OPM_HOME/local
+OPM_LOCAL_BIN=$OPM_LOCAL/bin
+OPM_LOCAL_INC=$OPM_LOCAL/include
+OPM_LOCAL_LIB=$OPM_LOCAL/lib
 
 ## Bash setting.
 if [[ -z $CLICOLOR ]]; then
@@ -46,13 +46,13 @@ export LD_LIBRARY_PATH=$OPM_LIB:$OPM_LOCAL_LIB:$LD_LIBRARY_PATH
 export PKG_CONFIG_PATH=$OPM_LOCAL_LIB/pkgconfig:$PKG_CONFIG_PATH
 
 ## Extension.
-OPM_ETC_PROFILE_DIR=$OPM_HOME/etc/profile.d
+OPM_PROFILE_DIR=$OPM_HOME/etc/profile.d
 
 ## Warning: Don't use the quoting("...").
-for cursor in $OPM_ETC_PROFILE_DIR/*.sh; do
+for cursor in $OPM_PROFILE_DIR/*.sh; do
     . $cursor
 done
 
 ## OPM last setting.
-export OPM_SETUP_COMPLETE=1
+export OPM_SETUP=1
 

@@ -1,17 +1,15 @@
 #!/bin/bash
 
+if [[ -z $OPM_HOME ]]; then
+    echo 'Not defined OPM_HOME variable.'
+    exit 1
+fi
+
+OPM_LOCAL=$OPM_HOME/local
+OPM_TMP=$OPM_HOME/tmp
+
 ## Don't remove DEPENDENCIES variable.
 DEPENDENCIES=
-
-if [[ -z $OPM_LOCAL ]]; then
-    echo 'Not defined OPM_LOCAL variable.'
-    exit 1
-fi
-
-if [[ -z $OPM_TMP ]]; then
-    echo 'Not defined OPM_TMP variable.'
-    exit 1
-fi
 
 NAME='ffmpeg-2.8.5.tar.bz2'
 URL='http://ffmpeg.org/releases/ffmpeg-2.8.5.tar.bz2'

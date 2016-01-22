@@ -1,17 +1,15 @@
 #!/bin/bash
 
+if [[ -z $OPM_HOME ]]; then
+    echo 'Not defined OPM_HOME variable.'
+    exit 1
+fi
+
+OPM_LOCAL=$OPM_HOME/local
+OPM_TMP=$OPM_HOME/tmp
+
 ## Don't remove DEPENDENCIES variable.
 DEPENDENCIES=
-
-if [[ -z $OPM_LOCAL ]]; then
-    echo 'Not defined OPM_LOCAL variable.'
-    exit 1
-fi
-
-if [[ -z $OPM_TMP ]]; then
-    echo 'Not defined OPM_TMP variable.'
-    exit 1
-fi
 
 NAME='flac-1.3.1'
 URL='http://downloads.xiph.org/releases/flac/flac-1.3.1.tar.xz'
