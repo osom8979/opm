@@ -23,6 +23,7 @@ OPM_LOCAL_BIN=$OPM_LOCAL/bin
 OPM_LOCAL_INC=$OPM_LOCAL/include
 OPM_LOCAL_LIB=$OPM_LOCAL/lib
 
+
 ## Bash setting.
 if [[ -z $CLICOLOR ]]; then
     export CLICOLOR=1
@@ -33,6 +34,7 @@ fi
 
 ## General setting.
 export PATH=$OPM_BIN:$OPM_LOCAL_BIN:$PATH
+export EDITOR=vi
 
 ## Python setting.
 export PYTHONPATH=$OPM_PYTHON:$PYTHONPATH
