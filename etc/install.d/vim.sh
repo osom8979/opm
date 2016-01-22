@@ -5,16 +5,6 @@ if [[ -z $OPM_HOME ]]; then
     exit 1
 fi
 
-CLEAN_FLAG=false
-
-for arg in $@; do
-    case $arg in
-    --clean)
-        CLEAN_FLAG=true
-        ;;
-    esac
-done
-
 VIMRC=$HOME/.vimrc
 VIM_DIR=$HOME/.vim
 
@@ -33,13 +23,8 @@ SRC_VIM_MACRO=$SRC_VIM_DIR/macro.vim
 SRC_VIM_PLUGIN=$SRC_VIM_DIR/plugin.vim
 SRC_VIM_YCM_CONF=$SRC_VIM_DIR/ycm_conf.py
 
-DATE_FORMAT=`date +%Y%m%d_%H-%M-%S`
+DATE_FORMAT=`date +%Y%m%d_%H%M%S`
 BACKUP_SUFFIX=$DATE_FORMAT.backup
-
-if [[ $CLEAN_FLAG == true ]]; then
-    rm $VIMRC $VIM_CONFIG $VIM_KEYMAP $VIM_MACRO $VIM_PLUGIN $VIM_YCM_CONF
-    return
-fi
 
 ## Backup.
 if [[ -f $VIMRC ]]; then
