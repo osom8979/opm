@@ -23,7 +23,7 @@ if [[ $PLATFORM == 'MacOSX' ]]; then
 fi
 
 ## Trim string.
-INCLUDE_LIST=`echo -e "$INCLUDE_LIST" | sed -e 's/[ \t\r\n]*//g'`
+INCLUDE_LIST=`echo -e "$INCLUDE_LIST" | sed -e 's/ *//g'`
 
 ## Remove current directory.
 INCLUDE_LIST=`echo -e "$INCLUDE_LIST" | grep -v '^\.$'`

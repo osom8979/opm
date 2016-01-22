@@ -1,21 +1,12 @@
 #!/bin/bash
 
-function getScriptDirectory {
-    local working=$PWD
-    cd "$(dirname "${BASH_SOURCE[0]}")"
-    echo $PWD
-    cd "$working"
-}
+if [[ -z $OPM_HOME ]]; then
+    echo 'Not defined OPM_HOME variable.'
+    exit 1
+fi
 
 WORKING=$PWD
-SCRIPT_PATH=`getScriptDirectory`
-
-INSTALL_DIR=$SCRIPT_PATH/etc/library.d
-PREFIX=$HOME/.local
-
-if [[ ! -d "$PREFIX" ]]; then
-    mkdir "$PREFIX"
-fi
+INSTALL_DIR=$OPM_HOME/etc/library.d
 
 ## Warning: Don't use the quoting("...").
 for cursor in $INSTALL_DIR/*.sh; do
