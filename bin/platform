@@ -1,3 +1,17 @@
 #!/bin/bash
 
-uname -s
+case "$(uname -s)" in
+Darwin)
+    echo 'MacOSX'
+    ;;
+Linux)
+    echo 'Linux'
+    ;;
+CYGWIN*|MINGW*|MSYS*)
+    echo 'Windows'
+    ;;
+*)
+    echo 'Unknown'
+    ;;
+esac
+
