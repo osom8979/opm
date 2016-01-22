@@ -9,25 +9,25 @@ fi
 
 declare -a CPP_EXT
 
-function addCppExtension {
+function addPattern {
     local insert_index=${#CPP_EXT[*]}
     local extension=$1
-    CPP_EXT[$insert_index]="'*.$extension'"
+    CPP_EXT[$insert_index]="'$extension'"
 }
 
 ## Source
-addCppExtension 'c'
-addCppExtension 'cc'
-addCppExtension 'cxx'
-addCppExtension 'cpp'
-addCppExtension 'c++'
+addPattern '*.c'
+addPattern '*.cc'
+addPattern '*.cxx'
+addPattern '*.cpp'
+addPattern '*.c++'
 
 ## Header
-addCppExtension 'h'
-addCppExtension 'hh'
-addCppExtension 'hxx'
-addCppExtension 'hpp'
-addCppExtension 'h++'
+addPattern '*.h'
+addPattern '*.hh'
+addPattern '*.hxx'
+addPattern '*.hpp'
+addPattern '*.h++'
 
 SIZE=${#CPP_EXT[*]}
 INDEX=0
