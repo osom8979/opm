@@ -1,19 +1,33 @@
 #!/bin/bash
 
-WORKING=$PWD
-TAGSNAME=tags
+WORKING="$PWD"
+LIST_FILE="$WORKING/tags.files"
+CTAGS_DB="$WORKING/tags"
+
+if [[ ! -z $1 ]]; then   WORKING="$1"; fi
+if [[ ! -z $2 ]]; then LIST_FILE="$2"; fi
+if [[ ! -z $3 ]]; then  CTAGS_DB="$3"; fi
+
+# cleanup.
+if [[ -f "$LIST_FILE" ]]; then rm -f "$LIST_FILE"; fi
+if [[ -f "$CTAGS_DB" ]]; then rm -f "$CTAGS_DB"; fi
+
+# create find script.
+find-cpp "$WORKING" > "$LIST_FILE"
+
+if [[ ! -f "$LIST_FILE" ]]; then
+    echo "Not found $LIST_FILE error."
+    exit 1
+fi
 
 FLAGS=""
 FLAGS="$FLAGS --c++-kinds=+p --fields=+iaS --extra=+q"
 FLAGS="$FLAGS --exclude=boost"
 FLAGS="$FLAGS --tag-relative=no"
-FLAGS="$FLAGS -f $TAGSNAME"
-FLAGS="$FLAGS -R"
+FLAGS="$FLAGS -f $CTAGS_DB"
+FLAGS="$FLAGS -L $LIST_FILE"
+#FLAGS="$FLAGS -R"
 
-if [[ -f "$TAGSNAME" ]]; then
-    rm "$TAGSNAME"
-fi
-
-echo "Create ctags: $WORKING/$TAGSNAME"
+echo "Create ctags: $CTAGS_DB"
 ctags $FLAGS
 

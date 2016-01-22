@@ -1,5 +1,12 @@
 #!/bin/bash
 
+WORKING=$PWD
+FIND_DIR='.'
+
+if [[ ! -z $1 ]]; then
+FIND_DIR="$1"
+fi
+
 declare -a CPP_EXT
 
 function addCppExtension {
@@ -22,7 +29,6 @@ addCppExtension 'hxx'
 addCppExtension 'hpp'
 addCppExtension 'h++'
 
-DIR='.'
 SIZE=${#CPP_EXT[*]}
 INDEX=0
 FLAGS=
@@ -35,5 +41,5 @@ while [[ $INDEX -lt $SIZE ]]; do
     let 'INDEX = INDEX + 1'
 done
 
-echo $FLAGS | xargs find "$DIR"
+echo $FLAGS | xargs find "$FIND_DIR"
 

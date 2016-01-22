@@ -4,12 +4,16 @@ WORKING="$PWD"
 LIST_FILE="$WORKING/cscope.files"
 CSCOPE_DB="$WORKING/cscope.out"
 
+if [[ ! -z $1 ]]; then   WORKING="$1"; fi
+if [[ ! -z $2 ]]; then LIST_FILE="$2"; fi
+if [[ ! -z $3 ]]; then CSCOPE_DB="$3"; fi
+
 # cleanup.
 if [[ -f "$LIST_FILE" ]]; then rm -f "$LIST_FILE"; fi
 if [[ -f "$CSCOPE_DB" ]]; then rm -f "$CSCOPE_DB"; fi
 
 # create find script.
-find-cpp > "$LIST_FILE"
+find-cpp "$WORKING" > "$LIST_FILE"
 
 if [[ ! -f "$LIST_FILE" ]]; then
     echo "Not found $LIST_FILE error."

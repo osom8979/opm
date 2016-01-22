@@ -129,7 +129,7 @@ let g:pymode_options_max_line_length = 99
 " ctags.vim
 set tags=./tags,tags
 "set tagbsearch " binary search
-for fpath in split(globpath("$HOME/.cache/ctags/", '*.tags'), '\n')
+for fpath in split(globpath("$HOME/.vim/ctags/", '*.tags'), '\n')
     "echom fpath
     "let &tags+=','+fpath
     exe ":set tags+=".fpath
@@ -141,7 +141,7 @@ if has('cscope')
     set csto=0    " cscope db search first.
     set nocsverb  " verbose off.
 
-    for fpath in split(globpath("$HOME/.cache/cscope/", '*.out'), '\n')
+    for fpath in split(globpath("$HOME/.vim/cscope/", '*.out'), '\n')
         cscope add .fpath
     endfo
 
