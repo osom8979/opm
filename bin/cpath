@@ -1,0 +1,13 @@
+#!/bin/bash
+
+WORKING=$PWD
+SCRIPT_PATH=`getpath ${BASH_SOURCE[0]}`
+OPM_SCRIPT=$SCRIPT_PATH/cpath.py
+
+if [[ ! -f $OPM_SCRIPT ]]; then
+    echo "Not found $OPM_SCRIPT" 
+    exit 1
+fi
+
+python $OPM_SCRIPT $@
+

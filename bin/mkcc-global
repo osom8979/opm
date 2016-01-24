@@ -14,12 +14,10 @@ CSCOPE_LIST_EXT='.out.list'
 
 INDEX=0
 
-for cursor in $(cpath-list); do
+for cursor in $(cpath); do
     echo "Run $cursor"
-
     mkctags  "$cursor" "$CTAGS_DIR/${INDEX}${CTAGS_LIST_EXT}"   "$CTAGS_DIR/${INDEX}${CTAGS_EXT}"
     mkcscope "$cursor" "$CSCOPE_DIR/${INDEX}${CSCOPE_LIST_EXT}" "$CSCOPE_DIR/${INDEX}${CSCOPE_EXT}"
-
     let "INDEX = $INDEX + 1"
 done
 
