@@ -126,6 +126,15 @@ let g:pymode_folding = 0
 let g:pymode_lint_ignore = 'E203,E221,E266,E272,E301,E302'
 let g:pymode_options_max_line_length = 99
 
+" OmniCppComplete
+let OmniCpp_MayCompleteDot      = 1 " autocomplete with .
+let OmniCpp_MayCompleteArrow    = 1 " autocomplete with ->
+let OmniCpp_MayCompleteScope    = 1 " autocomplete with ::
+let OmniCpp_SelectFirstItem     = 2 " select first item (but don't insert)
+let OmniCpp_NamespaceSearch     = 2 " search namespaces in this and included files
+let OmniCpp_ShowPrototypeInAbbr = 1 " show function prototype (i.e. parameters) in popup window
+let OmniCpp_LocalSearchDecl     = 1 " don't require special style of function opening braces
+
 " ctags.vim
 set tags=./tags,tags
 "set tagbsearch " binary search
