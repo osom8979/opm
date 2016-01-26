@@ -106,6 +106,9 @@ latex
 *.out
 *.app
 
+# Dependencies
+*.d
+
 ##############
 ### Python ###
 
