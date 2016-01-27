@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [[ -z $OPM_HOME ]]; then
+    echo 'Not defined OPM_HOME variable.'
+    exit 1
+fi
+
+OPM_INC=$OPM_HOME/include
+HEADER=$OPM_INC/header.hpp
+DEP=$OPM_INC/header.d
+GCH=$OPM_INC/header.hpp.gch
+
+GCC_CMD=g++
+GCC_FLAGS=''
+GCC_FLAGS="$GCC_FLAGS -std=c++11"
+GCC_FLAGS="$GCC_FLAGS -MD"
+GCC_FLAGS="$GCC_FLAGS -MF $DEP"
+GCC_FLAGS="$GCC_FLAGS -o $GCH"
+
+if [[ ! -f $DEP ]]; then
+    $GCC_CMD $GCC_FLAGS $HEADER
+fi
+
+if [[ ! -f $DEP ]]; then
+    echo "Not found $DEP file."
+    exit 1
+fi
+
+cat $DEP | sed -e 's/^[^ ].*://g' -e 's/^ *//g' -e 's/ *\\//g' -e 's/  */ /g' | awk 'BEGIN{RS=" ";}{print($0);}' | egrep -v '^$' | grep -v "$HEADER"
+

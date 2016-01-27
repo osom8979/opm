@@ -32,9 +32,16 @@
 #include <string.h>
 #include <tgmath.h>
 #include <time.h>
-#include <uchar.h>
 #include <wchar.h>
 #include <wctype.h>
+
+#if defined(__clang__)
+//#include <uchar.h>
+#elif defined(__GNUC__)
+#include <uchar.h>
+#else
+#pragma message("Unknown compiler.")
+#endif
 
 #include <cassert>
 #include <cctype>
@@ -57,9 +64,17 @@
 #include <cstring>
 #include <ctgmath>
 #include <ctime>
-//#include <cuchar>
 #include <cwchar>
 #include <cwctype>
+
+
+#if defined(__clang__)
+//#include <cuchar>
+#elif defined(__GNUC__)
+//#include <cuchar>
+#else
+#pragma message("Unknown compiler.")
+#endif
 
 // Containers
 #include <array>
@@ -96,7 +111,6 @@
 // Miscellaneous headers
 #include <algorithm>
 #include <chrono>
-//#include <codecvt>
 #include <complex>
 #include <exception>
 #include <functional>
@@ -119,3 +133,12 @@
 #include <type_traits>
 #include <utility>
 #include <valarray>
+
+#if defined(__clang__)
+#include <codecvt>
+#elif defined(__GNUC__)
+//#include <codecvt>
+#else
+#pragma message("Unknown compiler.")
+#endif
+

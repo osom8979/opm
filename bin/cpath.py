@@ -3,18 +3,31 @@
 
 import os
 import re
+
 from optparse import OptionParser
 from subprocess import Popen, PIPE, STDOUT
 
+CPATH = os.environ['CPATH']
 GCC_CMD = 'g++ -std=c++11 -E -v -x c++ - < /dev/null'
 
 OPTION_PARSER = OptionParser()
+OPTION_PARSER.add_option('-u', '--user',
+                         dest='user',
+                         action='store_true',
+                         default=False,
+                         help='Print user-defined include directories.')
 OPTION_PARSER.add_option('-f', '--files',
                          dest='files',
                          action='store_true',
                          default=False,
                          help='Print header files.')
 (OPTIONS, ARGS) = OPTION_PARSER.parse_args()
+
+def getCpathList():
+    result = []
+    for cursor in CPATH.split(r':'):
+        result += [str(cursor)]
+    return result
 
 def findChildren(directory):
     result = []
@@ -42,16 +55,30 @@ def getGccIncludeList(verbose):
         elif re.match(r'^#include .*', line):
             enable = True
         elif enable:
-            if not re.match(r'^\.$', line):
-                result += [str(line)]
+            result += [str(line)]
     return result
 
-if __name__ == '__main__':
+def printUserPath():
+    for cursor in getCpathList():
+        if os.path.isdir(cursor):
+            print cursor
+
+def printFiles():
     dir_list = getGccIncludeList(getStderrResult(GCC_CMD))
-    if OPTIONS.files:
-        for cursor in dir_list:
+    for cursor in dir_list:
+        if not re.match(r'^\.$', cursor):
             for file in findChildren(cursor):
                 print file
+
+def printPath():
+    dir_list = getGccIncludeList(getStderrResult(GCC_CMD))
+    for cursor in dir_list:
+        print cursor
+
+if __name__ == '__main__':
+    if OPTIONS.user:
+        printUserPath()
+    elif OPTIONS.files:
+        printFiles()
     else:
-        for cursor in dir_list:
-            print cursor
+        printPath()

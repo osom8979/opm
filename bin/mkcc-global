@@ -12,13 +12,22 @@ CSCOPE_EXT='.out'
 CTAGS_LIST_EXT='.tags.list'
 CSCOPE_LIST_EXT='.out.list'
 
+CTAGS_SYS_LIST=$CTAGS_DIR/sys${CTAGS_LIST_EXT}
+CSCOPE_SYS_LIST=$CSCOPE_DIR/sys${CSCOPE_LIST_EXT}
+
+cpp-header > "$CTAGS_SYS_LIST"
+cpp-header > "$CSCOPE_SYS_LIST"
+
+echo "Run system header."
+mkctags  "." "$CTAGS_SYS_LIST"  "$CTAGS_DIR/sys${CTAGS_EXT}"
+mkcscope "." "$CSCOPE_SYS_LIST" "$CSCOPE_DIR/sys${CSCOPE_EXT}"
+
 INDEX=0
 
-for cursor in $(cpath); do
+for cursor in $(cpath -u); do
     echo "Run $cursor"
     mkctags  "$cursor" "$CTAGS_DIR/${INDEX}${CTAGS_LIST_EXT}"   "$CTAGS_DIR/${INDEX}${CTAGS_EXT}"
     mkcscope "$cursor" "$CSCOPE_DIR/${INDEX}${CSCOPE_LIST_EXT}" "$CSCOPE_DIR/${INDEX}${CSCOPE_EXT}"
     let "INDEX = $INDEX + 1"
 done
-
 
