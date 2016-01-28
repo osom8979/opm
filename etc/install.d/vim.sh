@@ -5,23 +5,17 @@ if [[ -z $OPM_HOME ]]; then
     exit 1
 fi
 
+function mkdirs {
+    if [[ ! -d "$1" ]]; then
+        mkdir -p "$1"
+    fi
+}
+
 VIMRC=$HOME/.vimrc
 VIM_DIR=$HOME/.vim
 
-VIM_CONFIG=$VIM_DIR/config.vim
-VIM_KEYMAP=$VIM_DIR/keymap.vim
-VIM_MACRO=$VIM_DIR/macro.vim
-VIM_PLUGIN=$VIM_DIR/plugin.vim
-VIM_YCM_CONF=$VIM_DIR/ycm_conf.py
-
 SRC_VIMRC=$OPM_HOME/etc/vim/vimrc
 SRC_VIM_DIR=$OPM_HOME/etc/vim/vim
-
-SRC_VIM_CONFIG=$SRC_VIM_DIR/config.vim
-SRC_VIM_KEYMAP=$SRC_VIM_DIR/keymap.vim
-SRC_VIM_MACRO=$SRC_VIM_DIR/macro.vim
-SRC_VIM_PLUGIN=$SRC_VIM_DIR/plugin.vim
-SRC_VIM_YCM_CONF=$SRC_VIM_DIR/ycm_conf.py
 
 DATE_FORMAT=`date +%Y%m%d_%H%M%S`
 BACKUP_SUFFIX=$DATE_FORMAT.backup
@@ -31,10 +25,10 @@ if [[ -f $VIMRC ]]; then
     mv $VIMRC $VIMRC.$BACKUP_SUFFIX
 fi
 
-## Install Shougo/neobundle.vim plugin.
+## Install NeoBundle.vim plugin.
 BUNDLE_DIR=$HOME/.vim/bundle
 NEOBUNDLE_DIR=$BUNDLE_DIR/neobundle.vim
-mkdir -p "$BUNDLE_DIR"
+mkdirs "$BUNDLE_DIR"
 if [[ -d "$NEOBUNDLE_DIR/.git" ]]; then
     echo 'Exists $NEOBUNDLE_DIR'
 else
@@ -42,12 +36,18 @@ else
 fi
 
 ## Create a symbolic link.
-ln -s $SRC_VIMRC         $VIMRC
-ln -s $SRC_VIM_CONFIG    $VIM_CONFIG
-ln -s $SRC_VIM_KEYMAP    $VIM_KEYMAP
-ln -s $SRC_VIM_MACRO     $VIM_MACRO
-ln -s $SRC_VIM_PLUGIN    $VIM_PLUGIN
-ln -s $SRC_VIM_YCM_CONF  $VIM_YCM_CONF
+ln -s $SRC_VIMRC $VIMRC
+ln -s $SRC_VIM_DIR/config.vim  $VIM_DIR/config.vim
+ln -s $SRC_VIM_DIR/keymap.vim  $VIM_DIR/keymap.vim
+ln -s $SRC_VIM_DIR/macro.vim   $VIM_DIR/macro.vim
+ln -s $SRC_VIM_DIR/plugin.vim  $VIM_DIR/plugin.vim
+ln -s $SRC_VIM_DIR/ycm_conf.py $VIM_DIR/ycm_conf.py
+
+## NeoVim.
+NEOVIM_HOME=$HOME/.config/nvim
+NEOVIMRC=$NEOVIM_HOME/init.vim
+mkdirs "$NEOVIM_HOME"
+ln -s $SRC_VIMRC $NEOVIMRC
 
 echo ''
 echo 'Run this code:'
