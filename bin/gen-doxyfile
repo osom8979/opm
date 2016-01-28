@@ -37,7 +37,9 @@ EXCLUDE_PATTERNS='*3rd/*'
 
 ## OUTPUT
 HTML_TIMESTAMP=YES
+HTML_OUTPUT=.html
 GENERATE_LATEX=NO
+LATEX_OUTPUT=.latex
 RTF_SOURCE_CODE=NO
 
 ## MACRO
@@ -111,7 +113,9 @@ replaceDoxygenParam FILE_PATTERNS         "$FILE_PATTERNS"
 replaceDoxygenParam RECURSIVE             "$RECURSIVE"
 replaceDoxygenParam EXCLUDE_PATTERNS      "$EXCLUDE_PATTERNS"
 replaceDoxygenParam HTML_TIMESTAMP        "$HTML_TIMESTAMP"
+replaceDoxygenParam HTML_OUTPUT           "$HTML_OUTPUT"
 replaceDoxygenParam GENERATE_LATEX        "$GENERATE_LATEX"
+replaceDoxygenParam LATEX_OUTPUT          "$LATEX_OUTPUT"
 replaceDoxygenParam RTF_SOURCE_CODE       "$RTF_SOURCE_CODE"
 replaceDoxygenParam MACRO_EXPANSION       "$MACRO_EXPANSION"
 replaceDoxygenParam INCLUDE_PATH          "$INCLUDE_PATH"
