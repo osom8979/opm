@@ -13,9 +13,11 @@ function mkdirs {
 
 VIMRC=$HOME/.vimrc
 VIM_DIR=$HOME/.vim
+VIM_SNIP_DIR=$VIM_DIR/snippets
 
 SRC_VIMRC=$OPM_HOME/etc/vim/vimrc
 SRC_VIM_DIR=$OPM_HOME/etc/vim/vim
+SRC_VIM_SNIP_DIR=$SRC_VIM_DIR/snippets
 
 DATE_FORMAT=`date +%Y%m%d_%H%M%S`
 BACKUP_SUFFIX=$DATE_FORMAT.backup
@@ -37,6 +39,7 @@ fi
 
 ## Create a symbolic link.
 ln -s $SRC_VIMRC $VIMRC
+ln -s $SRC_VIM_SNIP_DIR $VIM_SNIP_DIR
 ln -s $SRC_VIM_DIR/config.vim  $VIM_DIR/config.vim
 ln -s $SRC_VIM_DIR/keymap.vim  $VIM_DIR/keymap.vim
 ln -s $SRC_VIM_DIR/macro.vim   $VIM_DIR/macro.vim

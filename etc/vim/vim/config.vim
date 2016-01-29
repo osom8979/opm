@@ -51,6 +51,8 @@ set noswapfile   " no swap file.
 " make that backspace key work the way it should
 set backspace=indent,eol,start
 
+"set paste " Don't use this: (for the SnipMate plugin)
+
 " theme setting.
 "set background=dark
 colorscheme desert
@@ -96,6 +98,7 @@ let NERDTreeIgnore += ['.*\.[oO]$', '.*\.[eE][xX][eE]$']
 let NERDTreeIgnore += ['.*\.pyc']
 
 " vim-airline
+let g:airline_theme='dark'
 let g:airline_powerline_fonts = 0
 let g:airline#extensions#tabline#enabled = 1
 
@@ -134,6 +137,11 @@ let OmniCpp_SelectFirstItem     = 2 " select first item (but don't insert)
 let OmniCpp_NamespaceSearch     = 2 " search namespaces in this and included files
 let OmniCpp_ShowPrototypeInAbbr = 1 " show function prototype (i.e. parameters) in popup window
 let OmniCpp_LocalSearchDecl     = 1 " don't require special style of function opening braces
+
+" SnipMate
+"let g:snipMate = {}
+"let g:snipMate.scope_aliases = {}
+"let g:snipMate.scope_aliases['cpp'] = 'cpp'
 
 " ctags.vim
 set tags=./tags,tags
