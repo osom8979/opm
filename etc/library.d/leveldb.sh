@@ -25,7 +25,7 @@ function runLinux {
     make >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
-    cp -rf include/ $OPM_LOCAL/include/
+    cp -rf include/leveldb $OPM_LOCAL/include/leveldb
     cp libleveldb.* $OPM_LOCAL/lib/
 }
 
