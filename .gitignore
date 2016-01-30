@@ -107,6 +107,8 @@ latex
 *.app
 
 # Dependencies
+*.d
+!*.d/
 
 ##############
 ### Python ###
@@ -183,9 +185,4 @@ target/
 /tmp/*
 !/tmp/.keep
 *.tmp
-
-#etc/library.d/gflags.sh
-#include/header.d
-*.d
-!*.d/
 
