@@ -1,156 +1,215 @@
 "" Macro setting.
 
-function! OpmHelp()
-    echom 'OPM HELP!'
-endfunction
+let s:False = 0
+let s:True  = 1
 
 function! TrimLeft(text)
     return substitute(a:text, '^[ \t]*', '', '')
+endfunction
+
+function! TrimRight(text)
+    return substitute(a:text, '[ \t]*$', '', '')
+endfunction
+
+function! Trim(text)
+    return TrimLeft(TrimRight(a:text))
 endfunction
 
 "" -----------------
 "" Buffer operations.
 "" -----------------
 
-function! GetBuffersOutput()
+let s:BUFFER_NUM  = 'B_NUM'
+let s:BUFFER_F1   = 'B_F1'
+let s:BUFFER_F2   = 'B_F2'
+let s:BUFFER_F3   = 'B_F3'
+let s:BUFFER_F4   = 'B_F4'
+let s:BUFFER_F5   = 'B_F5'
+let s:BUFFER_NAME = 'B_NAME'
+let s:BUFFER_LINE = 'B_LINE'
+
+function! GetBufferInfoDictionary(num, f1, f2, f3, f4, f5, name, line)
+    return {
+        \   s:BUFFER_NUM  : a:num,
+        \   s:BUFFER_F1   : a:f1,
+        \   s:BUFFER_F2   : a:f2,
+        \   s:BUFFER_F3   : a:f3,
+        \   s:BUFFER_F4   : a:f4,
+        \   s:BUFFER_F5   : a:f5,
+        \   s:BUFFER_NAME : a:name,
+        \   s:BUFFER_LINE : a:line,
+        \}
+endfunction
+
+function! IsListedBuffer(info)
+    if a:info[s:BUFFER_F1] == 'u'
+        return s:False
+    endif
+    return s:True
+endfunction
+
+function! IsCurrentBuffer(info)
+    if a:info[s:BUFFER_F2] == '%'
+        return s:True
+    endif
+    return s:False
+endfunction
+
+function! IsActiveBuffer(info)
+    if a:info[s:BUFFER_F3] == 'a'
+        return s:True
+    endif
+    return s:False
+endfunction
+
+function! IsHiddenBuffer(info)
+    if a:info[s:BUFFER_F3] == 'h'
+        return s:True
+    endif
+    return s:False
+endfunction
+
+function! IsModifiableBuffer(info)
+    if a:info[s:BUFFER_F4] == ' '
+        return s:True
+    endif
+    return s:False
+endfunction
+
+function! IsReadonlyBuffer(info)
+    if a:info[s:BUFFER_F4] == '='
+        return s:True
+    endif
+    return s:False
+endfunction
+
+function! FindIndexWithBufferNumber(buffers, number)
+    let index = 0
+    for cursor in a:buffers
+        if cursor[s:BUFFER_NUM] == a:number
+            return index
+        endif
+        let index += 1
+    endfor
+    return -1
+endfunction
+
+function! GetBufferInfoDictionaryWithString(text)
+    let trim = Trim(a:text)
+    let num  = matchstr(trim, '^[0-9]*')
+    let f1   = trim[strlen(num)+0]
+    let f2   = trim[strlen(num)+1]
+    let f3   = trim[strlen(num)+2]
+    let f4   = trim[strlen(num)+3]
+    let f5   = trim[strlen(num)+4]
+
+    let name = strpart(trim, stridx(trim, '"')+1)
+    let name = strpart(name, 0, stridx(name, '"'))
+
+    let line = matchstr(trim, '[0-9]*$')
+    return GetBufferInfoDictionary(
+        \   str2nr(num),
+        \   f1, f2, f3, f4, f5,
+        \   name,
+        \   str2nr(line)
+        \)
+endfunction
+
+function! GetCurrentBuffersOutput()
     redir => output
-    silent execute 'buffers'
+    silent execute 'buffers!'
     redir END
     return output
 endfunction
 
-function! GetListedBuffer()
+function! GetCurrentBufferInfoList()
     let result = []
-    for cursor in split(GetBuffersOutput(), '\n')
-        let result += [matchstr(TrimLeft(cursor), '^[0-9]*')]
+    for cursor in split(GetCurrentBuffersOutput(), '\n')
+        let result += [GetBufferInfoDictionaryWithString(cursor)]
     endfor
-    " return a string list.
     return result
 endfunction
 
-"" ---------------------------
-"" Quickfix Buffer operations.
-"" ---------------------------
-
-function! FindQuickfixBufferNumber()
+function! GetCurrentModifiableListedBufferInfoList()
     let result = []
-    for cursor in split(GetBuffersOutput(), '\n')
-        " Quickfix list name is '[Quickfix list]'
-        if match(tolower(cursor), 'quickfix list') != -1
-            return str2nr(matchstr(TrimLeft(cursor), '^[0-9]*'))
+    for cursor in split(GetCurrentBuffersOutput(), '\n')
+        let info = GetBufferInfoDictionaryWithString(cursor)
+        if IsListedBuffer(info) && IsModifiableBuffer(info)
+            let result += [info]
         endif
     endfor
-    return -1
-endfunction
-
-function! FindQuickfixBufferIndex(list)
-    let quickfix_number = FindQuickfixBufferNumber()
-    if quickfix_number == -1
-        return -1
-    endif
-
-    let find_index = 0
-    for cursor in a:list
-        if cursor == quickfix_number
-            return find_index
-        endif
-        let find_index += 1
-    endfor
-
-    return -1
-endfunction
-
-function! RemoveQuickfixBuffer(list)
-    let quickfix_index = FindQuickfixBufferIndex(a:list)
-    if quickfix_index != -1
-        call remove(a:list, quickfix_index)
-    endif
-    return a:list
+    return result
 endfunction
 
 "" -----------------------
-"" Move Buffer operations.
+"" Main Buffer operations.
 "" -----------------------
 
-function! MoveListedBuffer(offset)
-    let buffers = RemoveQuickfixBuffer(GetListedBuffer())
-    let size = len(buffers)
-    let current = bufnr('%')
+function! MoveModifiableBuffer(offset)
+    let buffers = GetCurrentModifiableListedBufferInfoList()
+    let size    = len(buffers)
+    let index   = FindIndexWithBufferNumber(buffers, bufnr('%'))
+    let next    = index + a:offset
 
-    if size < 2
+    if size == 0
         return
+    endif
+
+    if index == -1
+        let next = 0
     endif
 
     " Switching another buffer!
-    let position = index(buffers, string(current))
-    if position == -1
-        echom 'Not found index error.'
-        return
-    endif
-
-    let next = position + a:offset
     if 0 <= next && next < size
-        silent execute 'b ' . buffers[next]
+        silent execute 'buffer ' . buffers[next][s:BUFFER_NUM]
     endif
 endfunction
 
-function! MovePrevListedBuffer()
-    call MoveListedBuffer(-1)
+function! MovePrevModifiableBuffer()
+    call MoveModifiableBuffer(-1)
 endfunction
 
-function! MoveNextListedBuffer()
-    call MoveListedBuffer(1)
+function! MoveNextModifiableBuffer()
+    call MoveModifiableBuffer(1)
 endfunction
 
-"" ------------------------
-"" Close Buffer operations.
-"" ------------------------
+function! CloseAndMoveNextBuffer()
+    let buffers = GetCurrentModifiableListedBufferInfoList()
+    let size    = len(buffers)
+    let index   = FindIndexWithBufferNumber(buffers, bufnr('%'))
 
-function! CloseBufferAndMoveNext()
-    let buffers = GetListedBuffer()
-    let quickfix_number = FindQuickfixBufferNumber()
-    let size = len(buffers)
-    let current = bufnr('%')
-
-    if empty(buffers)
-        return
-    elseif size == 1
-        " Listed buffer size is 1.
-        silent execute 'bd ' . buffers[0]
-        return
-    elseif size == 2
-        " Listed buffer size is 2.
-        if quickfix_number == -1 || quickfix_number == current
-            silent execute 'bnext'
-            silent execute 'bd ' . current
-        else
-            silent execute 'bd ' . buffers[1]
-            silent execute 'bd ' . buffers[0]
-        endif
+    if size == 0 || index == -1
         return
     endif
 
-    " Listed buffer size is 3 or more.
-
-    if quickfix_number != current
-        let buffers = RemoveQuickfixBuffer(buffers)
-    endif
-
-    let position = index(buffers, string(current))
-    let size = len(buffers)
-    let next = 0
-
-    " Calculate next buffer number.
-    if position + 1 < size
-        let next = buffers[position+1]
-    else
-        let next = buffers[position-1]
+    let next = -1
+    if index + 1 < size
+        let next = index + 1
+    elseif index - 1 >= 0
+        let next = index - 1
     endif
 
     " Switching another buffer!
-    silent execute 'b ' . next
+    if next != -1
+        silent execute 'buffer ' . buffers[next][s:BUFFER_NUM]
+    endif
+    silent execute 'bdelete ' . buffers[index][s:BUFFER_NUM]
+endfunction
 
-    " Close buffer!
-    silent execute 'bd ' . string(current)
+function! CloseAnotherBuffer()
+    let buffers = GetCurrentModifiableListedBufferInfoList()
+    let size    = len(buffers)
+    let current = bufnr('%')
+    let index   = FindIndexWithBufferNumber(buffers, current)
+
+    if size == 0 || index == -1
+        return
+    endif
+
+    for cursor in buffers
+        if cursor[s:BUFFER_NUM] != current
+            silent execute 'bdelete ' . cursor[s:BUFFER_NUM]
+        endif
+    endfor
 endfunction
 

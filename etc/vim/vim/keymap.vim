@@ -6,9 +6,10 @@ let mapleader="\\"
 noremap <leader>? <ESC>:call OpmHelp()<CR>
 
 " Buffer setting.
-noremap  <F1>      :call MovePrevListedBuffer()<CR>
-noremap  <F2>      :call MoveNextListedBuffer()<CR>
-nnoremap <leader>w :call CloseBufferAndMoveNext()<CR>
+noremap  <F1>      :call MovePrevModifiableBuffer()<CR>
+noremap  <F2>      :call MoveNextModifiableBuffer()<CR>
+nnoremap <leader>w :call CloseAndMoveNextBuffer()<CR>
+nnoremap <leader>W :call CloseAnotherBuffer()<CR>
 
 " Clipboard setting.
 noremap  <F3> "+Y
@@ -18,8 +19,7 @@ vnoremap <F4> "+gP
 inoremap <F4> <ESC>"+gpa
 
 " Ctags setting.
-nnoremap <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
-
+nnoremap  <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
 nnoremap  <leader>{ :tp<CR>
 nnoremap  <leader>} :tn<CR>
 
@@ -35,6 +35,13 @@ nnoremap  <C-\>d  :cs find d <C-R>=expand("<cword>")<CR><CR>
 
 nnoremap  <leader>[ :cp<CR>
 nnoremap  <leader>] :cn<CR>
+
+" OmniCppComplete popup menu.
+"inoremap  <leader><space>  <C-x><C-o>
+
+" vim-easymotion setting.
+" Find next: <leader><leader>f
+" Find prev: <leader><leader>F
 
 " ---------------
 " WINDOW SETTING.
