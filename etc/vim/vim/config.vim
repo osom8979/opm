@@ -130,6 +130,7 @@ let g:pymode_lint_ignore = 'E203,E221,E266,E272,E301,E302'
 let g:pymode_options_max_line_length = 99
 
 " OmniCppComplete
+set completeopt-=preview
 let OmniCpp_MayCompleteDot      = 1 " autocomplete with .
 let OmniCpp_MayCompleteArrow    = 1 " autocomplete with ->
 let OmniCpp_MayCompleteScope    = 1 " autocomplete with ::
