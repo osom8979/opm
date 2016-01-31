@@ -3,8 +3,11 @@
 CTAGS_DIR="$HOME/.vim/ctags"
 CSCOPE_DIR="$HOME/.vim/cscope"
 
-if [[ ! -d "$CTAGS_DIR"  ]]; then mkdir -p "$CTAGS_DIR";  fi
-if [[ ! -d "$CSCOPE_DIR" ]]; then mkdir -p "$CSCOPE_DIR"; fi
+if [[ -d "$CTAGS_DIR"  ]]; then rm -rf "$CTAGS_DIR";  fi
+if [[ -d "$CSCOPE_DIR" ]]; then rm -rf "$CSCOPE_DIR"; fi
+
+mkdir -p "$CTAGS_DIR"
+mkdir -p "$CSCOPE_DIR"
 
 CTAGS_EXT='.tags'
 CSCOPE_EXT='.out'

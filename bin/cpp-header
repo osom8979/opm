@@ -26,5 +26,22 @@ if [[ ! -f $DEP ]]; then
     exit 1
 fi
 
-cat $DEP | sed -e 's/^[^ ].*://g' -e 's/^ *//g' -e 's/ *\\//g' -e 's/  */ /g' | awk 'BEGIN{RS=" ";}{print($0);}' | egrep -v '^$' | grep -v "$HEADER"
+RESULT=`sed -e 's/^[^ ].*://g' $DEP`
+RESULT=`echo -e "$RESULT" | sed -e 's/^ *//g'`
+
+## Bash quotes(\\ -> \) -> sed regex quotes(\\ -> \) -> result: \\\\ -> \
+RESULT=`echo -e "$RESULT" | sed -e 's/ *\\\\//g'`
+
+RESULT=`echo -e "$RESULT" | sed -e 's/  */ /g'`
+RESULT=`echo -e "$RESULT" | awk 'BEGIN{RS=" ";}{print($0);}'`
+RESULT=`echo -e "$RESULT" | sed -e '/^$/d'`
+
+## Remove original header file.
+RESULT=`echo -e "$RESULT" | sed -e '1d'`
+
+for cursor in $(echo -e ${RESULT}); do
+    if [[ -e "$cursor" ]]; then
+        echo "$cursor"
+    fi
+done
 
