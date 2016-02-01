@@ -2,8 +2,11 @@
 
 let mapleader="\\"
 
+" Common setting.
+" Yanked text to vi command prompt: <C-r>"
+
 " Help message.
-noremap <leader>? <ESC>:call OpmHelp()<CR>
+"noremap <leader>? <ESC>:call OpmHelp()<CR>
 
 " Buffer setting.
 noremap  <F1>      :call MovePrevModifiableBuffer()<CR>
