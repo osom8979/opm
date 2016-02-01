@@ -84,7 +84,9 @@ NeoBundle 'OmniCppComplete' " Ctags auto complete popup.
 NeoBundle 'tpope/vim-rails'
 
 " Python supported.
+if has('python')
 NeoBundle 'klen/python-mode'
+endif
 
 "if has("netbeans_intg")
 "    NeoBundle '~/.vim/bundle/pyclewn-2.0.1', {
