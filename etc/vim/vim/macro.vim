@@ -151,12 +151,8 @@ function! MoveModifiableBuffer(offset)
     let index   = FindIndexWithBufferNumber(buffers, bufnr('%'))
     let next    = index + a:offset
 
-    if size == 0
+    if size == 0 || index == -1
         return
-    endif
-
-    if index == -1
-        let next = 0
     endif
 
     " Switching another buffer!
