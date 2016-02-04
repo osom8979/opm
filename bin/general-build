@@ -108,12 +108,11 @@ fi
 
 ## EXTRACT:
 if [[ -d "$WORK_DIR" ]]; then
-    stdout "Remove $WORK_DIR"
-    rm -rf "$WORK_DIR"
+    stdout "Exists $WORK_DIR"
+else
+    stdout "Extract $DEST"
+    extract "$DEST" "$TEMP_DIR"
 fi
-
-stdout "Extract $DEST"
-extract "$DEST" "$TEMP_DIR"
 
 ## BUILD:
 stdout "Start build."
