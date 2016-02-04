@@ -70,10 +70,10 @@ function! IsHiddenBuffer(info)
 endfunction
 
 function! IsModifiableBuffer(info)
-    if a:info[s:BUFFER_F4] == ' '
-        return s:True
+    if a:info[s:BUFFER_F4] == '-'
+        return s:False
     endif
-    return s:False
+    return s:True
 endfunction
 
 function! IsReadonlyBuffer(info)
