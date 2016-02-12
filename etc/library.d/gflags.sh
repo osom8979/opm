@@ -22,10 +22,13 @@ LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 
 function runLinux {
     code=$?; [[ $code != 0 ]] && exit $code
-    cmake -DCMAKE_INSTALL_PREFIX=$OPM_LOCAL -G 'Unix Makefiles' >> $LOG_PATH
+    cmake -DCMAKE_CXX_FLAGS=-fPIC \
+          -DCMAKE_C_FLAGS=-fPIC \
+          -DCMAKE_INSTALL_PREFIX=$OPM_LOCAL \
+          -G 'Unix Makefiles' >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
-    make >> $LOG_PATH
+    make VERBOSE=0 >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
     make install >> $LOG_PATH
