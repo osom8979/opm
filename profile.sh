@@ -36,6 +36,8 @@ fi
 export PATH=$OPM_BIN:$OPM_LOCAL_BIN:$PATH
 export EDITOR=vi
 
+export LC_COLLATE="ko_KR.UTF-8"
+
 ## Python setting.
 export PYTHONPATH=$OPM_PYTHON:$PYTHONPATH
 
