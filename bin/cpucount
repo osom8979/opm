@@ -1,13 +1,13 @@
 #!/bin/bash
 
-case `platform` in
-MacOSX)
+case "$(uname -s)" in
+Darwin)
     sysctl -n hw.ncpu
     ;;
 Linux)
     grep -c ^processor /proc/cpuinfo
     ;;
-Windows)
+CYGWIN*|MINGW*|MSYS*)
     #echo $NUMBER_OF_PROCESSORS
     ## OR:
     WMIC CPU Get NumberOfLogicalProcessors
