@@ -1,0 +1,22 @@
+#!/bin/bash
+
+case `platform` in
+MacOSX)
+    sysctl -n hw.ncpu
+    ;;
+Linux)
+    grep -c ^processor /proc/cpuinfo
+    ;;
+Windows)
+    #echo $NUMBER_OF_PROCESSORS
+    ## OR:
+    WMIC CPU Get NumberOfLogicalProcessors
+    ;;
+*)
+    echo 'Not found platform.' 1>&2
+    exit 1
+    ;;
+esac
+
+exit 0
+
