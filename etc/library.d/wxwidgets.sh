@@ -11,13 +11,13 @@ OPM_TMP=$OPM_HOME/tmp
 ## Don't remove DEPENDENCIES variable.
 DEPENDENCIES=
 
-NAME='glog-0.3.4'
-URL='https://codeload.github.com/google/glog/tar.gz/v0.3.4'
-MD5='df92e05c9d02504fb96674bc776a41cb'
+NAME='wxWidgets-3.1.0'
+URL='https://codeload.github.com/wxWidgets/wxWidgets/tar.gz/v3.1.0'
+MD5='6d2af648c5d0b2d366e7050d06b9a89f'
 TEMP_DIR="$OPM_TMP/build"
 DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL/lib/libglog.a"
+ALREADY="$OPM_LOCAL/include/wx-3.1/wx/config.h"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 THREAD_FLAG=`thread-flag`
 
@@ -26,7 +26,7 @@ function runCommon {
     ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
-    make >> $LOG_PATH
+    make $THREAD_FLAG >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
     make install >> $LOG_PATH

@@ -19,6 +19,7 @@ DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
 ALREADY="$OPM_LOCAL/lib/libz.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
+THREAD_FLAG=`thread-flag`
 
 function runLinux {
     code=$?; [[ $code != 0 ]] && exit $code
@@ -54,7 +55,8 @@ LINUX_FUNC=runLinux
 MACOSX_FUNC=runLinux
 WINDOWS_FUNC=runWindows
 
-. general-build "$NAME" "$URL" "$MD5" \
-    "$TEMP_DIR" "$DEST_NAME" "$WORK_NAME" "$ALREADY" "$LOG_PATH" \
-    "$LINUX_FUNC" "$MACOSX_FUNC" "$WINDOWS_FUNC"
+. general-build "$NAME" "$URL" "$MD5" "$TEMP_DIR"    \
+    "$DEST_NAME" "$WORK_NAME" "$ALREADY" "$LOG_PATH" \
+    "$LINUX_FUNC" "$MACOSX_FUNC" "$WINDOWS_FUNC"     \
+    "$DEPENDENCIES"
 

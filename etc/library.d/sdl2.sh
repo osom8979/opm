@@ -14,7 +14,7 @@ DEPENDENCIES=
 NAME='SDL2-2.0.4'
 URL='https://www.libsdl.org/release/SDL2-2.0.4.tar.gz'
 MD5='44fc4a023349933e7f5d7a582f7b886e'
- 
+
 #NAME='SDL-2.0.4-10002'
 #URL='https://www.libsdl.org/tmp/SDL-2.0.4-10002.tar.gz'
 #MD5='32a23f12e8d9436a0fc6d12b5e8ad05f'
@@ -24,8 +24,9 @@ DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
 ALREADY="$OPM_LOCAL/lib/libSDL2.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
+THREAD_FLAG=`thread-flag`
 
-function runLinux {
+function runCommon {
     code=$?; [[ $code != 0 ]] && exit $code
     ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
 
@@ -77,11 +78,12 @@ function runMacOSX {
     make install >> $LOG_PATH
 }
 
-LINUX_FUNC=runLinux
+LINUX_FUNC=runCommon
 MACOSX_FUNC=runMacOSX
-WINDOWS_FUNC=runLinux
+WINDOWS_FUNC=runCommon
 
-. general-build "$NAME" "$URL" "$MD5" \
-    "$TEMP_DIR" "$DEST_NAME" "$WORK_NAME" "$ALREADY" "$LOG_PATH" \
-    "$LINUX_FUNC" "$MACOSX_FUNC" "$WINDOWS_FUNC"
+. general-build "$NAME" "$URL" "$MD5" "$TEMP_DIR"    \
+    "$DEST_NAME" "$WORK_NAME" "$ALREADY" "$LOG_PATH" \
+    "$LINUX_FUNC" "$MACOSX_FUNC" "$WINDOWS_FUNC"     \
+    "$DEPENDENCIES"
 

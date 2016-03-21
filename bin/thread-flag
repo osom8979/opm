@@ -1,0 +1,24 @@
+#!/bin/bash
+
+case "$(uname -s)" in
+Darwin)
+    CORE_COUNT=`sysctl -n hw.ncpu`
+    let "THREAD_COUNT = $CORE_COUNT * 2"
+    ;;
+Linux)
+    CORE_COUNT=`grep -c ^processor /proc/cpuinfo`
+    let "THREAD_COUNT = $CORE_COUNT * 2"
+    ;;
+CYGWIN*|MINGW*|MSYS*)
+    # Force setting.
+    THREAD_COUNT=1
+    ;;
+*)
+    # Not found platform.
+    THREAD_COUNT=1
+    ;;
+esac
+
+echo -j$THREAD_COUNT
+exit 0
+

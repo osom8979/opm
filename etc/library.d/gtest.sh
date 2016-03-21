@@ -19,8 +19,9 @@ DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
 ALREADY="$OPM_LOCAL/lib/libgtest.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
+THREAD_FLAG=`thread-flag`
 
-function runLinux {
+function runCommon {
     code=$?; [[ $code != 0 ]] && exit $code
     autoreconf -ifv >> $LOG_PATH
 
@@ -34,6 +35,7 @@ function runLinux {
     # make install is dangerous and not supported.
     # make install >> $LOG_PATH
 
+    # Custom install process:
     cp -r include/gtest "$OPM_LOCAL/include"
     local lib_files=`find . -iname '*.a' | grep -v samples`
     for cursor in $lib_files; do
@@ -41,11 +43,12 @@ function runLinux {
     done
 }
 
-LINUX_FUNC=runLinux
-MACOSX_FUNC=runLinux
-WINDOWS_FUNC=runLinux
+LINUX_FUNC=runCommon
+MACOSX_FUNC=runCommon
+WINDOWS_FUNC=runCommon
 
-. general-build "$NAME" "$URL" "$MD5" \
-    "$TEMP_DIR" "$DEST_NAME" "$WORK_NAME" "$ALREADY" "$LOG_PATH" \
-    "$LINUX_FUNC" "$MACOSX_FUNC" "$WINDOWS_FUNC"
+. general-build "$NAME" "$URL" "$MD5" "$TEMP_DIR"    \
+    "$DEST_NAME" "$WORK_NAME" "$ALREADY" "$LOG_PATH" \
+    "$LINUX_FUNC" "$MACOSX_FUNC" "$WINDOWS_FUNC"     \
+    "$DEPENDENCIES"
 

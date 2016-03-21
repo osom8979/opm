@@ -18,15 +18,31 @@ LOG_PATH=$8
 LINUX_FUNC=$9
 MACOSX_FUNC=${10}
 WINDOWS_FUNC=${11}
+DEPENDENCIES=${12}
 
 HELP="general-build {name} {url} {md5}"
 HELP="$HELP {temp} {dest} {work} {already} {log}"
 HELP="$HELP {osx} {linux} {windows}"
+HELP="$HELP {dependencies}"
 
 WORKING="$PWD"
 DEST="$TEMP_DIR/$DEST_NAME"
 WORK_DIR="$TEMP_DIR/$WORK_NAME"
 PLATFORM=`platform`
+
+## ---------------------
+## Install dependencies.
+## ---------------------
+
+for cursor in ${DEPENDENCIES//:/$'\n'}; do
+    cursor_absolute="$TPARTY_HOME/library.d/$cursor"
+    if [[ -f "$cursor_absolute" ]]; then
+        echo "Dependency: $cursor"
+        source $cursor_absolute
+    else
+        echo "Not found $cursor_absolute"
+    fi
+done
 
 ## ---------------
 ## Bash functions.
@@ -119,6 +135,10 @@ stdout "Start build."
 stdout "Log file: $LOG_PATH"
 stdout "Working: $WORK_DIR"
 stdout "Platform: $PLATFORM"
+
+if [[ ! -d "$WORK_DIR" ]]; then
+    mkdir -p "$WORK_DIR"
+fi
 cd "$WORK_DIR"
 
 case "$PLATFORM" in

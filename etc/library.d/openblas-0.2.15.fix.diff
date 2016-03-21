@@ -1,0 +1,12 @@
+diff -ruN OpenBLAS-0.2.15/c_check OpenBLAS-0.2.15-fix/c_check
+--- OpenBLAS-0.2.15/c_check	2015-10-28 05:44:50.000000000 +0900
++++ OpenBLAS-0.2.15-fix/c_check	2016-03-21 00:06:11.000000000 +0900
+@@ -165,7 +165,7 @@
+ $binformat    = bin32;
+ $binformat    = bin64  if ($data =~ /BINARY_64/);
+ 
+-$data = `$compiler_name -S ctest1.c && grep globl ctest1.s | head -n 1 && rm -f ctest1.s`;
++$data = `$compiler_name -S ctest1.c && grep --color=never globl ctest1.s | head -n 1 && rm -f ctest1.s`;
+ 
+ $data =~ /globl\s([_\.]*)(.*)/;
+ 

@@ -11,17 +11,23 @@ OPM_TMP=$OPM_HOME/tmp
 ## Don't remove DEPENDENCIES variable.
 DEPENDENCIES=
 
-NAME='glog-0.3.4'
-URL='https://codeload.github.com/google/glog/tar.gz/v0.3.4'
-MD5='df92e05c9d02504fb96674bc776a41cb'
+NAME='snappy-1.1.3'
+URL='https://codeload.github.com/google/snappy/tar.gz/1.1.3'
+MD5='2dec0280159271390bd43a8e1f077fea'
 TEMP_DIR="$OPM_TMP/build"
 DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
-ALREADY="$OPM_LOCAL/lib/libglog.a"
+ALREADY="$OPM_LOCAL/lib/libsnappy.a"
 LOG_PATH="$TEMP_DIR/$NAME-`datetime`.log"
 THREAD_FLAG=`thread-flag`
 
 function runCommon {
+    code=$?; [[ $code != 0 ]] && exit $code
+    patch -p1 < $OPM_HOME/library.d/snappy-1.1.3.osx.diff >> $LOG_PATH
+
+    code=$?; [[ $code != 0 ]] && exit $code
+    ./autogen.sh >> $LOG_PATH
+
     code=$?; [[ $code != 0 ]] && exit $code
     ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
 
