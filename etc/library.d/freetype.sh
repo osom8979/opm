@@ -11,9 +11,9 @@ OPM_TMP=$OPM_HOME/tmp
 ## Don't remove DEPENDENCIES variable.
 DEPENDENCIES=
 
-NAME='freetype-2.6.2'
-URL='http://jaist.dl.sourceforge.net/project/freetype/freetype2/2.6.2/freetype-2.6.2.tar.gz'
-MD5='c408547878f1f5a3700881a8bbf1c644'
+NAME='freetype-2.6.3'
+URL='http://ftp.twaren.net/Unix/NonGNU//freetype/freetype-2.6.3.tar.gz'
+MD5='8b0c80b64042b7c39b9fa9debe6305c3'
 TEMP_DIR="$OPM_TMP/build"
 DEST_NAME="$NAME.tar.gz"
 WORK_NAME="$NAME"
