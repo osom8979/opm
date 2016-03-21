@@ -23,7 +23,7 @@ THREAD_FLAG=`thread-flag`
 
 function runCommon {
     code=$?; [[ $code != 0 ]] && exit $code
-    patch -p1 < $OPM_HOME/library.d/snappy-1.1.3.osx.diff >> $LOG_PATH
+    patch -p1 < $OPM_HOME/etc/library.d/snappy-1.1.3.osx.diff >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
     ./autogen.sh >> $LOG_PATH

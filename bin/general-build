@@ -35,7 +35,7 @@ PLATFORM=`platform`
 ## ---------------------
 
 for cursor in ${DEPENDENCIES//:/$'\n'}; do
-    cursor_absolute="$TPARTY_HOME/library.d/$cursor"
+    cursor_absolute="$OPM_HOME/etc/library.d/$cursor"
     if [[ -f "$cursor_absolute" ]]; then
         echo "Dependency: $cursor"
         source $cursor_absolute
