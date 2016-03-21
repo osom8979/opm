@@ -26,6 +26,7 @@ PROJECT_BRIEF='Unknown project'
 OUTPUT_LANGUAGE='Korean-en'
 ALIASES='translate{2}="<dl class='\''section remarks'\''><dt>Translate-\1</dt><dd>\2</dd></dl>"'
 WARN_IF_UNDOCUMENTED=NO
+QUIET=YES
 
 ## INPUT
 INPUT='src'
@@ -122,6 +123,7 @@ replaceDoxygenParam INCLUDE_PATH          "$INCLUDE_PATH"
 replaceDoxygenParam INCLUDE_FILE_PATTERNS "$INCLUDE_FILE_PATTERNS"
 replaceDoxygenParam USE_MATHJAX           "$USE_MATHJAX"
 replaceDoxygenParam MATHJAX_RELPATH       "$MATHJAX_RELPATH"
+replaceDoxygenParam QUIET                 "$QUIET"
 
 echo 'Done.'
 
