@@ -23,6 +23,10 @@ THREAD_FLAG=`thread-flag`
 
 function runCommon {
     code=$?; [[ $code != 0 ]] && exit $code
+    export CFLAGS="-fPIC"
+    export CXXFLAGS="-fPIC -stdlib=libc++ -std=c++11"
+    export OBJCXXFLAGS="-fPIC -stdlib=libc++ -std=c++11"
+    export LDFLAGS="-stdlib=libc++"
     ./configure --prefix=$OPM_LOCAL >> $LOG_PATH
 
     code=$?; [[ $code != 0 ]] && exit $code
