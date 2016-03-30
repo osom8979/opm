@@ -1,6 +1,9 @@
 #!/bin/bash
 
 if [[ -z $GREP_OPTIONS ]]; then
-    export GREP_OPTIONS='--color=always'
+    # Don't use this code.
+    #export GREP_OPTIONS='--color=always'
+
+    export GREP_OPTIONS=
 fi
 
