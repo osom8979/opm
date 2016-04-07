@@ -2,6 +2,7 @@
 	autocrlf = false
 	safecrlf = true
 	eol = lf
+	excludesfile = ~/.gitignore_global
 [color]
 	ui = auto
 	diff = auto
