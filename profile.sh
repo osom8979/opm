@@ -25,9 +25,8 @@ fi
 
 ## General setting.
 export PATH=$OPM_BIN:$PATH
-export EDITOR=vi
-
 export LC_COLLATE="ko_KR.UTF-8"
+export EDITOR=vi
 
 ## Python setting.
 export PYTHONPATH=$OPM_PYTHON:$PYTHONPATH
@@ -39,7 +38,4 @@ OPM_PROFILE_DIR=$OPM_HOME/etc/profile.d
 for cursor in $OPM_PROFILE_DIR/*.sh; do
     . $cursor
 done
-
-## OPM last setting.
-export OPM_SETUP=1
 
