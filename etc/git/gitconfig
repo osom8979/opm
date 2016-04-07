@@ -15,6 +15,10 @@
 	logc = log --all --graph --decorate --oneline
 	logf = log --all --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s'
 	logw = log --all --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s' --since=1weeks
+	diffc = diff --cached
+	diffcw = diff --cached --word-diff
+	diffwc = diff --cached --word-diff
+	diffw = diff --word-diff
 	showf = show --oneline --name-only
 	count = rev-list --count HEAD
 	st = status
