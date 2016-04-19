@@ -15,6 +15,14 @@ function! Trim(text)
     return TrimLeft(TrimRight(a:text))
 endfunction
 
+"" ------------------
+"" String operations.
+"" ------------------
+
+function! RemoveCr()
+    silent execute '%s/$//g'
+endfunction
+
 "" -----------------
 "" Buffer operations.
 "" -----------------
