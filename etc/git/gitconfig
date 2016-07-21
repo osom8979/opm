@@ -22,10 +22,11 @@
 	showf = show --oneline --name-only
 	count = rev-list --count HEAD
 	st = status
-[user]
-	name = zer0
-	email = osom8979@gmail.com
 [push]
 	default = simple
 [http]
 	sslVerify = false
+
+#[credential]
+#	helper = store
+
