@@ -10,11 +10,11 @@
 	branch = auto
 	interactive = true
 [alias]
-	log10 = log --all --graph --decorate --oneline -10
-	log20 = log --all --graph --decorate --oneline -20
-	logc = log --all --graph --decorate --oneline
-	logf = log --all --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s'
-	logw = log --all --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s' --since=1weeks
+	log10 = log --graph --decorate --oneline -10
+	log20 = log --graph --decorate --oneline -20
+	logc = log --graph --decorate --oneline
+	logf = log --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s'
+	logw = log --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s' --since=1weeks
 	diffc = diff --cached
 	diffcw = diff --cached --word-diff
 	diffwc = diff --cached --word-diff
