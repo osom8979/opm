@@ -37,20 +37,23 @@ else
     git clone https://github.com/Shougo/neobundle.vim $NEOBUNDLE_DIR
 fi
 
-## Create a symbolic link.
-ln -s $SRC_VIMRC $VIMRC
-ln -s $SRC_VIM_SNIP_DIR $VIM_SNIP_DIR
-ln -s $SRC_VIM_DIR/config.vim  $VIM_DIR/config.vim
-ln -s $SRC_VIM_DIR/keymap.vim  $VIM_DIR/keymap.vim
-ln -s $SRC_VIM_DIR/macro.vim   $VIM_DIR/macro.vim
-ln -s $SRC_VIM_DIR/plugin.vim  $VIM_DIR/plugin.vim
-ln -s $SRC_VIM_DIR/ycm_conf.py $VIM_DIR/ycm_conf.py
+## Create vimrc file.
+echo '"== BEGIN OSOM VIM SETTING =='    >> $VIMRC
+echo "scriptencoding utf-8"             >> $VIMRC
+echo "source $SRC_VIM_DIR/plugin.vim"   >> $VIMRC
+echo "source $SRC_VIM_DIR/config.vim"   >> $VIMRC
+echo "source $SRC_VIM_DIR/keymap.vim"   >> $VIMRC
+echo "source $SRC_VIM_DIR/macro.vim"    >> $VIMRC
+echo '"== END OSOM VIM SETTING =='      >> $VIMRC
 
 ## NeoVim.
 NEOVIM_HOME=$HOME/.config/nvim
 NEOVIMRC=$NEOVIM_HOME/init.vim
 mkdirs "$NEOVIM_HOME"
-ln -s $SRC_VIMRC $NEOVIMRC
+if [[ -f $NEOVIMRC ]]; then
+    mv $NEOVIMRC $NEOVIMRC.$BACKUP_SUFFIX
+fi
+cp $VIMRC $NEOVIMRC
 
 echo ''
 echo 'Run this code:'
