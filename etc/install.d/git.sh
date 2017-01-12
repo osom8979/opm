@@ -13,7 +13,7 @@ DATE_FORMAT=`date +%Y%m%d_%H%M%S`
 
 ## Backup.
 if [[ -f $GITCONFIG ]]; then
-    mv $GITCONFIG $GITCONFIG.$DATE_FORMAT.backup
+    cp $GITCONFIG $GITCONFIG.$DATE_FORMAT.backup
 fi
 
 ## Finally, insert user name (Only zer0's).

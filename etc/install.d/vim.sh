@@ -24,7 +24,7 @@ BACKUP_SUFFIX=$DATE_FORMAT.backup
 
 ## Backup.
 if [[ -f $VIMRC ]]; then
-    mv $VIMRC $VIMRC.$BACKUP_SUFFIX
+    cp $VIMRC $VIMRC.$BACKUP_SUFFIX
 fi
 
 ## Install NeoBundle.vim plugin.
