@@ -21,7 +21,8 @@ if [[ "$CURRENT_USER" == "zer0" ]]; then
     echo -e "[user]"                        >> $GITCONFIG
     echo -e "\tname = zer0"                 >> $GITCONFIG
     echo -e "\temail = osom8979@gmail.com"  >> $GITCONFIG
-    echo -e "[include]"                     >> $GITCONFIG
-    echo -e "\tpath = $SRC_GITCONFIG"       >> $GITCONFIG
 fi
+
+echo -e "[include]"               >> $GITCONFIG
+echo -e "\tpath = $SRC_GITCONFIG" >> $GITCONFIG
 
