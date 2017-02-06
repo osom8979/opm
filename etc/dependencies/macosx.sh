@@ -2,6 +2,7 @@
 
 ## Compiler.
 brew install nasm
+brew install yasm
 brew install automake autoconf libtool
 
 ## Developers tools.
