@@ -1,9 +1,14 @@
 #!/bin/bash
 
-## Compiler & Tools.
+## Compiler.
 brew install automake autoconf libtool
-brew install valgrind cppcheck
+
+## Developers tools.
+brew install valgrind
+brew install cppcheck
 
 ## Vim editor.
+brew install neovim/neovim/neovim
 brew install ctags
+brew install cscope
 
