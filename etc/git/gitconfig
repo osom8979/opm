@@ -12,6 +12,14 @@
 [alias]
 	log10 = log --graph --decorate --oneline -10
 	log20 = log --graph --decorate --oneline -20
+	log30 = log --graph --decorate --oneline -20
+	log40 = log --graph --decorate --oneline -20
+	log50 = log --graph --decorate --oneline -20
+	log10a = log --graph --decorate --oneline --all -10
+	log20a = log --graph --decorate --oneline --all -20
+	log30a = log --graph --decorate --oneline --all -20
+	log40a = log --graph --decorate --oneline --all -20
+	log50a = log --graph --decorate --oneline --all -20
 	logc = log --graph --decorate --oneline
 	logf = log --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s'
 	logw = log --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s' --since=1weeks
