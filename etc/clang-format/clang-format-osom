@@ -1,0 +1,8 @@
+# clang-format settings.
+# See also: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+---
+Language: Cpp
+IndentWidth: 4
+
+
