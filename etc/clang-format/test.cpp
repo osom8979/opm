@@ -78,7 +78,7 @@ NAMESPACE_LIBTBAG_OPEN
 
 namespace debug {
 
-// clang-format on
+// clang-format off
 #ifndef TBAG_ERROR_INFO_MAP
 #define TBAG_ERROR_INFO_MAP(_TBAG_XX)                 \
     _TBAG_XX(     SUCCESS, "No error"               ) \
@@ -97,7 +97,7 @@ namespace debug {
     _TBAG_XX(UNKNOWN_PROCESS_ID, "Unknown process id") \
     /* -- END -- */
 #endif
-// clang-format off
+// clang-format on
 
 /** Native type of error code. */
 typedef int ErrorCodeType;
