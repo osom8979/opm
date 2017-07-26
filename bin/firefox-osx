@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+DOWNLOAD_DIR=$HOME/Downloads
+IP_ADDRESS=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
+DISPLAY_INDEX=0
+
+echo "Run Firefox"
+echo "IP: $IP_ADDRESS"
+echo "DIR: $DOWNLOAD_DIR"
+echo "DISPLAY: $DISPLAY_INDEX"
+echo 'In XQuartz preference, go to "Security" and check "Allow connections from network clients"'
+
+open -a XQuartz
+xhost + $IP_ADDRESS
+
+docker run --rm --name firefox -e DISPLAY=$IP_ADDRESS:$DISPLAY_INDEX -v /tmp/.X11-unix:/tmp/.X11-unix -v $DOWNLOAD_DIR:/root/Downloads jess/firefox
+
+echo "Done."
+
+
