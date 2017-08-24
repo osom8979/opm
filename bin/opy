@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+
+WORKING=$PWD
+SCRIPT_DIR="$( cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+OPM_DIR="$(dirname $SCRIPT_DIR)"
+
+python $@
+
