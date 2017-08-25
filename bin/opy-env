@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+if [[ -z $1 ]]; then
+OPY_ENV_PREFIX=opy
+else
+OPY_ENV_PREFIX=$1
+fi
+
 PYENV_CMD=`PATH=~/.pyenv/bin/:$PATH which pyenv`
 if [[ -z $PYENV_CMD ]]; then
     echo "Not found pyenv command."
@@ -41,7 +47,7 @@ fi
 USER_NAME=`id -u -n`
 OPY_PYTHON_VERSION=3.6.1
 OPY_PYTHON_VERSION_REGEX=`echo $OPY_PYTHON_VERSION | sed 's/\./\\\\./g'`
-OPY_ENV_NAME="__${USER_NAME}_opy_${OPY_PYTHON_VERSION}__"
+OPY_ENV_NAME="__${USER_NAME}_${OPY_ENV_PREFIX}_opy_${OPY_PYTHON_VERSION}__"
 OPY_ENV_NAME_REGEX=`echo $OPY_ENV_NAME | sed 's/\./\\\\./g'`
 
 export PATH="~/.pyenv/bin:$PATH"
