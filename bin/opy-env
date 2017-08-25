@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+WORKING=$PWD
+SCRIPT_DIR="$( cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
+OPM_DIR="$(dirname $SCRIPT_DIR)"
+
+PYENV_CMD=`which pyenv`
+BREW_CMD=`which brew`
+GIT_CMD=`which git`
+PLATFORM=`platform`
+
+if [[ -z $PYENV_CMD ]]; then
+    echo "Not found pyenv command."
+
+    if [[ "$PLATFORM" == "MacOSX" ]]; then
+        if [[ -z $BREW ]]; then
+            echo "Not found brew command."
+            ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+        fi
+
+        BREW_CMD=`which brew`
+        if [[ -z $BREW ]]; then
+            exit 1
+        fi
+
+        echo "Install pyenv from brew command."
+        brew update
+        brew install pyenv
+        brew install pyenv-virtualenv
+    else
+        if [[ -z $GIT_CMD ]]; then
+            echo "Not found git command."
+            exit 1
+        fi
+
+        echo "Install pyenv from pyenv-installer (see: https://github.com/pyenv/pyenv-installer)"
+        curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
+    fi
+
+    PYENV_CMD=`which pyenv`
+    if [[ -z $PYENV_CMD ]]; then
+        exit 1
+    fi
+fi
+
+USER_NAME=`id -u -n`
+OPY_PYTHON_VERSION=3.6.1
+OPY_PYTHON_VERSION_REGEX=`echo $OPY_PYTHON_VERSION | sed 's/\./\\\\./g'`
+OPY_ENV_NAME="__${USER_NAME}_opy_${OPY_PYTHON_VERSION}__"
+OPY_ENV_NAME_REGEX=`echo $OPY_ENV_NAME | sed 's/\./\\\\./g'`
+
+export PATH="~/.pyenv/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+FIND_PYTHON_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^${OPY_PYTHON_VERSION_REGEX}$"`
+if [[ -z $FIND_PYTHON_ENV ]]; then
+    echo "Not found $OPY_PYTHON_VERSION pyenv."
+    pyenv install $OPY_PYTHON_VERSION
+fi
+
+FIND_OPY_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^$OPY_ENV_NAME_REGEX$"`
+#echo "FIND_OPY_ENV: $FIND_OPY_ENV"
+if [[ -z $FIND_OPY_ENV ]]; then
+    echo "Not found $OPY_ENV_NAME pyenv."
+    pyenv virtualenv "$OPY_PYTHON_VERSION" "$OPY_ENV_NAME"
+fi
+
+CURRENT_PYENV_VERSION=`pyenv version | awk '{ print($1); }'`
+#echo "CURRENT_PYENV_VERSION: $CURRENT_PYENV_VERSION"
+if [[ "$CURRENT_PYENV_VERSION" != "$OPY_ENV_NAME" ]]; then
+    pyenv shell $OPY_ENV_NAME
+fi
+
+echo "Python version: $(python --version)"
+echo "Python executable: $(which python)"
+echo "Pyenv version: $(pyenv version | awk '{print($1);}')"
+
