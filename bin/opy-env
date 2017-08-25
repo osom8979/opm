@@ -1,18 +1,12 @@
 #!/usr/bin/env bash
 
-WORKING=$PWD
-SCRIPT_DIR="$( cd "$(dirname ${BASH_SOURCE[0]})" ; pwd -P )"
-OPM_DIR="$(dirname $SCRIPT_DIR)"
-
-PYENV_CMD=`which pyenv`
-BREW_CMD=`which brew`
-GIT_CMD=`which git`
-PLATFORM=`platform`
-
+PYENV_CMD=`PATH=~/.pyenv/bin/:$PATH which pyenv`
 if [[ -z $PYENV_CMD ]]; then
     echo "Not found pyenv command."
 
+    PLATFORM=`platform`
     if [[ "$PLATFORM" == "MacOSX" ]]; then
+        BREW_CMD=`which brew`
         if [[ -z $BREW ]]; then
             echo "Not found brew command."
             ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -28,6 +22,7 @@ if [[ -z $PYENV_CMD ]]; then
         brew install pyenv
         brew install pyenv-virtualenv
     else
+        GIT_CMD=`which git`
         if [[ -z $GIT_CMD ]]; then
             echo "Not found git command."
             exit 1
@@ -37,7 +32,7 @@ if [[ -z $PYENV_CMD ]]; then
         curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
     fi
 
-    PYENV_CMD=`which pyenv`
+    PYENV_CMD=`PATH=~/.pyenv/bin/:$PATH which pyenv`
     if [[ -z $PYENV_CMD ]]; then
         exit 1
     fi
@@ -72,7 +67,8 @@ if [[ "$CURRENT_PYENV_VERSION" != "$OPY_ENV_NAME" ]]; then
     pyenv shell $OPY_ENV_NAME
 fi
 
-echo "Python version: $(python --version)"
-echo "Python executable: $(which python)"
-echo "Pyenv version: $(pyenv version | awk '{print($1);}')"
+echo "[OSOM Python Environment]"
+echo "* Python version: $(python --version)"
+echo "* Python executable: $(which python)"
+echo "* Pyenv version: $(pyenv version | awk '{print($1);}')"
 
