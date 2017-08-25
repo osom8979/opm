@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-if [[ -z $1 ]]; then
+if [[ -z $OPY_ENV_PREFIX ]]; then
 OPY_ENV_PREFIX=opy
-else
-OPY_ENV_PREFIX=$1
 fi
 
 PYENV_CMD=`PATH=~/.pyenv/bin/:$PATH which pyenv`
@@ -71,6 +69,9 @@ CURRENT_PYENV_VERSION=`pyenv version | awk '{ print($1); }'`
 #echo "CURRENT_PYENV_VERSION: $CURRENT_PYENV_VERSION"
 if [[ "$CURRENT_PYENV_VERSION" != "$OPY_ENV_NAME" ]]; then
     pyenv shell $OPY_ENV_NAME
+else
+    pyenv activate $OPY_ENV_NAME
+    #pyenv deactivate
 fi
 
 echo "[OSOM Python Environment]"
