@@ -4,6 +4,10 @@ if [[ -z $OPY_ENV_PREFIX ]]; then
 OPY_ENV_PREFIX=opy
 fi
 
+if [[ -z $OPY_PYTHON_VERSION ]]; then
+OPY_PYTHON_VERSION=`python --version 2>&1 | awk '{print($2);}'`
+fi
+
 PYENV_CMD=`PATH=~/.pyenv/bin/:$PATH which pyenv`
 if [[ -z $PYENV_CMD ]]; then
     echo "Not found pyenv command."
@@ -43,7 +47,6 @@ if [[ -z $PYENV_CMD ]]; then
 fi
 
 USER_NAME=`id -u -n`
-OPY_PYTHON_VERSION=3.6.1
 OPY_PYTHON_VERSION_REGEX=`echo $OPY_PYTHON_VERSION | sed 's/\./\\\\./g'`
 OPY_ENV_NAME="__${USER_NAME}_${OPY_ENV_PREFIX}_opy_${OPY_PYTHON_VERSION}__"
 OPY_ENV_NAME_REGEX=`echo $OPY_ENV_NAME | sed 's/\./\\\\./g'`
@@ -55,7 +58,7 @@ eval "$(pyenv virtualenv-init -)"
 FIND_PYTHON_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^${OPY_PYTHON_VERSION_REGEX}$"`
 if [[ -z $FIND_PYTHON_ENV ]]; then
     echo "Not found $OPY_PYTHON_VERSION pyenv."
-    pyenv install $OPY_PYTHON_VERSION
+    PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $OPY_PYTHON_VERSION
 fi
 
 FIND_OPY_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^$OPY_ENV_NAME_REGEX$"`
@@ -75,7 +78,7 @@ else
 fi
 
 echo "[OSOM Python Environment]"
-echo "* Python version: $(python --version)"
+echo "* Python version: $(python --version 2>&1)"
 echo "* Python executable: $(which python)"
 echo "* Pyenv version: $(pyenv version | awk '{print($1);}')"
 
