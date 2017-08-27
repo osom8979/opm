@@ -5,14 +5,16 @@ OPY_ENV_PREFIX=opy
 fi
 
 if [[ -z $OPY_PYTHON_VERSION ]]; then
-OPY_PYTHON_VERSION=`python --version 2>&1 | awk '{print($2);}'`
+#OPY_PYTHON_VERSION=`python --version 2>&1 | awk '{print($2);}'`
+OPY_PYTHON_VERSION=3.6.2
 fi
 
 PYENV_CMD=`PATH=~/.pyenv/bin/:$PATH which pyenv`
+PLATFORM=`platform`
+
 if [[ -z $PYENV_CMD ]]; then
     echo "Not found pyenv command."
 
-    PLATFORM=`platform`
     if [[ "$PLATFORM" == "MacOSX" ]]; then
         BREW_CMD=`which brew`
         if [[ -z $BREW ]]; then
@@ -58,7 +60,11 @@ eval "$(pyenv virtualenv-init -)"
 FIND_PYTHON_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^${OPY_PYTHON_VERSION_REGEX}$"`
 if [[ -z $FIND_PYTHON_ENV ]]; then
     echo "Not found $OPY_PYTHON_VERSION pyenv."
-    PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $OPY_PYTHON_VERSION
+    if [[ "$PLATFORM" == "MacOSX" ]]; then
+        PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install $OPY_PYTHON_VERSION
+    else
+        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $OPY_PYTHON_VERSION
+    fi
 fi
 
 FIND_OPY_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^$OPY_ENV_NAME_REGEX$"`
