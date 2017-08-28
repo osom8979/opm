@@ -17,13 +17,13 @@ if [[ -z $PYENV_CMD ]]; then
 
     if [[ "$PLATFORM" == "MacOSX" ]]; then
         BREW_CMD=`which brew`
-        if [[ -z $BREW ]]; then
+        if [[ -z $BREW_CMD ]]; then
             echo "Not found brew command."
             ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
         fi
 
         BREW_CMD=`which brew`
-        if [[ -z $BREW ]]; then
+        if [[ -z $BREW_CMD ]]; then
             exit 1
         fi
 
