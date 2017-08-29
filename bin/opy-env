@@ -1,5 +1,34 @@
 #!/usr/bin/env bash
 
+# Suggested build environment
+#
+# pyenv will try its best to download and compile the wanted Python version,
+# but sometimes compilation fails because of unmet system dependencies,
+# or compilation succeeds but the new Python version exhibits weird failures at runtime.
+# The following instructions are our recommendations for a sane build environment.
+#
+# Mac OS X:
+#   brew install openssl readline xz
+# Ubuntu/Debian/Mint:
+#   apt-get install -y make build-essential \
+#       libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
+#       wget curl llvm libncurses5-dev xz-utils tk-dev
+# CentOS/Fedora 21 and below:
+#   yum install gcc zlib-devel bzip2 \
+#       bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel
+# Fedora 22 and above:
+#   dnf install -y gcc zlib-devel bzip2 \
+#   bzip2-devel readline-devel sqlite sqlite-devel openssl-devel tk-devel
+# openSUSE:
+#   zypper install gcc automake openssl-devel ncurses-devel readline-devel zlib-devel tk-devel
+# Arch Linux:
+#   pacman -S base-devel openssl zlib
+# Linuxbrew:
+#   brew install bzip2 openssl readline sqlite xz
+#
+# See also:
+#   https://github.com/pyenv/pyenv/wiki
+
 if [[ -z $OPY_ENV_PREFIX ]]; then
 OPY_ENV_PREFIX=opy
 fi
