@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+wget --no-check-certificate -c -m -U -nc -np -r -k -l 0 $@
+
