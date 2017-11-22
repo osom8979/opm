@@ -10,26 +10,30 @@
 	branch = auto
 	interactive = true
 [alias]
-	log10 = log --graph --decorate --oneline -10
-	log20 = log --graph --decorate --oneline -20
-	log30 = log --graph --decorate --oneline -30
-	log40 = log --graph --decorate --oneline -40
-	log50 = log --graph --decorate --oneline -50
+	log10  = log --graph --decorate --oneline -10
+	log20  = log --graph --decorate --oneline -20
+	log30  = log --graph --decorate --oneline -30
+	log40  = log --graph --decorate --oneline -40
+	log50  = log --graph --decorate --oneline -50
 	log10a = log --graph --decorate --oneline --all -10
 	log20a = log --graph --decorate --oneline --all -20
 	log30a = log --graph --decorate --oneline --all -30
 	log40a = log --graph --decorate --oneline --all -40
 	log50a = log --graph --decorate --oneline --all -50
-	logc = log --graph --decorate --oneline
-	logf = log --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s'
-	logw = log --graph --decorate --date=iso --pretty=format:'%h (%an) %ad : %s' --since=1weeks
-	diffc = diff --cached
+	logc   = log --graph --decorate --oneline
+	logf   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s'
+	logfa  = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --all
+	logw   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1weeks
+	logwa  = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1weeks --all
+	logd   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1days
+	logda  = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1days --all
+	diffc  = diff --cached
 	diffcw = diff --cached --word-diff
 	diffwc = diff --cached --word-diff
-	diffw = diff --word-diff
-	showf = show --oneline --name-only
-	count = rev-list --count HEAD
-	st = status
+	diffw  = diff --word-diff
+	showf  = show --oneline --name-only
+	count  = rev-list --count HEAD
+	st     = status
 [push]
 	default = simple
 [http]
