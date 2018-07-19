@@ -121,5 +121,6 @@ fi
 echo "[OSOM Python Environment]"
 echo "* Python version: $(python --version 2>&1)"
 echo "* Python executable: $(which python)"
+echo "* Pyenv which python: $(pyenv which python)"
 echo "* Pyenv version: $(pyenv version | awk '{print($1);}')"
 

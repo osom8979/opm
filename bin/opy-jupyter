@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+. opy-env
+JUPYTER_PATH="$(pyenv which jupyter)"
+"$JUPYTER_PATH" $@
+
