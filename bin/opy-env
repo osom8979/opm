@@ -90,9 +90,15 @@ FIND_PYTHON_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^${
 if [[ -z $FIND_PYTHON_ENV ]]; then
     echo "Not found $OPY_PYTHON_VERSION pyenv."
     if [[ "$PLATFORM" == "MacOSX" ]]; then
-        PYTHON_CONFIGURE_OPTS="--enable-framework" pyenv install $OPY_PYTHON_VERSION
+        echo "Use the homebrew's OpenSSL."
+        echo " * See also: https://github.com/pyenv/pyenv/wiki/Common-build-problems"
+        CFLAGS="-I$(brew --prefix openssl)/include" \
+        LDFLAGS="-L$(brew --prefix openssl)/lib"    \
+        PYTHON_CONFIGURE_OPTS="--enable-framework"  \
+            pyenv install $OPY_PYTHON_VERSION
     else
-        PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install $OPY_PYTHON_VERSION
+        PYTHON_CONFIGURE_OPTS="--enable-shared" \
+            pyenv install $OPY_PYTHON_VERSION
     fi
 fi
 
