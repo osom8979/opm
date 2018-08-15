@@ -1,0 +1,28 @@
+version: '3.3'
+
+services:
+  traefik:
+    image: traefik ## Test version: traefik:1.5.4
+    deploy:
+      replicas: 1
+    ports:
+      - 80:80     ## HTTP (ACME HTTP Challenge & Redirect)
+      - 443:443   ## HTTPS
+      - 8080:8080 ## Traefik web interface.
+    networks:
+      - traefik-net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/traefik/traefik.toml:/traefik.toml
+      - /opt/traefik/acme.json:/acme.json
+    command:
+      - --docker
+      - --docker.swarmMode
+      - --docker.domain=traefik
+      - --docker.watch
+      - --api
+
+networks:
+  traefik-net:
+    external: true
+
