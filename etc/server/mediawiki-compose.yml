@@ -1,0 +1,46 @@
+version: '3.3'
+
+services:
+  mediawiki:
+    image: mediawiki
+    deploy:
+      replicas: 1
+    networks:
+      - traefik-net
+    labels:
+      traefik.port: 80
+      traefik.docker.network: traefik-net
+    volumes:
+      - images-volume:/var/www/html/images
+      # After initial setup, download LocalSettings.php to the same directory as
+      # this yaml and uncomment the following line and use compose to restart
+      # the mediawiki service
+      - /opt/mediawiki/LocalSettings.php:/var/www/html/LocalSettings.php
+
+  database:
+    image: mariadb
+    deploy:
+      replicas: 1
+    networks:
+      - traefik-net
+    labels:
+      traefik.port: 3306
+      traefik.docker.network: traefik-net
+    environment:
+      # @see https://phabricator.wikimedia.org/source/mediawiki/browse/master/includes/DefaultSettings.php
+      MYSQL_DATABASE: my_wiki
+      MYSQL_USER: wikiuser
+      MYSQL_PASSWORD_FILE: /run/secrets/wikiuser-pw
+      #MYSQL_RANDOM_ROOT_PASSWORD: yes
+
+volumes:
+  images-volume:
+
+secrets:
+  wikiuser-pw:
+    external: true
+
+networks:
+  traefik-net:
+    external: true
+
