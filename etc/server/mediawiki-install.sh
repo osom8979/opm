@@ -12,9 +12,9 @@ echo "Frontend Host: $FRONTEND_HOST"
 SECRET_NAME=mediawiki-wikiuser-pw
 SECRET_EXISTS=`docker secret ls | grep $SECRET_NAME`
 if [[ -z $SECRET_EXISTS ]]; then
-    read -sp "Enter the docker-secret ($SECRET_NAME) password: " WIKIUSER_PW
+    read -sp "Enter the docker-secret ($SECRET_NAME) password: " SECRET_VALUE
     echo -e "\nCreate $SECRET_NAME secret"
-    echo "$WIKIUSER_PW" | docker secret create "$SECRET_NAME" -
+    echo "$SECRET_VALUE" | docker secret create "$SECRET_NAME" -
 else
     echo "Exists $SECRET_NAME"
 fi

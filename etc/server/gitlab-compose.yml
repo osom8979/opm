@@ -1,0 +1,45 @@
+version: "3.3"
+
+services:
+  web:
+    image: gitlab/gitlab-ce:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.port=80"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
+    networks:
+      - traefik-net
+    secrets:
+      - gitlab-root-pw
+    volumes:
+      - /opt/gitlab/gitlab.rb:/gitlab.rb
+      - data:/var/opt/gitlab
+      - logs:/var/log/gitlab
+      - config:/etc/gitlab
+    environment:
+      - "GITLAB_OMNIBUS_CONFIG=from_file('/gitlab.rb')"
+
+  #gitlab-runner:
+  #  image: gitlab/gitlab-runner:alpine
+  #  deploy:
+  #    mode: replicated
+  #    replicas: 4
+
+volumes:
+  data:
+  logs:
+  config:
+
+secrets:
+  gitlab-root-pw:
+    external: true
+
+networks:
+  traefik-net:
+    external: true
+
