@@ -37,6 +37,6 @@ onHostRule = true
 
 [[acme.domains]]
 main = "*.@ACME_DOMAIN@"
-#sans = ["@ACME_DOMAIN@"]
+sans = ["@ACME_DOMAIN@"]
 
 
