@@ -1,7 +1,7 @@
 debug = false
 
 logLevel = "ERROR"
-defaultEntryPoints = ["https","http"]
+defaultEntryPoints = ["http", "https"]
 
 [entryPoints]
   [entryPoints.http]
@@ -16,20 +16,27 @@ defaultEntryPoints = ["https","http"]
 
 [docker]
 endpoint = "unix:///var/run/docker.sock"
-domain = "@DOMAIN_NAME@"
+domain = "@ACME_DOMAIN@"
 watch = true
 exposedByDefault = false
+swarmMode = true
+
+[api]
+entryPoint = "traefik"
+dashboard = true
+debug = false
 
 [acme]
-email = "@EMAIL@"
+email = "@ACME_EMAIL@"
 storage = "acme.json"
 entryPoint = "https"
 acmeLogging = true
 onHostRule = true
+  [acme.httpChallenge]
+  entryPoint = "http"
 
 [[acme.domains]]
-  main = "*.@DOMAIN_NAME@"
+main = "*.@ACME_DOMAIN@"
+#sans = ["@ACME_DOMAIN@"]
 
-[acme.httpChallenge]
-  entryPoint = "http"
 
