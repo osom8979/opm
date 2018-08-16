@@ -34,6 +34,7 @@ services:
       - traefik-net
       - net
     volumes:
+      - /opt/mediawiki/backup:/backup
       - images:/var/www/html/images
 
 volumes:
