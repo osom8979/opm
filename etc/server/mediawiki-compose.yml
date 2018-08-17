@@ -16,6 +16,8 @@ services:
       - "MYSQL_USER=wikiuser"
       - "MYSQL_PASSWORD_FILE=/run/secrets/mediawiki-wikiuser-pw"
       - "MYSQL_RANDOM_ROOT_PASSWORD=yes"
+    volumes:
+      - raw_db:/var/lib/mysql
 
   web:
     image: mediawiki
@@ -34,11 +36,19 @@ services:
       - traefik-net
       - net
     volumes:
-      - /opt/mediawiki/backup:/backup
       - images:/var/www/html/images
+      - /opt/mediawiki/backup:/backup
+      - /opt/mediawiki/mediawiki-phpconfig.ini:/usr/local/etc/php/conf.d/mediawiki-phpconfig.ini
+      - /opt/mediawiki/SimpleMathJax:/var/www/html/extensions/SimpleMathJax
+      - /opt/mediawiki/osom-logo.png:/var/www/html/resources/assets/wiki.png
+      # After initial setup, download LocalSettings.php to the same directory as
+      # this yaml and uncomment the following line and use compose to restart
+      # the mediawiki service
+      #- /opt/mediawiki/LocalSettings.php:/var/www/html/LocalSettings.php
 
 volumes:
   images:
+  raw_db:
 
 secrets:
   mediawiki-wikiuser-pw:
