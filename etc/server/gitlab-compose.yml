@@ -14,8 +14,6 @@ services:
         - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
     networks:
       - traefik-net
-    secrets:
-      - gitlab-root-pw
     volumes:
       - /opt/gitlab/gitlab.rb:/gitlab.rb
       - data:/var/opt/gitlab
@@ -34,10 +32,6 @@ volumes:
   data:
   logs:
   config:
-
-secrets:
-  gitlab-root-pw:
-    external: true
 
 networks:
   traefik-net:

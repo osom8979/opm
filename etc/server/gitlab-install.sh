@@ -14,16 +14,6 @@ fi
 export FRONTEND_HOST
 echo "Frontend Host: $FRONTEND_HOST"
 
-SECRET_NAME=gitlab-root-pw
-SECRET_EXISTS=`docker secret ls | grep $SECRET_NAME`
-if [[ -z $SECRET_EXISTS ]]; then
-    read -sp "Enter the docker-secret ($SECRET_NAME) password: " SECRET_VALUE
-    echo -e "\nCreate $SECRET_NAME secret"
-    echo "$SECRET_VALUE" | docker secret create "$SECRET_NAME" -
-else
-    echo "Exists $SECRET_NAME"
-fi
-
 COMPOSE_YML=gitlab-compose.yml
 if [[ ! -f "$COMPOSE_YML" ]]; then
     echo "Not found $COMPOSE_YML file"
