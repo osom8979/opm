@@ -6,7 +6,7 @@ services:
     deploy:
       replicas: 1
       restart_policy:
-        condition: on-failure
+        condition: any
       placement:
         constraints: [node.role==manager]
       labels:
@@ -18,6 +18,10 @@ services:
       - traefik-net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - data:/data
+
+volumes:
+  data:
 
 networks:
   traefik-net:
