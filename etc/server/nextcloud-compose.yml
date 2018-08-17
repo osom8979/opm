@@ -16,6 +16,8 @@ services:
       - "MYSQL_USER=clouduser"
       - "MYSQL_PASSWORD_FILE=/run/secrets/nextcloud-clouduser-pw"
       - "MYSQL_RANDOM_ROOT_PASSWORD=yes"
+    volumes:
+      - raw_db:/var/lib/mysql
 
   web:
     image: nextcloud
@@ -38,6 +40,7 @@ services:
 
 volumes:
   data:
+  raw_db:
 
 secrets:
   nextcloud-clouduser-pw:
