@@ -5,37 +5,6 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
-ACME_DOMAIN=$1
-ACME_EMAIL=$2
-if [[ -z $ACME_DOMAIN || -z $ACME_EMAIL ]]; then
-    echo "Usage: $0 {acme_domain} {acme_email}"
-    exit 1
-fi
-
-echo "ACME Domain: $ACME_DOMAIN"
-echo "ACME E-mail: $ACME_EMAIL"
-
-NET_NAME=traefik-net
-NET_EXISTS=`docker network ls | grep $NET_NAME`
-if [[ -z $NET_EXISTS ]]; then
-    echo "Create $NET_NAME overlay network"
-    docker network create -d overlay "$NET_NAME"
-else
-    echo "Exists $NET_NAME"
-fi
-
-TOML_TEMPLATE=traefik-template.toml
-if [[ ! -f "$TOML_TEMPLATE" ]]; then
-    echo "Not found $TOML_TEMPLATE file"
-    exit 1
-fi
-
-COMPOSE_YML=traefik-compose.yml
-if [[ ! -f "$COMPOSE_YML" ]]; then
-    echo "Not found $COMPOSE_YML file"
-    exit 1
-fi
-
 OPT_DIR=/opt/traefik
 if [[ -d "$OPT_DIR" ]]; then
     echo "Exists $OPT_DIR directory"
@@ -44,12 +13,34 @@ else
     mkdir -p "$OPT_DIR"
 fi
 
+TOML_TEMPLATE=traefik-template.toml
 TOML_PATH="$OPT_DIR/traefik.toml"
 if [[ -f "$TOML_PATH" ]]; then
     echo "Exists $TOML_PATH file"
 else
+    echo "Not found $TOML_PATH file"
+
+    ACME_DOMAIN=$1
+    ACME_EMAIL=$2
+    if [[ -z $ACME_DOMAIN || -z $ACME_EMAIL ]]; then
+        echo "Usage: $0 {acme_domain} {acme_email}"
+        exit 1
+    fi
+
+    echo "ACME Domain: $ACME_DOMAIN"
+    echo "ACME E-mail: $ACME_EMAIL"
+
     echo "Create $TOML_PATH file"
     cat "$TOML_TEMPLATE" | sed -e "s/@ACME_DOMAIN@/$ACME_DOMAIN/g" -e "s/@ACME_EMAIL@/$ACME_EMAIL/g" > "$TOML_PATH"
+fi
+
+NET_NAME=traefik-net
+NET_EXISTS=`docker network ls | grep $NET_NAME`
+if [[ -z $NET_EXISTS ]]; then
+    echo "Create $NET_NAME overlay network"
+    docker network create -d overlay "$NET_NAME"
+else
+    echo "Exists $NET_NAME"
 fi
 
 ACME_PATH="$OPT_DIR/acme.json"
@@ -63,8 +54,10 @@ else
 fi
 
 STACK_NAME=traefik
+COMPOSE_YML=traefik-compose.yml
 echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
 
+echo "Traefik web: http://localhost:10000/"
 echo "Done ($?)."
 
