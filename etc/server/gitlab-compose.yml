@@ -23,18 +23,46 @@ services:
     environment:
       - "GITLAB_OMNIBUS_CONFIG=from_file('/gitlab.rb')"
 
-  runner:
+  #runner:
+  #  image: gitlab/gitlab-runner
+  #  deploy:
+  #    mode: replicated
+  #    replicas: 4
+  #    placement:
+  #      constraints: [node.role == worker]
+
+  runner1: &default_runner
     image: gitlab/gitlab-runner
     deploy:
-      mode: replicated
-      replicas: 4
-      #placement:
-      #  constraints: [node.role == worker]
+      replicas: 1
+      restart_policy:
+        condition: any
+    volumes:
+      - runner1_config:/etc/gitlab-runner
+
+  runner2:
+    <<: *default_runner
+    volumes:
+      - runner2_config:/etc/gitlab-runner
+
+  runner3:
+    <<: *default_runner
+    volumes:
+      - runner3_config:/etc/gitlab-runner
+
+  runner4:
+    <<: *default_runner
+    volumes:
+      - runner4_config:/etc/gitlab-runner
 
 volumes:
   data:
   logs:
   config:
+  runner1_config:
+  runner2_config:
+  runner3_config:
+  runner4_config:
 
 networks:
   traefik-net:
