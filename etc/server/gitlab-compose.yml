@@ -14,6 +14,7 @@ services:
         - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
     networks:
       - traefik-net
+      - mailhog-net
     volumes:
       - /opt/gitlab/gitlab.rb:/gitlab.rb
       - data:/var/opt/gitlab
@@ -22,11 +23,13 @@ services:
     environment:
       - "GITLAB_OMNIBUS_CONFIG=from_file('/gitlab.rb')"
 
-  #gitlab-runner:
-  #  image: gitlab/gitlab-runner:alpine
-  #  deploy:
-  #    mode: replicated
-  #    replicas: 4
+  runner:
+    image: gitlab/gitlab-runner
+    deploy:
+      mode: replicated
+      replicas: 4
+      #placement:
+      #  constraints: [node.role == worker]
 
 volumes:
   data:
@@ -35,5 +38,7 @@ volumes:
 
 networks:
   traefik-net:
+    external: true
+  mailhog-net:
     external: true
 
