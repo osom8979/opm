@@ -15,7 +15,8 @@ echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
 
 echo "MailHog web: http://localhost:10002/"
-echo "Local MailHog SMTP: $NET_NAME:1025"
-echo "Local MailHog HTTP: $NET_NAME:8025"
+echo "  Local MailHog network: $NET_NAME"
+echo "  Local MailHog SMTP: ${STACK_NAME}_api:1025"
+echo "  Local MailHog HTTP: ${STACK_NAME}_api:8025"
 echo "Done ($?)."
 
