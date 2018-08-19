@@ -1,0 +1,28 @@
+version: '3.3'
+
+services:
+  api:
+    image: sonatype/nexus3
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      labels:
+        - "traefik.enable=true"
+        - "traefik.port=8081"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
+    networks:
+      - traefik-net
+    volumes:
+      - data:/nexus-data
+
+volumes:
+  data:
+
+networks:
+  traefik-net:
+    external: true
+  net:
+    driver: overlay
+
