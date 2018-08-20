@@ -1,0 +1,27 @@
+version: '3.3'
+
+services:
+  api:
+    image: onlyoffice/documentserver
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - onlyoffice-net
+    volumes:
+      - logs:/var/log/onlyoffice
+      - data:/var/www/onlyoffice/Data
+      #- /opt/onlyoffice:/var/www/onlyoffice/Data
+    #ports:
+    #  - 10010:80
+    #  - 10011:443
+
+volumes:
+  logs:
+  data:
+
+networks:
+  onlyoffice-net:
+    external: true
+

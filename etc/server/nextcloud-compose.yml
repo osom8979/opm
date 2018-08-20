@@ -35,6 +35,7 @@ services:
     networks:
       - traefik-net
       - net
+      #- onlyoffice-net
     volumes:
       - data:/var/www/html
 
@@ -49,6 +50,8 @@ secrets:
 networks:
   traefik-net:
     external: true
+  #onlyoffice-net:
+  #  external: true
   net:
     driver: overlay
 
