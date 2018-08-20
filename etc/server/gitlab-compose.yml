@@ -38,21 +38,25 @@ services:
       restart_policy:
         condition: any
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - runner1_config:/etc/gitlab-runner
 
   runner2:
     <<: *default_runner
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - runner2_config:/etc/gitlab-runner
 
   runner3:
     <<: *default_runner
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - runner3_config:/etc/gitlab-runner
 
   runner4:
     <<: *default_runner
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - runner4_config:/etc/gitlab-runner
 
 volumes:
