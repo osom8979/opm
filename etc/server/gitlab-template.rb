@@ -16,6 +16,6 @@ gitlab_rails['smtp_force_ssl'] = false
 
 # If your SMTP server does not like the default 'From: gitlab@localhost' you
 # can change the 'From' with this setting.
-gitlab_rails['gitlab_email_from'] = 'gitlab@localhost'
-gitlab_rails['gitlab_email_reply_to'] = 'noreply@localhost'
+gitlab_rails['gitlab_email_from'] = 'gitlab@@FRONTEND_HOST@'
+gitlab_rails['gitlab_email_reply_to'] = 'noreply@@FRONTEND_HOST@'
 
