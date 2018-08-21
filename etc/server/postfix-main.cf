@@ -1,0 +1,3 @@
+myhostname = @HOST_NAME@
+mydomain = @DOMAIN_NAME@
+net_interfaces = all

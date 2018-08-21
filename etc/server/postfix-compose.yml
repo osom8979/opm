@@ -1,0 +1,19 @@
+version: '3.3'
+
+services:
+  api:
+    image: instrumentisto/postfix
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - postfix-net
+    volumes:
+      - /opt/postfix/main.cf:/etc/postfix/main.cf
+
+networks:
+  postfix-net:
+    external: true
+
+

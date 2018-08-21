@@ -14,7 +14,7 @@ services:
         - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
     networks:
       - traefik-net
-      - mailhog-net
+      - postfix-net
     volumes:
       - /opt/gitlab/gitlab.rb:/gitlab.rb
       - data:/var/opt/gitlab
@@ -71,6 +71,6 @@ volumes:
 networks:
   traefik-net:
     external: true
-  mailhog-net:
+  postfix-net:
     external: true
 
