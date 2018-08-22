@@ -8,14 +8,24 @@ services:
       restart_policy:
         condition: any
     networks:
-      - onlyoffice-net
+      - net
     volumes:
       - logs:/var/log/onlyoffice
       - data:/var/www/onlyoffice/Data
-      #- /opt/onlyoffice:/var/www/onlyoffice/Data
-    #ports:
-    #  - 10010:80
-    #  - 10011:443
+
+  web:
+    image: nginx
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - onlyoffice-net
+      - net
+    volumes:
+      - /opt/onlyoffice/certs/onlyoffice.key:/etc/nginx/conf.d/key.pem
+      - /opt/onlyoffice/certs/onlyoffice.crt:/etc/nginx/conf.d/cert.pem
+      - /opt/onlyoffice/proxy_ssl.conf:/etc/nginx/conf.d/proxy_ssl.conf
 
 volumes:
   logs:
@@ -24,4 +34,6 @@ volumes:
 networks:
   onlyoffice-net:
     external: true
+  net:
+    driver: overlay
 
