@@ -1,0 +1,160 @@
+#!/bin/bash
+
+if [[ -z $TPARTY_HOME ]]; then
+    echo 'Not defined TPARTY_HOME variable.'
+    exit 1
+fi
+
+NAME=$1
+URL=$2
+MD5=$3
+
+TEMP_DIR=$4
+DEST_NAME=$5
+WORK_NAME=$6
+ALREADY=$7
+LOG_PATH=$8
+
+LINUX_FUNC=$9
+MACOSX_FUNC=${10}
+WINDOWS_FUNC=${11}
+
+HELP="general-build {name} {url} {md5}"
+HELP="$HELP {temp} {dest} {work} {already} {log}"
+HELP="$HELP {osx} {linux} {windows}"
+
+WORKING="$PWD"
+DEST="$TEMP_DIR/$DEST_NAME"
+WORK_DIR="$TEMP_DIR/$WORK_NAME"
+PLATFORM=`platform`
+
+## ---------------
+## Bash functions.
+## ---------------
+
+function stdout {
+    echo " - $@"
+}
+
+function stderr {
+    if [[ $PLATFORM == 'Linux' ]]; then
+        echo -e "\e[31m - $@\e[0m" 1>&2
+    else
+        echo " - $@" 1>&2
+    fi
+}
+
+function testCommand {
+    local command=$1
+    if [[ $(test-command $command) != 'True' ]]; then
+        stderr "Not found $command command."
+        exit 1
+    fi
+}
+
+## -------
+## Exists.
+## -------
+
+if [[ -z $WINDOWS_FUNC ]]; then
+    stderr "$HELP"
+    exit 1
+fi
+
+if [[ ! -d "$TEMP_DIR" ]]; then
+    mkdir -p "$TEMP_DIR"
+fi
+
+testCommand make
+testCommand curl
+testCommand gcc
+testCommand tar
+testCommand unzip
+
+## ------------
+## Entry-point.
+## ------------
+
+## ALREADY:
+if [[ -f "$ALREADY" ]]; then
+    stdout "Already installed ($ALREADY)."
+    return 0
+fi
+
+## Check to downloaded file.
+if [[ -f "$DEST" && "$MD5" != "" ]]; then
+    if [[ $(checksum "$DEST" "$MD5") != 'True' ]]; then
+        stdout "Removing inaccurate file: $DEST"
+        rm -f "$DEST"
+    fi
+fi
+
+## DOWNLOAD:
+if [[ -f "$DEST" ]]; then
+    stdout "Skip download $NAME"
+else
+    stdout "Download $NAME"
+    curl -k -o "$DEST" "$URL"
+
+    DOWNLOAD_RESULT=$?
+    if [[ $DOWNLOAD_RESULT != 0 ]]; then
+        stderr 'Download error.'
+        exit 1
+    fi
+fi
+
+## CHECKSUM:
+if [[ "$MD5" == "" ]]; then
+    stdout "Skip checksum."
+else
+    CHECKSUM_RESULT=`checksum "$DEST" "$MD5"`
+    stdout "Checksum result: $CHECKSUM_RESULT"
+
+    if [[ $CHECKSUM_RESULT != 'True' ]]; then
+        stderr 'Checksum error.'
+        stderr "Remove: $DEST"
+        rm -f "$DEST"
+        exit 1
+    fi
+fi
+
+## EXTRACT:
+if [[ -d "$WORK_DIR" ]]; then
+    stdout "Exists $WORK_DIR"
+    stdout "Skip extract."
+else
+    stdout "Extract $DEST"
+    extract "$DEST" "$TEMP_DIR"
+    if [[ ! -d "$WORK_DIR" ]]; then
+        mkdir -p "$WORK_DIR"
+    fi
+fi
+
+## BUILD:
+stdout "Start build."
+stdout "Log file: $LOG_PATH"
+stdout "Working: $WORK_DIR"
+stdout "Platform: $PLATFORM"
+
+cd "$WORK_DIR"
+
+case "$PLATFORM" in
+Linux)
+    $LINUX_FUNC
+    ;;
+MacOSX)
+    $MACOSX_FUNC
+    ;;
+Windows)
+    $WINDOWS_FUNC
+    ;;
+*)
+    stderr "Unknown platform."
+    exit 1
+    ;;
+esac
+
+## END:
+cd "$WORKING"
+stdout 'Done.'
+

@@ -1,0 +1,35 @@
+#!/bin/bash
+
+case "$(uname -s)" in
+Darwin)
+    MD5_CMD='md5 -r'
+    ;;
+#Linux)
+#CYGWIN*|MINGW*|MSYS*)
+*)
+    MD5_CMD='md5sum'
+    ;;
+esac
+
+FILE=$1
+MD5=$2
+
+if [[ -z $FILE ]]; then
+    echo 'checksum {path} {optional:md5}'
+    exit 1
+fi
+
+MD5_RESULT=`$MD5_CMD $FILE`
+CHECKSUM=`echo $MD5_RESULT | awk '{print($1);}'`
+
+if [[ -z "$MD5" ]]; then
+    echo $CHECKSUM
+    exit 0
+elif [[ "$CHECKSUM" == "$MD5" ]]; then
+    echo 'True'
+    exit 0
+else
+    echo 'False'
+    exit 1
+fi
+

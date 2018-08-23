@@ -1,0 +1,12 @@
+diff -ruN protobuf-3.0.0-beta-2/autogen.sh protobuf-3.0.0-beta-2-fix/autogen.sh
+--- protobuf-3.0.0-beta-2/autogen.sh	2015-12-31 06:21:46 +0900
++++ protobuf-3.0.0-beta-2-fix/autogen.sh	2016-03-28 19:28:22 +0900
+@@ -31,7 +31,7 @@
+ # directory is set up as an SVN external.
+ if test ! -e gmock; then
+   echo "Google Mock not present.  Fetching gmock-1.7.0 from the web..."
+-  curl $curlopts -O https://googlemock.googlecode.com/files/gmock-1.7.0.zip
++  curl $curlopts -k -O https://googlemock.googlecode.com/files/gmock-1.7.0.zip
+   unzip -q gmock-1.7.0.zip
+   rm gmock-1.7.0.zip
+   mv gmock-1.7.0 gmock

@@ -1,0 +1,43 @@
+#!/bin/bash
+
+FILE=$1
+DEST=$2
+
+if [[ -z "$DEST" ]]; then
+    echo 'extract {path} {dest}'
+    exit 1
+fi
+
+if [[ ! -f "$FILE" ]]; then
+    echo "Not found $FILE file."
+    exit 1
+fi
+
+if [[ ! -d "$DEST" ]]; then
+    mkdir -p "$DEST"
+fi
+
+function getFileExtension {
+    local name=$1
+    echo "${name#${name%.*}}"
+}
+
+function getFileName {
+    local name=$1
+    local ext=`getFileExtension $name`
+    echo "${name%${ext}}"
+}
+
+EXT_ZIP='.zip'
+FILE_EXT=`getFileExtension $FILE`
+FILE_NAME=`getFileName $FILE`
+
+case $FILE_EXT in
+$EXT_ZIP)
+    unzip -qo "$FILE" -d "$DEST"
+    ;;
+*)
+    tar -xf "$FILE" -C "$DEST"
+    ;;
+esac
+

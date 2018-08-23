@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [[ -z $TPARTY_HOME ]]; then
+    echo 'Not defined TPARTY_HOME variable.'
+    exit 1
+fi
+
+ARG_DEPENDENCIES=$1
+
+for cursor in ${ARG_DEPENDENCIES//:/$'\n'}; do
+    cursor_absolute="$TPARTY_HOME/library.d/$cursor"
+    if [[ -f "$cursor_absolute" ]]; then
+        echo "Dependency: $cursor"
+        source $cursor_absolute
+    else
+        echo "Not found $cursor_absolute"
+    fi
+done
+

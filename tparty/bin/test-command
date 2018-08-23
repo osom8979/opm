@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if ! which $1 &> /dev/null; then
+    echo 'False'
+    exit 1
+else
+    echo 'True'
+    exit 0
+fi
+
