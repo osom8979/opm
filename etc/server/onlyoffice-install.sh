@@ -98,5 +98,6 @@ COMPOSE_YML=onlyoffice-compose.yml
 echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
 
+echo "Document server host: https://${STACK_NAME}_api"
 echo "Done ($?)."
 
