@@ -7,17 +7,23 @@ services:
       replicas: 1
       restart_policy:
         condition: any
+      labels:
+        - "traefik.enable=true"
+        - "traefik.port=80"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
     stdin_open: true
     networks:
-      - onlyoffice-net
+      - traefik-net
     volumes:
       - logs:/var/log/onlyoffice
-      - /opt/onlyoffice:/var/www/onlyoffice/Data
+      - data:/var/www/onlyoffice/Data
 
 volumes:
   logs:
+  data:
 
 networks:
-  onlyoffice-net:
+  traefik-net:
     external: true
 
