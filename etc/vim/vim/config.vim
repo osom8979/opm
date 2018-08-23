@@ -97,6 +97,11 @@ let NERDTreeIgnore  = ['^\..*', '^\.$', '^\.\.$', '\~$']
 let NERDTreeIgnore += ['.*\.[oO]$', '.*\.[eE][xX][eE]$']
 let NERDTreeIgnore += ['.*\.pyc']
 
+" NERDCommenter
+let g:NERDDefaultAlign = 'left'
+let g:NERDCommentEmptyLines = 1
+let g:NERDTrimTrailingWhitespace = 1
+
 " vim-airline
 let g:airline_theme='dark'
 let g:airline_powerline_fonts = 0

@@ -40,7 +40,7 @@ NeoBundle 'kien/ctrlp.vim'             " full path fuzzy file, buffer, mru, tag,
 NeoBundle 'majutsushi/tagbar'          " tagbar window.
 NeoBundle 'easymotion/vim-easymotion'  " motions on speed.
 NeoBundle 'kshenoy/vim-signature'      " display marks.
-"NeoBundle 'scrooloose/nerdcommenter'  " language dependent commenter.
+NeoBundle 'scrooloose/nerdcommenter'   " language dependent commenter.
 "NeoBundle 'tpope/vim-fugitive'        " git wrapper.
 "NeoBundle 'edkolev/promptline.vim'    " generate a fast shell prompt.
 "NeoBundle 'tpope/vim-surround'        " quoting/parenthesizing made simple.
