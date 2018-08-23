@@ -1,0 +1,22 @@
+version: '3.3'
+
+services:
+  web:
+    image: rawmind/cloud9-sdk:0.3.0-2
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    ports:
+      - ${PUBLISH_PORT}:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${DOCKER_PATH}:/bin/docker
+      - /opt/c9/workspace:/workspace
+    command: ["--listen", "0.0.0.0",
+              "--port", "8080",
+              "-w", "/workspace",
+              "--collab",
+              "--auth", "${CLOUD9_USER}:${CLOUD9_PASS}"]
+
+
