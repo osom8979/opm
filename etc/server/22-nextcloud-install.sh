@@ -19,20 +19,16 @@ else
     echo "Exists $SECRET_NAME"
 fi
 
-COMPOSE_YML=nextcloud-compose.yml
-if [[ ! -f "$COMPOSE_YML" ]]; then
-    echo "Not found $COMPOSE_YML file"
-    exit 1
-fi
-
 STACK_NAME=nextcloud
+COMPOSE_YML=22-nextcloud-compose.yml
 echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
+CODE=$?
 
 echo "Go to page $FRONTEND_HOST and continue setting."
 echo "  Database type: MySQL"
 echo "  Database host: nextcloud_db"
 echo "  Database name: nextcloud"
 echo "  Database username: clouduser"
-echo "Done ($?)."
+echo "Done ($CODE)."
 

@@ -29,8 +29,8 @@ services:
         condition: any
       labels:
         - "traefik.enable=true"
-        - "traefik.port=80"
         - "traefik.docker.network=traefik-net"
+        - "traefik.port=80"
         - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
     networks:
       - traefik-net
