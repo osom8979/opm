@@ -7,12 +7,26 @@ services:
       replicas: 1
       restart_policy:
         condition: any
-    ports:
-      - 10003:8081
-      - 10004:8082
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.web.port=8081"
+        - "traefik.web.frontend.rule=Host:${FRONTEND_HOST:?err}"
+        - "traefik.web.frontend.whiteList.sourceRange=192.168.1.0/24"
+        - "traefik.web.frontend.whiteList.useXForwardedFor=true"
+        - "traefik.docker.port=15000"
+        - "traefik.docker.frontend.rule=Host:${DOCKER_FRONTEND_HOST:?err}"
+        - "traefik.docker.frontend.whiteList.sourceRange=192.168.1.0/24"
+        - "traefik.docker.frontend.whiteList.useXForwardedFor=true"
+    networks:
+      - traefik-net
     volumes:
       - data:/nexus-data
 
 volumes:
   data:
+
+networks:
+  traefik-net:
+    external: true
 
