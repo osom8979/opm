@@ -7,10 +7,12 @@ services:
       replicas: 1
       restart_policy:
         condition: any
+      placement:
+        constraints: [node.role==manager]
     networks:
       - postfix-net
     volumes:
-      - /opt/postfix/main.cf:/etc/postfix/main.cf
+      - /opt/opm/postfix/main.cf:/etc/postfix/main.cf
 
 networks:
   postfix-net:

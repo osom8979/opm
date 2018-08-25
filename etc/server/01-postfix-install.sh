@@ -5,7 +5,7 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
-OPT_DIR=/opt/postfix
+OPT_DIR=/opt/opm/postfix
 if [[ -d "$OPT_DIR" ]]; then
     echo "Exists $OPT_DIR directory"
 else
@@ -13,7 +13,7 @@ else
     mkdir -p "$OPT_DIR"
 fi
 
-MAIN_CF_TEMPLATE=postfix-main.cf
+MAIN_CF_TEMPLATE=01-postfix-main.cf
 MAIN_CF_PATH="$OPT_DIR/main.cf"
 if [[ -f "$MAIN_CF_PATH" ]]; then
     echo "Exists $MAIN_CF_PATH file"
@@ -44,11 +44,12 @@ else
 fi
 
 STACK_NAME=postfix
-COMPOSE_YML=postfix-compose.yml
+COMPOSE_YML=01-postfix-compose.yml
 echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
+CODE=$?
 
 echo "Local Postfix network: $NET_NAME"
 echo "Local Postfix host: ${STACK_NAME}_api"
-echo "Done ($?)."
+echo "Done ($CODE)."
 
