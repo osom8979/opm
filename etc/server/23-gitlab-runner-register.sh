@@ -27,6 +27,7 @@ docker exec $CONTAINER_ID gitlab-runner register \
     --tag-list "$TAG_LIST" \
     --run-untagged \
     --locked="false"
+CODE=$?
 
-echo "Done ($?)."
+echo "Done ($CODE)."
 

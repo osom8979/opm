@@ -14,13 +14,7 @@ fi
 export FRONTEND_HOST
 echo "Frontend Host: $FRONTEND_HOST"
 
-COMPOSE_YML=gitlab-compose.yml
-if [[ ! -f "$COMPOSE_YML" ]]; then
-    echo "Not found $COMPOSE_YML file"
-    exit 1
-fi
-
-OPT_DIR=/opt/gitlab
+OPT_DIR=/opt/opm/gitlab
 if [[ -d "$OPT_DIR" ]]; then
     echo "Exists $OPT_DIR directory"
 else
@@ -28,7 +22,7 @@ else
     mkdir -p "$OPT_DIR"
 fi
 
-CONFIG_TEMPLATE=gitlab-template.rb
+CONFIG_TEMPLATE=23-gitlab-template.rb
 CONFIG_PATH="$OPT_DIR/gitlab.rb"
 if [[ -f "$CONFIG_PATH" ]]; then
     echo "Exists $CONFIG_PATH file"
@@ -38,10 +32,12 @@ else
 fi
 
 STACK_NAME=gitlab
+COMPOSE_YML=23-gitlab-compose.yml
 echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
+CODE=$?
 
 echo "Go to page $FRONTEND_HOST and continue setting."
 echo "  Admin user name: root"
-echo "Done ($?)."
+echo "Done ($CODE)."
 

@@ -16,10 +16,9 @@ echo "Tag-list: $TAG_LIST"
 echo "Docker image: $DOCKER_IMAGE"
 
 CONTAINER_LIST=`docker ps --all | grep gitlab_runner | awk '{printf("%s\n", $1);}'`
-REGISTER_SCRIPT=gitlab-runner-register.sh
+REGISTER_SCRIPT=23-gitlab-runner-register.sh
 
 for i in $CONTAINER_LIST; do
-    #echo " ** Run docker image: $i"
     "$SHELL" "$REGISTER_SCRIPT" "$i" "$URL" "$REGISTRATION_TOKEN" "$TAG_LIST" "$DOCKER_IMAGE"
 done
 
