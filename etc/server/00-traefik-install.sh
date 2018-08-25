@@ -31,6 +31,9 @@ else
     touch "$ACME_PATH" && chmod 600 "$ACME_PATH"
 fi
 
+PUBLISH_PORT=10000
+export PUBLISH_PORT
+
 TOML_TEMPLATE=00-traefik-template.toml
 TOML_PATH="$OPT_DIR/traefik.toml"
 if [[ -f "$TOML_PATH" ]]; then
@@ -40,9 +43,15 @@ else
 
     ACME_DOMAIN=$1
     ACME_EMAIL=$2
+    WEB_PORT=$3
+
     if [[ -z $ACME_DOMAIN || -z $ACME_EMAIL ]]; then
-        echo "Usage: $0 {acme_domain} {acme_email}"
+        echo "Usage: $0 {acme_domain} {acme_email} {publish_port:10000}"
         exit 1
+    fi
+
+    if [[ ! -z $WEB_PORT ]]; then
+        PUBLISH_PORT=$WEB_PORT
     fi
 
     echo "ACME Domain: $ACME_DOMAIN"
@@ -67,6 +76,6 @@ echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
 CODE=$?
 
-echo "Traefik web: http://localhost:10000/"
+echo "Traefik web: http://localhost:$PUBLISH_PORT/"
 echo "Done ($CODE)."
 

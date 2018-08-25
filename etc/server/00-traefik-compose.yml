@@ -10,14 +10,14 @@ services:
       placement:
         constraints: [node.role==manager]
     ports:
-      - 80:80      ## HTTP (ACME HTTP Challenge & Redirect)
-      - 443:443    ## HTTPS
-      - 10000:8080 ## Traefik web interface.
+      - 80:80   ## HTTP (ACME HTTP Challenge & Redirect)
+      - 443:443 ## HTTPS
+      - "${PUBLISH_PORT:?err}:8080" ## Traefik web interface.
     networks:
       - traefik-net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /opt/opm/traefik/log:/traefik-log
+      #- /opt/opm/traefik/log:/traefik-log
       - /opt/opm/traefik/traefik.toml:/traefik.toml
       - /opt/opm/traefik/acme.json:/acme.json
 
