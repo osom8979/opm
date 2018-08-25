@@ -18,11 +18,6 @@ else
     mkdir -p "$WORKSPACE"
 fi
 
-echo "Workspace: $WORKSPACE"
-echo "User: $CLOUD9_USER"
-echo "Password: $CLOUD9_PASS"
-echo "Port: $PUBLISH_PORT"
-
 docker run -d \
     -v $WORKSPACE:/workspace \
     -v /var/run/docker.sock:/var/run/docker.sock \
@@ -30,6 +25,11 @@ docker run -d \
     -p $PUBLISH_PORT:8080 \
     damnhandy/cloud9-sdk \
     --listen "0.0.0.0" -p "8080" -w "/workspace" -a "${CLOUD9_USER}:${CLOUD9_PASS}"
+CODE=$?
 
-echo "Done ($?)."
+echo "Web url: http://localhost:$PUBLISH_PORT"
+echo "  Workspace: $WORKSPACE"
+echo "  Username: $CLOUD9_USER"
+echo "  Password: $CLOUD9_PASS"
+echo "Done ($CODE)."
 
