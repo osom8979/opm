@@ -5,7 +5,7 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
-OPT_DIR=/opt/traefik
+OPT_DIR=/opt/opm/traefik
 if [[ -d "$OPT_DIR" ]]; then
     echo "Exists $OPT_DIR directory"
 else
@@ -13,7 +13,25 @@ else
     mkdir -p "$OPT_DIR"
 fi
 
-TOML_TEMPLATE=traefik-template.toml
+LOG_DIR=$OPT_DIR/log
+if [[ -d "$LOG_DIR" ]]; then
+    echo "Exists $LOG_DIR directory"
+else
+    echo "Create $LOG_DIR directory"
+    mkdir -p "$LOG_DIR"
+fi
+
+ACME_PATH=$OPT_DIR/acme.json
+if [[ -f "$ACME_PATH" ]]; then
+    echo "Exists $ACME_PATH file"
+else
+    echo "Create $ACME_PATH file"
+    ## Error starting provider *acme.Provider: unable to get ACME account:
+    ## permissions 644 for acme.json are too open, please use 600
+    touch "$ACME_PATH" && chmod 600 "$ACME_PATH"
+fi
+
+TOML_TEMPLATE=00-traefik-template.toml
 TOML_PATH="$OPT_DIR/traefik.toml"
 if [[ -f "$TOML_PATH" ]]; then
     echo "Exists $TOML_PATH file"
@@ -43,21 +61,12 @@ else
     echo "Exists $NET_NAME"
 fi
 
-ACME_PATH="$OPT_DIR/acme.json"
-if [[ -f "$ACME_PATH" ]]; then
-    echo "Exists $ACME_PATH file"
-else
-    echo "Create $ACME_PATH file"
-    ## Error starting provider *acme.Provider: unable to get ACME account:
-    ## permissions 644 for acme.json are too open, please use 600
-    touch "$ACME_PATH" && chmod 600 "$ACME_PATH"
-fi
-
 STACK_NAME=traefik
-COMPOSE_YML=traefik-compose.yml
+COMPOSE_YML=00-traefik-compose.yml
 echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
+CODE=$?
 
 echo "Traefik web: http://localhost:10000/"
-echo "Done ($?)."
+echo "Done ($CODE)."
 
