@@ -9,23 +9,12 @@ services:
         condition: any
       placement:
         constraints: [node.role==manager]
-      #labels:
-      #  - "traefik.enable=true"
-      #  - "traefik.port=9000"
-      #  - "traefik.docker.network=traefik-net"
-      #  - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
     ports:
-      - 10001:9000
-    #networks:
-    #  - traefik-net
+      - "${PUBLISH_PORT:?err}:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - data:/data
 
 volumes:
   data:
-
-#networks:
-#  traefik-net:
-#    external: true
 
