@@ -5,7 +5,7 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
-OPT_DIR=/opt/mediawiki
+OPT_DIR=/opt/opm/mediawiki
 if [[ -d "$OPT_DIR" ]]; then
     echo "Exists $OPT_DIR directory"
 else
@@ -62,6 +62,7 @@ docker service update \
     --mount-add \
     "type=bind,source=$LOCALSETTINGS_PATH,target=/var/www/html/LocalSettings.php" \
     "$CONTAINER_ID"
+CODE=$?
 
-echo "Done ($?)."
+echo "Done ($CODE)."
 

@@ -24,7 +24,7 @@ else
     echo "Exists $SECRET_NAME"
 fi
 
-OPT_DIR=/opt/mediawiki
+OPT_DIR=/opt/opm/mediawiki
 if [[ -d "$OPT_DIR" ]]; then
     echo "Exists $OPT_DIR directory"
 else
@@ -40,7 +40,7 @@ else
     mkdir -p "$BACKUP_DIR"
 fi
 
-BACKUP_TEMPLATE=mediawiki-backup.sh
+BACKUP_TEMPLATE=20-mediawiki-backup.sh
 BACKUP_SCRIPT_PATH=$BACKUP_DIR/mediawiki-backup.sh
 if [[ -f "$BACKUP_SCRIPT_PATH" ]]; then
     echo "Exists $BACKUP_SCRIPT_PATH file"
@@ -49,7 +49,7 @@ else
     cp "$BACKUP_TEMPLATE" "$BACKUP_SCRIPT_PATH" && chmod +x "$BACKUP_SCRIPT_PATH"
 fi
 
-IMPORT_TEMPLATE=mediawiki-import.sh
+IMPORT_TEMPLATE=20-mediawiki-import.sh
 IMPORT_SCRIPT_PATH=$BACKUP_DIR/mediawiki-import.sh
 if [[ -f "$IMPORT_SCRIPT_PATH" ]]; then
     echo "Exists $IMPORT_SCRIPT_PATH file"
@@ -58,7 +58,7 @@ else
     cp "$IMPORT_TEMPLATE" "$IMPORT_SCRIPT_PATH" && chmod +x "$IMPORT_SCRIPT_PATH"
 fi
 
-PHPCONFIG_TEMPLATE=mediawiki-phpconfig.ini
+PHPCONFIG_TEMPLATE=20-mediawiki-phpconfig.ini
 PHPCONFIG_INI_PATH=$OPT_DIR/mediawiki-phpconfig.ini
 if [[ -f "$PHPCONFIG_INI_PATH" ]]; then
     echo "Exists $PHPCONFIG_INI_PATH file"
@@ -67,13 +67,8 @@ else
     cp "$PHPCONFIG_TEMPLATE" "$PHPCONFIG_INI_PATH"
 fi
 
-COMPOSE_YML=mediawiki-compose.yml
-if [[ ! -f "$COMPOSE_YML" ]]; then
-    echo "Not found $COMPOSE_YML file"
-    exit 1
-fi
 
-LOGO_NAME=osom-logo.png
+LOGO_NAME=20-mediawiki-logo.png
 LOGO_PATH=$OPT_DIR/osom-logo.png
 if [[ -f "$LOGO_PATH" ]]; then
     echo "Exists $LOGO_PATH file"
@@ -88,8 +83,10 @@ if [[ ! -d $SIMPLEMATHJAX_DIR ]]; then
 fi
 
 STACK_NAME=mediawiki
+COMPOSE_YML=20-mediawiki-compose.yml
 echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
+CODE=$?
 
 echo "Go to page $FRONTEND_HOST and continue setting."
 echo '  Database type: MySQL'
@@ -104,5 +101,5 @@ echo '   - Renameuser'
 echo '   - SyntaxHighlight_GeSHi'
 echo '   - WikiEditor'
 echo '   - SimpleMathJax (https://github.com/jmnote/SimpleMathJax.git)'
-echo "Done ($?)."
+echo "Done ($CODE)."
 

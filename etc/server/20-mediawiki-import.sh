@@ -33,6 +33,5 @@ chown -R www-data:www-data "$IMAGES_DIR"
 echo "Setting:"
 echo "UPDATE [[MediaWiki:Sidebar]]"
 echo "REDIRECT [[Osom:MainPage]]"
-echo "Done ($?)."
-
+echo "Done."
 
