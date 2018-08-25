@@ -1,0 +1,18 @@
+version: '3.3'
+
+services:
+  api:
+    image: sonatype/nexus3
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    ports:
+      - "${WEB_PORT:?err}:8081"
+      - "${EXT_PORT:?err}:8082"
+    volumes:
+      - data:/nexus-data
+
+volumes:
+  data:
+
