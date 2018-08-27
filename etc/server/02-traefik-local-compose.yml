@@ -1,0 +1,26 @@
+version: '3.3'
+
+services:
+  api:
+    image: traefik:1.6
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      placement:
+        constraints: [node.role==manager]
+    ports:
+      - 8080:443 ## HTTPS
+      - "${PUBLISH_PORT:?err}:8080" ## Traefik web interface.
+    networks:
+      - traefik-net
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /opt/opm/traefik-local/traefik.toml:/traefik.toml
+      - /opt/opm/traefik-local/traefik.key:/traefik-data/traefik.key
+      - /opt/opm/traefik-local/traefik.crt:/traefik-data/traefik.crt
+
+networks:
+  traefik-local-net:
+    external: true
+
