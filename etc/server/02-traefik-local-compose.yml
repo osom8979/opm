@@ -13,7 +13,7 @@ services:
       - 8080:443 ## HTTPS
       - "${PUBLISH_PORT:?err}:8080" ## Traefik web interface.
     networks:
-      - traefik-net
+      - traefik-local-net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /opt/opm/traefik-local/traefik.toml:/traefik.toml

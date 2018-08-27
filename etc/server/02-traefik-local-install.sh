@@ -5,6 +5,11 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
+if [[ -z $(which openssl) ]]; then
+    echo "Not found openssl."
+    exit 1
+fi
+
 OPT_DIR=/opt/opm/traefik-local
 if [[ -d "$OPT_DIR" ]]; then
     echo "Exists $OPT_DIR directory"
@@ -46,6 +51,15 @@ else
     echo "Local Domain: $LOCAL_DOMAIN"
     echo "Create $TOML_PATH file"
     cat "$TOML_TEMPLATE" | sed -e "s/@LOCAL_DOMAIN@/$LOCAL_DOMAIN/g" > "$TOML_PATH"
+fi
+
+KEY_PATH=$OPT_DIR/traefik.key
+CRT_PATH=$OPT_DIR/traefik.crt
+if [[ -f "$KEY_PATH" && -f "$CRT_PATH" ]]; then
+    echo "Exists $KEY_PATH & $CRT_PATH files"
+else
+    echo "Create key & crt"
+    openssl req -subj '/CN=localhost' -x509 -newkey rsa:2048 -nodes -keyout "$KEY_PATH" -out "$CRT_PATH" -days 36500
 fi
 
 NET_NAME=traefik-local-net
