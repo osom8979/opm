@@ -10,13 +10,23 @@ defaultEntryPoints = ["http", "https"]
 #  filePath = "/traefik-log/access.log"
 
 [entryPoints]
+  ## Local area.
+  [entryPoints.local-https]
+  address = ":10443"
+    [entryPoints.local-https.tls]
+      [[entryPoints.local-https.tls.certificates]]
+      certFile = "/traefik-data/traefik.crt"
+      keyFile = "/traefik-data/traefik.key"
+
+  ## Wide area.
   [entryPoints.http]
   address = ":80"
     [entryPoints.http.redirect]
     entryPoint = "https"
+
   [entryPoints.https]
   address = ":443"
-  [entryPoints.https.tls]
+    [entryPoints.https.tls]
 
 [retry]
 

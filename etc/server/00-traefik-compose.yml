@@ -10,8 +10,9 @@ services:
       placement:
         constraints: [node.role==manager]
     ports:
-      - 80:80   ## HTTP (ACME HTTP Challenge & Redirect)
-      - 443:443 ## HTTPS
+      - 80:80       ## HTTP (ACME HTTP Challenge & Redirect)
+      - 443:443     ## HTTPS
+      - 8080:10443  ## HTTPS (Local area)
       - "${PUBLISH_PORT:?err}:8080" ## Traefik web interface.
     networks:
       - traefik-net
@@ -20,6 +21,8 @@ services:
       #- /opt/opm/traefik/log:/traefik-log
       - /opt/opm/traefik/traefik.toml:/traefik.toml
       - /opt/opm/traefik/acme.json:/acme.json
+      - /opt/opm/traefik/traefik.key:/traefik-data/traefik.key
+      - /opt/opm/traefik/traefik.crt:/traefik-data/traefik.crt
 
 networks:
   traefik-net:
