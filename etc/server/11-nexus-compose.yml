@@ -2,7 +2,8 @@ version: '3.3'
 
 services:
   api:
-    image: nexus-repository-apt:3.11.0
+    #image: nexus-repository-apt:3.11.0
+    image: sonatype/nexus3
     deploy:
       replicas: 1
       restart_policy:

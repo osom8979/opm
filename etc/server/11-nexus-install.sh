@@ -1,27 +1,27 @@
 #!/usr/bin/env bash
 
-DOCKER_IMAGE_NAME=nexus-repository-apt
-EXISTS_DOCKER_IMAGE=`docker images --all | grep -rn $DOCKER_IMAGE_NAME`
-if [[ -z $EXISTS_DOCKER_IMAGE ]]; then
-    SRC="https://github.com/sonatype-nexus-community/nexus-repository-apt"
-    DEST=nexus-repository-apt
-    pushd $PWD
-    if [[ -d "$DEST/.git" ]]; then
-        cd $DEST
-        git pull
-    else
-        git clone --depth 1 "$SRC" "$DEST"
-        cd $DEST
-    fi
-
-    docker build -t $DOCKER_IMAGE_NAME:3.11.0 .
-    DOCKER_BUILD_CODE=$?
-    if [[ ! $DOCKER_BUILD_CODE -eq 0 ]]; then
-        echo "Docker build error ($DOCKER_BUILD_CODE)."
-        exit $DOCKER_BUILD_CODE
-    fi
-    popd
-fi
+#DOCKER_IMAGE_NAME=nexus-repository-apt
+#EXISTS_DOCKER_IMAGE=`docker images --all | grep $DOCKER_IMAGE_NAME`
+#if [[ -z $EXISTS_DOCKER_IMAGE ]]; then
+#    SRC="https://github.com/sonatype-nexus-community/nexus-repository-apt"
+#    DEST=nexus-repository-apt
+#    pushd $PWD
+#    if [[ -d "$DEST/.git" ]]; then
+#        cd $DEST
+#        git pull
+#    else
+#        git clone --depth 1 "$SRC" "$DEST"
+#        cd $DEST
+#    fi
+#
+#    docker build -t $DOCKER_IMAGE_NAME:3.11.0 .
+#    DOCKER_BUILD_CODE=$?
+#    if [[ ! $DOCKER_BUILD_CODE -eq 0 ]]; then
+#        echo "Docker build error ($DOCKER_BUILD_CODE)."
+#        exit $DOCKER_BUILD_CODE
+#    fi
+#    popd
+#fi
 
 FRONTEND_HOST=$1
 DOCKER_FRONTEND_HOST=$2
