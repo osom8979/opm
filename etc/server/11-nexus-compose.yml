@@ -2,8 +2,8 @@ version: '3.3'
 
 services:
   api:
-    #image: nexus-repository-apt:3.11.0
-    image: sonatype/nexus3
+    #image: sonatype/nexus3
+    image: "${DOCKER_IMAGE_NAME:?err}:${DOCKER_IMAGE_TAG:?err}"
     deploy:
       replicas: 1
       restart_policy:
@@ -14,9 +14,8 @@ services:
         - "traefik.web.port=8081"
         - "traefik.web.frontend.rule=Host:${FRONTEND_HOST:?err}"
         - "traefik.web.frontend.entryPoints=local-https"
-        - "traefik.docker.port=8082"
-        - "traefik.docker.frontend.rule=Host:${DOCKER_FRONTEND_HOST:?err}"
-        - "traefik.docker.frontend.entryPoints=local-https"
+    ports:
+      - "${EXTENSION_PUBLISH_PORT:?err}:${EXTENSION_PUBLISH_PORT:?err}"
     networks:
       - traefik-net
     volumes:
