@@ -16,7 +16,7 @@ services:
       - traefik-net
       - postfix-net
     volumes:
-      - /opt/gitlab/gitlab.rb:/gitlab.rb
+      - /opt/opm/gitlab/gitlab.rb:/gitlab.rb
       - data:/var/opt/gitlab
       - logs:/var/log/gitlab
       - config:/etc/gitlab

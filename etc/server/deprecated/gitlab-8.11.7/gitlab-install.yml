@@ -1,0 +1,67 @@
+version: "3.3"
+
+services:
+  postgresql:
+    image: sameersbn/postgresql:9.5-1
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - net
+    volumes:
+      - raw_db:/var/lib/postgresql
+    environment:
+      - "DB_NAME=gitlabhq_production"
+      - "DB_USER=gitlab"
+      - "DB_PASS=gitlab"
+      - "DB_EXTENSION=pg_trgm"
+
+  redisio:
+    image: sameersbn/redis:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - net
+    volumes:
+      - raw_redis:/var/lib/redis
+
+  gitlab:
+    image: sameersbn/gitlab:8.11.7
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      #labels:
+      #  - "traefik.enable=true"
+      #  - "traefik.docker.network=traefik-net"
+      #  - "traefik.web.port=80"
+      #  - "traefik.web.frontend.rule=Host:${FRONTEND_HOST:?err}"
+      #  - "traefik.web.frontend.entryPoints=local-https"
+    ports:
+      - 8000:80
+    networks:
+      - traefik-net
+      - net
+    volumes:
+      - data:/home/git/data
+    environment:
+      - "GITLAB_PORT=80"
+      - "GITLAB_SSH_PORT=22"
+      - "GITLAB_SECRETS_DB_KEY_BASE=long-and-random-alpha-numeric-string"
+      - "GITLAB_SECRETS_SECRET_KEY_BASE=long-and-random-alpha-numeric-string"
+      - "GITLAB_SECRETS_OTP_KEY_BASE=long-and-random-alpha-numeric-string"
+
+volumes:
+  raw_db:
+  raw_redis:
+  data:
+
+networks:
+  traefik-net:
+    external: true
+  net:
+    driver: overlay
+
