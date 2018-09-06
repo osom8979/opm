@@ -41,12 +41,12 @@ NeoBundle 'majutsushi/tagbar'          " tagbar window.
 NeoBundle 'easymotion/vim-easymotion'  " motions on speed.
 NeoBundle 'kshenoy/vim-signature'      " display marks.
 NeoBundle 'scrooloose/nerdcommenter'   " language dependent commenter.
-"NeoBundle 'tpope/vim-fugitive'        " git wrapper.
 "NeoBundle 'edkolev/promptline.vim'    " generate a fast shell prompt.
 "NeoBundle 'tpope/vim-surround'        " quoting/parenthesizing made simple.
 "NeoBundle 'scrooloose/syntastic'      " syntax checking.
 "NeoBundle 'sjl/gundo.vim'             " undo tree.
 "NeoBundle 'zakj/vim-showmarks'        " show mark list bar.
+NeoBundle 'scrooloose/syntastic'       " syntax checking hacks for vim.
 
 " vim-airline.
 NeoBundle 'vim-airline/vim-airline-themes'
@@ -72,13 +72,17 @@ NeoBundle 'OmniCppComplete' " Ctags auto complete popup.
 "NeoBundle 'nanotech/jellybeans.vim'
 
 " C/C++ supported.
-"if has('win32')
-"    NeoBundle '~/.vim/bundle/YouCompleteMe-windows-733de48-x86', {
-"    \   'type' : 'nosync'
-"    \ }
-"else
-"    NeoBundle 'Valloric/YouCompleteMe'
-"endif
+if has('win32')
+    NeoBundle '~/.vim/bundle/YouCompleteMe-windows-733de48-x86', {
+    \   'type' : 'nosync'
+    \ }
+else
+    NeoBundle 'Valloric/YouCompleteMe'
+endif
+
+if has('nvim')
+NeoBundle 'sakhnik/nvim-gdb' " Neovim thin wrapper for GDB, LLDB and PDB.
+endif
 
 " Rails supported.
 NeoBundle 'tpope/vim-rails'
@@ -93,6 +97,14 @@ endif
 "    \   'type' : 'nosync'
 "    \ }
 "endif
+
+" Git supported.
+NeoBundle 'airblade/vim-gitgutter' " shows a git diff in the gutter.
+NeoBundle 'tpope/vim-fugitive'     " git wrapper.
+
+" Miscellaneous utilities.
+NeoBundle 'visSum.vim'  " computes sum of selected numbers. Use the :VisSum in VisualMode.
+NeoBundle 'VisIncr'     " produce increasing/decreasing columns. Usage: :ll or :ll -1
 
 call neobundle#end()
 
