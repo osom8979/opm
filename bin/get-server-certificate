@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -z $(which openssl) ]]; then
+    echo "Not found openssl."
+    exit 1
+fi
+
 SERVER_HOST=$1
 SERVER_PORT=${2:-443}
 if [[ -z $SERVER_HOST || -z $SERVER_PORT ]]; then
@@ -7,5 +12,5 @@ if [[ -z $SERVER_HOST || -z $SERVER_PORT ]]; then
     exit 1
 fi
 
-echo "QUIT" | openssl s_client -connect "$SERVER_HOST:$SERVER_PORT" 2>&1 | sed -n '/-----BEGIN CERTIFICATE-----/,$p' | sed -n '1,/-----END CERTIFICATE-----/p'
+echo "QUIT" | openssl s_client -connect "$SERVER_HOST:$SERVER_PORT" 2>&1 | openssl x509 -inform PEM -text
 
