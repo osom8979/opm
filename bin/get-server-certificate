@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+SERVER_HOST=$1
+SERVER_PORT=${2:-443}
+if [[ -z $SERVER_HOST || -z $SERVER_PORT ]]; then
+    echo "Usage: $0 {server_host} {server_port:443}"
+    exit 1
+fi
+
+echo "QUIT" | openssl s_client -connect "$SERVER_HOST:$SERVER_PORT" 2>&1 | sed -n '/-----BEGIN CERTIFICATE-----/,$p' | sed -n '1,/-----END CERTIFICATE-----/p'
+
