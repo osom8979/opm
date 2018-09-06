@@ -86,6 +86,10 @@ if has('gui_running')
     set lines=50       " vim line size.
     set columns=150    " vim column size.
     "winpos 0 0        " vim window position.
+elseif has('nvim')
+    " whitespace setting.
+    set listchars=eol:¶,tab:»·,trail:·,extends:»,precedes:«,conceal:×,nbsp:·
+    set list
 endif
 
 " NERDTree

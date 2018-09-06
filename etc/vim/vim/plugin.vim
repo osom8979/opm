@@ -1,6 +1,14 @@
 "" Plugins setting.
 "" Use the NeoBundle.vim plugin manager.
 
+if !has('python')
+    let s:opy_python_path=$HOME . '/.pyenv/versions/__zer0_opy_opy_3.6.1__/bin/python'
+    if filereadable(s:opy_python_path)
+       let g:python3_host_prog = s:opy_python_path
+       let g:loaded_python_provider = 1
+    endif
+endif
+
 " Note: Skip initialization for vim-tiny or vim-small.
 if !1 | finish | endif
 
@@ -43,7 +51,6 @@ NeoBundle 'kshenoy/vim-signature'      " display marks.
 NeoBundle 'scrooloose/nerdcommenter'   " language dependent commenter.
 "NeoBundle 'edkolev/promptline.vim'    " generate a fast shell prompt.
 "NeoBundle 'tpope/vim-surround'        " quoting/parenthesizing made simple.
-"NeoBundle 'scrooloose/syntastic'      " syntax checking.
 "NeoBundle 'sjl/gundo.vim'             " undo tree.
 "NeoBundle 'zakj/vim-showmarks'        " show mark list bar.
 NeoBundle 'scrooloose/syntastic'       " syntax checking hacks for vim.
@@ -72,17 +79,18 @@ NeoBundle 'OmniCppComplete' " Ctags auto complete popup.
 "NeoBundle 'nanotech/jellybeans.vim'
 
 " C/C++ supported.
-if has('win32')
-    NeoBundle '~/.vim/bundle/YouCompleteMe-windows-733de48-x86', {
-    \   'type' : 'nosync'
-    \ }
-else
-    NeoBundle 'Valloric/YouCompleteMe'
-endif
+"if has('win32')
+"    NeoBundle '~/.vim/bundle/YouCompleteMe-windows-733de48-x86', {
+"    \   'type' : 'nosync'
+"    \ }
+"else
+"    NeoBundle 'Valloric/YouCompleteMe'
+"endif
 
-if has('nvim')
-NeoBundle 'sakhnik/nvim-gdb' " Neovim thin wrapper for GDB, LLDB and PDB.
-endif
+" Debugging supported.
+"if has('nvim')
+"NeoBundle 'sakhnik/nvim-gdb' " Neovim thin wrapper for GDB, LLDB and PDB.
+"endif
 
 " Rails supported.
 NeoBundle 'tpope/vim-rails'
