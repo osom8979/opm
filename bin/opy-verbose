@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+OPY_ECHO=1 . opy-env && python $@
+

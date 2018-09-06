@@ -118,9 +118,19 @@ else
     #pyenv deactivate
 fi
 
+if [[ -z $OPY_ECHO ]]; then
+    if [[ -z $OPY_QUIET || $OPY_QUIET -eq 0 ]]; then
+        OPY_ECHO=1
+    else
+        OPY_ECHO=0
+    fi
+fi
+
+if [[ $OPY_ECHO -ne 0 ]]; then
 echo "[OSOM Python Environment]"
 echo "* Python version: $(python --version 2>&1)"
 echo "* Python executable: $(which python)"
 echo "* Pyenv which python: $(pyenv which python)"
 echo "* Pyenv version: $(pyenv version | awk '{print($1);}')"
+fi
 

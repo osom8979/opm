@@ -1,4 +1,2 @@
 #!/usr/bin/env bash
-. opy-env
-pip $@
-
+OPY_ECHO=0 . opy-env && pip $@
