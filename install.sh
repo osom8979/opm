@@ -11,9 +11,17 @@ WORKING=$PWD
 SCRIPT_PATH=`getScriptDirectory`
 INSTALL_DIR=$SCRIPT_PATH/etc/install.d
 
-BASH_PROFILE_PATH=$HOME/.profile
-if [[ ! -f "$BASH_PROFILE_PATH" ]]; then
-BASH_PROFILE_PATH=$HOME/.bash_profile
+if [[ -z $BASH_PROFILE_PATH ]]; then
+    ## See INVOCATION in 'man bash'
+    if [[ -f "$HOME/.profile" ]]; then
+        BASH_PROFILE_PATH="$HOME/.profile"
+    elif [[ -f "$HOME/.bash_login" ]]; then
+        BASH_PROFILE_PATH="$HOME/.bash_login"
+    elif [[ -f "$HOME/.bash_profile" ]]; then
+        BASH_PROFILE_PATH="$HOME/.bash_profile"
+    else
+        BASH_PROFILE_PATH="$HOME/.bash_profile"
+    fi
 fi
 
 if [[ ! -z "$OPM_HOME" || ! -z $(cat "$BASH_PROFILE_PATH" | grep "OPM_HOME") ]]; then
