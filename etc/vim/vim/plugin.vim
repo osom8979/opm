@@ -2,7 +2,7 @@
 "" Use the NeoBundle.vim plugin manager.
 
 if !has('python')
-    let s:opy_python_path=$HOME . '/.pyenv/versions/__zer0_opy_opy_3.6.1__/bin/python'
+    let s:opy_python_path = $HOME . '/.pyenv/versions/__zer0_opy_opy_3.6.1__/bin/python'
     if filereadable(s:opy_python_path)
        let g:python3_host_prog = s:opy_python_path
        let g:loaded_python_provider = 1
@@ -71,21 +71,29 @@ NeoBundle 'matchparenpp'  " blink match brace.
 NeoBundle 'echofunc.vim'  " print function parameter information.
 NeoBundle 'a.vim'         " source <-> header.
 
-" Auto completion.
-NeoBundle 'AutoComplPop'    " auto complete popup.
-NeoBundle 'OmniCppComplete' " Ctags auto complete popup.
-
 " Themes
 "NeoBundle 'nanotech/jellybeans.vim'
 
+" Auto completion.
+"NeoBundle 'OmniCppComplete' " Ctags auto complete popup.
+NeoBundle  'AutoComplPop'    " auto complete popup.
+
 " C/C++ supported.
-"if has('win32')
-"    NeoBundle '~/.vim/bundle/YouCompleteMe-windows-733de48-x86', {
-"    \   'type' : 'nosync'
-"    \ }
-"else
-"    NeoBundle 'Valloric/YouCompleteMe'
-"endif
+if has('win32')
+    NeoBundle '~/.vim/bundle/YouCompleteMe-windows-733de48-x86', {
+    \   'type' : 'nosync'
+    \ }
+else
+    let g:ycm_build_cmd = 'git submodule update --init --recursive'
+    NeoBundle 'Valloric/YouCompleteMe', {
+        \ 'build' : {
+        \   'cygwin'  : g:ycm_build_cmd,
+        \   'mac'     : g:ycm_build_cmd,
+        \   'linux'   : g:ycm_build_cmd,
+        \   'unix'    : g:ycm_build_cmd,
+        \   }
+        \ }
+endif
 
 " Debugging supported.
 "if has('nvim')
