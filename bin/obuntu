@@ -14,7 +14,7 @@ if [[ -z $OPM_HOME ]]; then
 OPM_HOME=`getAbsoluteDirectory "${SCRIPT_PATH}/.."`
 fi
 
-DOCKER_IMAGE=oubuntu
+DOCKER_IMAGE=obuntu
 EXISTS_DOCKER_IMAGE=`docker images | grep $DOCKER_IMAGE`
 if [[ -z $EXISTS_DOCKER_IMAGE ]]; then
     echo "Not found $DOCKER_IMAGE image"
@@ -28,29 +28,31 @@ else
     echo "Exists $DOCKER_IMAGE image."
 fi
 
-DOCKER_NAME=oubuntu-local
-EXISTS_DOCKER_PS=`docker ps --all -f name=$DOCKER_NAME`
+DOCKER_NAME=obuntu-local
+EXISTS_DOCKER_PS=`docker ps --all --format={{.ID}} -f name=$DOCKER_NAME`
 if [[ -z $EXISTS_DOCKER_PS ]]; then
     echo "Not found $DOCKER_NAME process."
     docker run -d -it -v $HOME/Public:/Public --name $DOCKER_NAME $DOCKER_IMAGE
-    exit $?
 else
     echo "Exists $DOCKER_NAME process."
 fi
+
+CONTAINER_STATUS_EXITED=exited
+CONTAINER_STATUS_UP=up
 
 function getContainerStatus {
     docker ps --all --format={{.Status}} -f name=$1 | awk '{print tolower($1)}'
 }
 
 CONTAINER_STATUS=`getContainerStatus $DOCKER_NAME`
-if [[ "$CONTAINER_STATUS" == "exited" ]]; then
+if [[ "$CONTAINER_STATUS" == "$CONTAINER_STATUS_EXITED" ]]; then
     echo "Exited $DOCKER_NAME container."
     docker start $DOCKER_NAME
 fi
 
-if [[ "$CONTAINER_STATUS" != "up" ]]; then
-    echo -n 'Wait running ...'
-    while [[ "$CONTAINER_STATUS" != "up" ]]; do
+if [[ "$CONTAINER_STATUS" != "$CONTAINER_STATUS_UP" ]]; then
+    echo -n 'Wait running'
+    while [[ "$CONTAINER_STATUS" != "$CONTAINER_STATUS_UP" ]]; do
         echo -n '.'
         sleep 1
         CONTAINER_STATUS=`getContainerStatus $DOCKER_NAME`
@@ -59,5 +61,7 @@ if [[ "$CONTAINER_STATUS" != "up" ]]; then
     echo 'Status Up!'
 fi
 
+CONTAINER_ID=`docker ps --all --format={{.ID}} -f name=$DOCKER_NAME`
+echo "Attach $DOCKER_NAME (ID: $CONTAINER_ID)"
 docker attach $DOCKER_NAME
 
