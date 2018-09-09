@@ -71,6 +71,8 @@ NeoBundle 'matchparenpp'  " blink match brace.
 NeoBundle 'echofunc.vim'  " print function parameter information.
 NeoBundle 'a.vim'         " source <-> header.
 
+NeoBundle 'vhdirk/vim-cmake'
+
 " Themes
 "NeoBundle 'nanotech/jellybeans.vim'
 
@@ -120,7 +122,7 @@ NeoBundle 'tpope/vim-fugitive'     " git wrapper.
 
 " Miscellaneous utilities.
 NeoBundle 'visSum.vim'  " computes sum of selected numbers. Use the :VisSum in VisualMode.
-NeoBundle 'VisIncr'     " produce increasing/decreasing columns. Usage: :ll or :ll -1
+NeoBundle 'VisIncr'     " produce increasing/decreasing columns. Usage: :II or :II -1
 
 call neobundle#end()
 
