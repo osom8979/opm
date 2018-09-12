@@ -98,9 +98,9 @@ else
 endif
 
 " Debugging supported.
-"if has('nvim')
-"NeoBundle 'sakhnik/nvim-gdb' " Neovim thin wrapper for GDB, LLDB and PDB.
-"endif
+if has('nvim')
+NeoBundle 'sakhnik/nvim-gdb' " Neovim thin wrapper for GDB, LLDB and PDB.
+endif
 
 " Rails supported.
 NeoBundle 'tpope/vim-rails'
