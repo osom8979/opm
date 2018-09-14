@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-OPY_ECHO=0 . opy-env && pip install \
-    numpy matplotlib \
-    neonvim future frozendict
-

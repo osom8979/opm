@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+SCIENCE_PACKAGES="numpy matplotlib"
+NEOVIM_PACKAGES="neonvim future frozendict"
+opy3-pip install $SCIENCE_PACKAGES $NEOVIM_PACKAGES
+
