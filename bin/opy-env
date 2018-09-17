@@ -79,7 +79,7 @@ fi
 
 USER_NAME=`id -u -n`
 OPY_PYTHON_VERSION_REGEX=`echo $OPY_PYTHON_VERSION | sed 's/\./\\\\./g'`
-OPY_ENV_NAME="__${USER_NAME}_${OPY_ENV_PREFIX}_opy_${OPY_PYTHON_VERSION}__"
+OPY_ENV_NAME="${OPY_ENV_PREFIX}-${USER_NAME}-${OPY_PYTHON_VERSION}"
 OPY_ENV_NAME_REGEX=`echo $OPY_ENV_NAME | sed 's/\./\\\\./g'`
 
 export PATH="~/.pyenv/bin:$PATH"
