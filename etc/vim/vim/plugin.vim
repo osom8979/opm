@@ -5,7 +5,10 @@ let s:home_dir = $HOME
 let s:user_name = $USER
 let s:opy_prefix = 'opy'
 let s:opy_version = '3.6.1'
-let s:opy_python_path = s:home_dir . '/.pyenv/versions/' . s:opy_prefix . '-' . s:user_name . '-' . s:opy_version . '/bin/python'
+let s:opy_python_path = s:home_dir . '/.pyenv/versions/' .
+            \ s:opy_prefix . '-' .
+            \ s:user_name . '-' .
+            \ s:opy_version . '/bin/python'
 
 if filereadable(s:opy_python_path)
    let g:python3_host_prog = s:opy_python_path
