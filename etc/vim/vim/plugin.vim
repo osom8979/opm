@@ -1,12 +1,15 @@
 "" Plugins setting.
 "" Use the NeoBundle.vim plugin manager.
 
-if !has('python')
-    let s:opy_python_path = $HOME . '/.pyenv/versions/__zer0_opy_opy_3.6.1__/bin/python'
-    if filereadable(s:opy_python_path)
-       let g:python3_host_prog = s:opy_python_path
-       let g:loaded_python_provider = 1
-    endif
+let s:home_dir = $HOME
+let s:user_name = $USER
+let s:opy_prefix = 'opy'
+let s:opy_version = '3.6.1'
+let s:opy_python_path = s:home_dir . '/.pyenv/versions/' . s:opy_prefix . '-' . s:user_name . '-' . s:opy_version . '/bin/python'
+
+if filereadable(s:opy_python_path)
+   let g:python3_host_prog = s:opy_python_path
+   let g:loaded_python_provider = 1 " To disable Python 2 support.
 endif
 
 " Note: Skip initialization for vim-tiny or vim-small.
@@ -86,15 +89,10 @@ if has('win32')
     \   'type' : 'nosync'
     \ }
 else
-    let g:ycm_build_cmd = 'git submodule update --init --recursive'
-    NeoBundle 'Valloric/YouCompleteMe', {
-        \ 'build' : {
-        \   'cygwin'  : g:ycm_build_cmd,
-        \   'mac'     : g:ycm_build_cmd,
-        \   'linux'   : g:ycm_build_cmd,
-        \   'unix'    : g:ycm_build_cmd,
-        \   }
-        \ }
+    " Compile command:
+    " git submodule update --init --recursive
+    " opy3 install.py --clang-completer
+    NeoBundle 'Valloric/YouCompleteMe'
 endif
 
 " Debugging supported.
