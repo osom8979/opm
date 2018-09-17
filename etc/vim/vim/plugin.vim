@@ -84,15 +84,17 @@ NeoBundle 'vhdirk/vim-cmake'
 NeoBundle  'AutoComplPop'    " auto complete popup.
 
 " C/C++ supported.
-if has('win32')
-    NeoBundle '~/.vim/bundle/YouCompleteMe-windows-733de48-x86', {
-    \   'type' : 'nosync'
-    \ }
-else
-    " Compile command:
-    " git submodule update --init --recursive
-    " opy3 install.py --clang-completer
-    NeoBundle 'Valloric/YouCompleteMe'
+if !$DISABLE_YCM && has('nvim')
+    if has('win32')
+        NeoBundle '~/.vim/bundle/YouCompleteMe-windows-733de48-x86', {
+        \   'type' : 'nosync'
+        \ }
+    else
+        " Compile command:
+        " git submodule update --init --recursive
+        " opy3 install.py --clang-completer
+        NeoBundle 'Valloric/YouCompleteMe'
+    endif
 endif
 
 " Debugging supported.
@@ -104,9 +106,9 @@ endif
 NeoBundle 'tpope/vim-rails'
 
 " Python supported.
-if has('python')
-NeoBundle 'klen/python-mode'
-endif
+"if has('python')
+"NeoBundle 'klen/python-mode'
+"endif
 
 "if has("netbeans_intg")
 "    NeoBundle '~/.vim/bundle/pyclewn-2.0.1', {
