@@ -132,3 +132,16 @@ call neobundle#end()
 filetype plugin indent on
 NeoBundleCheck
 
+" OPM vim plugin.
+if has('nvim') && filereadable(g:python3_host_prog)
+let g:opm_vim_script_dir = expand('<sfile>:p:h')
+python3 << EOF
+import sys
+import vim
+OPM_VIM_SCRIPT_DIR = vim.eval('g:opm_vim_script_dir')
+sys.path.insert(0, OPM_VIM_SCRIPT_DIR)
+import opvim
+opvim.runDefault()
+EOF
+endif
+

@@ -1,7 +1,17 @@
 " Vim setting.
 
 scriptencoding utf-8
+
+"if has('nvim')
+"let s:current_script_dir = expand('<sfile>:p:h')
+"source s:current_script_dir . '/plugin.vim'
+"source s:current_script_dir . '/config.vim'
+"source s:current_script_dir . '/keymap.vim'
+"source s:current_script_dir . '/macro.vim'
+"endif
+
 source ~/.vim/plugin.vim
 source ~/.vim/config.vim
 source ~/.vim/keymap.vim
 source ~/.vim/macro.vim
+
