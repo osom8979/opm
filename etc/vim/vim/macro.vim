@@ -217,3 +217,11 @@ function! CloseAnotherBuffer()
     endfor
 endfunction
 
+function! PrintHelpMessage()
+    let current_script_dir = expand('<sfile>:p:h')
+    let lines = readfile(current_script_dir . '/help.txt')
+    for line in lines
+        echo line
+    endfor
+endfunction
+

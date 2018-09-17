@@ -83,4 +83,5 @@ endif
 command! Reload    execute 'source ~/.vimrc'
 command! HexMode   execute '%!xxd'
 command! TextMode  execute '%!xxd -r'
+command! Help      execute ':call PrintHelpMessage()'
 

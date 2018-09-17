@@ -1,0 +1,4 @@
+[PLUGIN]
+visSum: Computes sum of selected numbers. Usage :VisSum in VisualMode.
+VisIncr: Increasing/Decreasing columns. Usage: :II or :II -1
+
