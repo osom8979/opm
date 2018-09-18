@@ -36,6 +36,8 @@ let s:BUFFER_F5   = 'B_F5'
 let s:BUFFER_NAME = 'B_NAME'
 let s:BUFFER_LINE = 'B_LINE'
 
+let s:QUICKFIX_NAME = "[Quickfix List]"
+
 function! GetBufferInfoDictionary(num, f1, f2, f3, f4, f5, name, line)
     return {
         \   s:BUFFER_NUM  : a:num,
@@ -63,6 +65,10 @@ function! IsCurrentBuffer(info)
     return s:False
 endfunction
 
+" The buffer is displayed in a window.  If there is a file for this
+" buffer, it has been read into the buffer.  The buffer may have been
+" modified since then and thus be different from the file.
+" See also: *active-buffer*
 function! IsActiveBuffer(info)
     if a:info[s:BUFFER_F3] == 'a'
         return s:True
@@ -70,6 +76,10 @@ function! IsActiveBuffer(info)
     return s:False
 endfunction
 
+" The buffer is not displayed.  If there is a file for this buffer, it
+" has been read into the buffer.  Otherwise it's the same as an active
+" buffer, you just can't see it.
+" See also: *hidden-buffer*
 function! IsHiddenBuffer(info)
     if a:info[s:BUFFER_F3] == 'h'
         return s:True
@@ -138,6 +148,16 @@ function! GetCurrentBufferInfoList()
     return result
 endfunction
 
+function! FindBufferWithName(name)
+    for cursor in split(GetCurrentBuffersOutput(), '\n')
+        let dic = GetBufferInfoDictionaryWithString(cursor)
+        if dic[s:BUFFER_NAME] == a:name
+            return dic
+        endif
+    endfor
+    return {}
+endfunction
+
 function! GetCurrentModifiableListedBufferInfoList()
     let result = []
     for cursor in split(GetCurrentBuffersOutput(), '\n')
@@ -147,6 +167,30 @@ function! GetCurrentModifiableListedBufferInfoList()
         endif
     endfor
     return result
+endfunction
+
+"" ---------------------
+"" Quick-fix operations.
+"" ---------------------
+
+function! FindQuickfixBuffer()
+    return FindBufferWithName(s:QUICKFIX_NAME)
+endfunction
+
+function! ExistsQuickfixBuffer()
+    let dic = FindQuickfixBuffer()
+    if empty(dic)
+        return s:False
+    endif
+    return IsActiveBuffer(dic)
+endfunction
+
+function! ToggleQuickfixBuffer()
+    if ExistsQuickfixBuffer()
+        silent execute 'cclose'
+    else
+        silent execute 'copen'
+    endif
 endfunction
 
 "" -----------------------
@@ -216,6 +260,10 @@ function! CloseAnotherBuffer()
         endif
     endfor
 endfunction
+
+"" -----------------------
+"" Miscellaneous utilities
+"" -----------------------
 
 function! PrintHelpMessage()
     let lines = readfile(g:opm_vim_script_dir . '/doc/help.txt')

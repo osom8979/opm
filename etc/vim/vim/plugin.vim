@@ -113,6 +113,12 @@ NeoBundle 'tpope/vim-fugitive'     " git wrapper.
 NeoBundle 'visSum.vim'  " computes sum of selected numbers. Use the :VisSum in VisualMode.
 NeoBundle 'VisIncr'     " produce increasing/decreasing columns. Usage: :II or :II -1
 
+" Shell
+NeoBundle 'skywind3000/asyncrun.vim'  " run async shell commands.
+
+" Quickfix
+"NeoBundle 'romainl/vim-qf'  " tame the quickfix window.
+
 NeoBundle g:opm_vim_script_dir . '/opvim', {
 \   'type' : 'nosync'
 \ }

@@ -8,30 +8,34 @@ let mapleader="\\"
 " Help message.
 "noremap <leader>? <ESC>:call OpmHelp()<CR>
 
-" Buffer setting.
+" Buffer settings.
 noremap  <F1>      :call MovePrevModifiableBuffer()<CR>
 noremap  <F2>      :call MoveNextModifiableBuffer()<CR>
 nnoremap <leader>w :call CloseAndMoveNextBuffer()<CR>
 nnoremap <leader>W :call CloseAnotherBuffer()<CR>
 
-" Clipboard setting.
+" Tab settings.
+nnoremap <leader><F1>   :tabprevious<CR>
+nnoremap <leader><F2>   :tabNext<CR>
+
+" Clipboard settings.
 noremap  <F3> "+Y
 noremap  <F4> "+gP
 vnoremap <F3> "+y
 vnoremap <F4> "+gP
 inoremap <F4> <ESC>"+gpa
 
-" Makefile setting.
+" Makefile settings.
 nnoremap <F9>                   :make<CR>:copen<CR>
 nnoremap <leader><leader><F1>   :cnext<CR>
 nnoremap <leader><leader><F2>   :cprevious<CR>
 
-" Ctags setting.
+" Ctags settings.
 nnoremap  <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
 nnoremap  <leader>{ :tp<CR>
 nnoremap  <leader>} :tn<CR>
 
-" Cscope setting.
+" Cscope settings.
 "nnoremap  <C-\>s  :cs find s <C-R>=expand("<cword>")<CR><CR>
 "nnoremap  <C-\>g  :cs find g <C-R>=expand("<cword>")<CR><CR>
 "nnoremap  <C-\>c  :cs find c <C-R>=expand("<cword>")<CR><CR>
@@ -46,7 +50,7 @@ nnoremap  <leader>} :tn<CR>
 " OmniCppComplete popup menu.
 "inoremap  <leader><space>  <C-x><C-o>
 
-" vim-easymotion setting.
+" vim-easymotion settings.
 " Find next: <leader><leader>f
 " Find prev: <leader><leader>F
 
@@ -63,7 +67,7 @@ smap <C-J> <Plug>snipMateNextOrTrigger
 " Open window.
 nnoremap  <leader><leader>1  :NERDTreeToggle<CR>
 nnoremap  <leader><leader>2  :Tagbar<CR>
-nnoremap  <leader><leader>3  :cwindow<CR>
+nnoremap  <leader><leader>3  :call ToggleQuickfixBuffer()<CR>
 "nnoremap <leader><leader>3  :GundoToggle<CR>
 "nnoremap <leader><leader>4  :SrcExplToggle<CR>
 
