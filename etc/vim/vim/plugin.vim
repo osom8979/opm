@@ -63,6 +63,7 @@ NeoBundle 'matchparenpp'  " blink match brace.
 NeoBundle 'echofunc.vim'  " print function parameter information.
 NeoBundle 'a.vim'         " source <-> header.
 
+" CMake
 "NeoBundle 'vhdirk/vim-cmake'
 
 " Themes
@@ -70,7 +71,7 @@ NeoBundle 'a.vim'         " source <-> header.
 
 " Auto completion.
 "NeoBundle 'OmniCppComplete' " Ctags auto complete popup.
-NeoBundle  'AutoComplPop'    " auto complete popup.
+"NeoBundle 'AutoComplPop'    " auto complete popup.
 
 " C/C++ supported.
 if !$DISABLE_YCM && has('nvim')
@@ -109,6 +110,9 @@ NeoBundle 'tpope/vim-rails'
 NeoBundle 'airblade/vim-gitgutter' " shows a git diff in the gutter.
 NeoBundle 'tpope/vim-fugitive'     " git wrapper.
 
+" Quickfix
+"NeoBundle 'romainl/vim-qf'  " tame the quickfix window.
+
 " Miscellaneous utilities.
 NeoBundle 'visSum.vim'  " computes sum of selected numbers. Use the :VisSum in VisualMode.
 NeoBundle 'VisIncr'     " produce increasing/decreasing columns. Usage: :II or :II -1
@@ -116,9 +120,10 @@ NeoBundle 'VisIncr'     " produce increasing/decreasing columns. Usage: :II or :
 " Shell
 NeoBundle 'skywind3000/asyncrun.vim'  " run async shell commands.
 
-" Quickfix
-"NeoBundle 'romainl/vim-qf'  " tame the quickfix window.
+" Menu
+NeoBundle 'skywind3000/quickmenu.vim'  " a nice customizable popup menu for vim.
 
+" OPM-VIM.
 NeoBundle g:opm_vim_script_dir . '/opvim', {
 \   'type' : 'nosync'
 \ }

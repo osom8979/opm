@@ -15,8 +15,8 @@ nnoremap <leader>w :call CloseAndMoveNextBuffer()<CR>
 nnoremap <leader>W :call CloseAnotherBuffer()<CR>
 
 " Tab settings.
-nnoremap <leader><F1>   :tabprevious<CR>
-nnoremap <leader><F2>   :tabNext<CR>
+"nnoremap <leader><F1>   :tabprevious<CR>
+"nnoremap <leader><F2>   :tabNext<CR>
 
 " Clipboard settings.
 noremap  <F3> "+Y
@@ -27,13 +27,13 @@ inoremap <F4> <ESC>"+gpa
 
 " Makefile settings.
 nnoremap <F9>                   :make<CR>:copen<CR>
-nnoremap <leader><leader><F1>   :cnext<CR>
-nnoremap <leader><leader><F2>   :cprevious<CR>
+nnoremap <leader><leader><F1>   :cprevious<CR>
+nnoremap <leader><leader><F2>   :cnext<CR>
 
 " Ctags settings.
-nnoremap  <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
-nnoremap  <leader>{ :tp<CR>
-nnoremap  <leader>} :tn<CR>
+"nnoremap  <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
+"nnoremap  <leader>{ :tp<CR>
+"nnoremap  <leader>} :tn<CR>
 
 " Cscope settings.
 "nnoremap  <C-\>s  :cs find s <C-R>=expand("<cword>")<CR><CR>
@@ -49,10 +49,6 @@ nnoremap  <leader>} :tn<CR>
 
 " OmniCppComplete popup menu.
 "inoremap  <leader><space>  <C-x><C-o>
-
-" vim-easymotion settings.
-" Find next: <leader><leader>f
-" Find prev: <leader><leader>F
 
 " SnipMate key
 " Integrate YouCompleteMe issue
