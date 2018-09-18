@@ -133,8 +133,8 @@ filetype plugin indent on
 NeoBundleCheck
 
 " OPM vim plugin.
-if has('nvim') && filereadable(g:python3_host_prog)
 let g:opm_vim_script_dir = expand('<sfile>:p:h')
+if has('nvim') && filereadable(g:python3_host_prog)
 python3 << EOF
 import sys
 import vim

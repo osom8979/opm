@@ -218,8 +218,7 @@ function! CloseAnotherBuffer()
 endfunction
 
 function! PrintHelpMessage()
-    let current_script_dir = expand('<sfile>:p:h')
-    let lines = readfile(current_script_dir . '/help.txt')
+    let lines = readfile(g:opm_vim_script_dir . '/help.txt')
     for line in lines
         echo line
     endfor
