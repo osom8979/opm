@@ -151,6 +151,9 @@ let OmniCpp_LocalSearchDecl     = 1 " don't require special style of function op
 " SnipMate
 let g:snips_author = $USER
 
+" QuickMenu
+let g:quickmenu_options = "LH" " enable cursorline (L) and cmdline help (H)
+
 " ctags.vim
 set tags=./tags,tags
 "set tagbsearch " binary search
@@ -184,13 +187,16 @@ endif
 
 " auto-command setting.
 if has('autocmd')
-    " Show NERDTree window.
-    autocmd VimEnter * NERDTree
-    autocmd TabEnter * NERDTree
-
     " Go to previous (last accessed) window.
-    autocmd VimEnter * wincmd p
-    autocmd TabEnter * wincmd p
+    " autocmd VimEnter * wincmd p
+
+    " Show NERDTree window.
+    autocmd VimEnter * NERDTree | wincmd p
+    autocmd TabEnter * NERDTree | wincmd p
+
+    " Show Quick-fix window.
+    autocmd VimEnter * copen | wincmd p
+    autocmd TabEnter * copen | wincmd p
 
     " Show Tagbar window.
     "autocmd TabEnter * Tagbar

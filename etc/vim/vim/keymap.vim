@@ -53,8 +53,11 @@ nnoremap <leader><leader><F2>   :cnext<CR>
 " SnipMate key
 " Integrate YouCompleteMe issue
 " https://github.com/Valloric/YouCompleteMe/issues/47
-imap <C-J> <esc>a<Plug>snipMateNextOrTrigger
+imap <C-J> <ESC>a<Plug>snipMateNextOrTrigger
 smap <C-J> <Plug>snipMateNextOrTrigger
+
+" QuickMenu
+noremap <silent><F12> :call quickmenu#toggle(0)<CR>
 
 " ---------------
 " WINDOW SETTING.
