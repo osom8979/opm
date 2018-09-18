@@ -186,11 +186,13 @@ endif
 if has('autocmd')
     " Show NERDTree window.
     autocmd VimEnter * NERDTree
+    autocmd TabEnter * NERDTree
 
     " Go to previous (last accessed) window.
     autocmd VimEnter * wincmd p
+    autocmd TabEnter * wincmd p
 
     " Show Tagbar window.
-    "autocmd VimEnter * Tagbar
+    "autocmd TabEnter * Tagbar
 endif
 
