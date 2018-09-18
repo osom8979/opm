@@ -190,6 +190,7 @@ function! ToggleQuickfixBuffer()
         silent execute 'cclose'
     else
         silent execute 'copen'
+        silent execute 'wincmd p'
     endif
 endfunction
 
