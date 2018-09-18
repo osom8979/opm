@@ -2,4 +2,5 @@
 visSum: Computes sum of selected numbers. Usage :VisSum in VisualMode.
 VisIncr: Increasing/Decreasing columns. Usage: :II or :II -1
 SnipMate: Textual snippets. Usage: <C-J>
+AsyncRun: Run Async Shell Commands. Usage: :AsyncRun[!] {args}
 
