@@ -50,6 +50,12 @@ nnoremap  <leader>} :tn<CR>
 " Find next: <leader><leader>f
 " Find prev: <leader><leader>F
 
+" SnipMate key
+" Integrate YouCompleteMe issue
+" https://github.com/Valloric/YouCompleteMe/issues/47
+imap <C-J> <esc>a<Plug>snipMateNextOrTrigger
+smap <C-J> <Plug>snipMateNextOrTrigger
+
 " ---------------
 " WINDOW SETTING.
 " ---------------

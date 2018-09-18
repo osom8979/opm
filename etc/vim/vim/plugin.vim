@@ -66,9 +66,9 @@ NeoBundle 'vim-airline/vim-airline-themes'
 NeoBundle 'vim-airline/vim-airline'
 
 " SnipMate.
-NeoBundle 'MarcWeber/vim-addon-mw-utils'
-NeoBundle 'tomtom/tlib_vim'
-NeoBundle 'garbas/vim-snipmate'
+NeoBundle 'MarcWeber/vim-addon-mw-utils' " dependency of 'vim-snipmate'
+NeoBundle 'tomtom/tlib_vim'              " dependency of 'vim-snipmate'
+NeoBundle 'garbas/vim-snipmate'          " snipmate aims to provide support for textual snippets.
 
 NeoBundle 'ctags.vim'   " ctags plugin (Conflict from the SrcExpl).
 NeoBundle 'cscope.vim'  " cscope plugin.
@@ -134,6 +134,8 @@ NeoBundleCheck
 
 " OPM vim plugin.
 let g:opm_vim_script_dir = expand('<sfile>:p:h')
+let &runtimepath .= ',' . g:opm_vim_script_dir
+
 if has('nvim') && filereadable(g:python3_host_prog)
 python3 << EOF
 import sys

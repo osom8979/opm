@@ -149,9 +149,7 @@ let OmniCpp_ShowPrototypeInAbbr = 1 " show function prototype (i.e. parameters) 
 let OmniCpp_LocalSearchDecl     = 1 " don't require special style of function opening braces
 
 " SnipMate
-"let g:snipMate = {}
-"let g:snipMate.scope_aliases = {}
-"let g:snipMate.scope_aliases['cpp'] = 'cpp'
+let g:snips_author = $USER
 
 " ctags.vim
 set tags=./tags,tags
