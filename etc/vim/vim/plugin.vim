@@ -1,20 +1,6 @@
 "" Plugins setting.
 "" Use the NeoBundle.vim plugin manager.
 
-let s:home_dir = $HOME
-let s:user_name = $USER
-let s:opy_prefix = 'opy'
-let s:opy_version = '3.6.1'
-let s:opy_python_path = s:home_dir . '/.pyenv/versions/' .
-            \ s:opy_prefix . '-' .
-            \ s:user_name . '-' .
-            \ s:opy_version . '/bin/python'
-
-if filereadable(s:opy_python_path)
-   let g:python3_host_prog = s:opy_python_path
-   let g:loaded_python_provider = 1 " To disable Python 2 support.
-endif
-
 " Note: Skip initialization for vim-tiny or vim-small.
 if !1 | finish | endif
 
@@ -77,7 +63,7 @@ NeoBundle 'matchparenpp'  " blink match brace.
 NeoBundle 'echofunc.vim'  " print function parameter information.
 NeoBundle 'a.vim'         " source <-> header.
 
-NeoBundle 'vhdirk/vim-cmake'
+"NeoBundle 'vhdirk/vim-cmake'
 
 " Themes
 "NeoBundle 'nanotech/jellybeans.vim'
@@ -127,23 +113,12 @@ NeoBundle 'tpope/vim-fugitive'     " git wrapper.
 NeoBundle 'visSum.vim'  " computes sum of selected numbers. Use the :VisSum in VisualMode.
 NeoBundle 'VisIncr'     " produce increasing/decreasing columns. Usage: :II or :II -1
 
+NeoBundle g:opm_vim_script_dir . '/opvim', {
+\   'type' : 'nosync'
+\ }
+
 call neobundle#end()
 
 filetype plugin indent on
 NeoBundleCheck
-
-" OPM vim plugin.
-let g:opm_vim_script_dir = expand('<sfile>:p:h')
-let &runtimepath .= ',' . g:opm_vim_script_dir
-
-if has('nvim') && filereadable(g:python3_host_prog)
-python3 << EOF
-import sys
-import vim
-OPM_VIM_SCRIPT_DIR = vim.eval('g:opm_vim_script_dir')
-sys.path.insert(0, OPM_VIM_SCRIPT_DIR)
-import opvim
-opvim.runDefault()
-EOF
-endif
 

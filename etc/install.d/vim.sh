@@ -13,11 +13,7 @@ function mkdirs {
 
 VIMRC=$HOME/.vimrc
 VIM_DIR=$HOME/.vim
-VIM_SNIP_DIR=$VIM_DIR/snippets
-
 SRC_VIMRC=$OPM_HOME/etc/vim/vimrc
-SRC_VIM_DIR=$OPM_HOME/etc/vim/vim
-SRC_VIM_SNIP_DIR=$SRC_VIM_DIR/snippets
 
 DATE_FORMAT=`date +%Y%m%d_%H%M%S`
 BACKUP_SUFFIX=$DATE_FORMAT.backup
@@ -38,13 +34,10 @@ else
 fi
 
 ## Create vimrc file.
-echo '"== BEGIN OSOM VIM SETTING =='    >> $VIMRC
-echo "scriptencoding utf-8"             >> $VIMRC
-echo "source $SRC_VIM_DIR/plugin.vim"   >> $VIMRC
-echo "source $SRC_VIM_DIR/config.vim"   >> $VIMRC
-echo "source $SRC_VIM_DIR/keymap.vim"   >> $VIMRC
-echo "source $SRC_VIM_DIR/macro.vim"    >> $VIMRC
-echo '"== END OSOM VIM SETTING =='      >> $VIMRC
+echo '"== BEGIN OSOM VIM SETTING ==' >> $VIMRC
+echo "scriptencoding utf-8"          >> $VIMRC
+echo "source $SRC_VIMRC"             >> $VIMRC
+echo '"== END OSOM VIM SETTING =='   >> $VIMRC
 
 ## NeoVim.
 NEOVIM_HOME=$HOME/.config/nvim

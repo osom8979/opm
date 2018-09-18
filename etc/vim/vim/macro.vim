@@ -218,7 +218,7 @@ function! CloseAnotherBuffer()
 endfunction
 
 function! PrintHelpMessage()
-    let lines = readfile(g:opm_vim_script_dir . '/help.txt')
+    let lines = readfile(g:opm_vim_script_dir . '/doc/help.txt')
     for line in lines
         echo line
     endfor

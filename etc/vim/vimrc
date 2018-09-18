@@ -2,16 +2,27 @@
 
 scriptencoding utf-8
 
-"if has('nvim')
-"let s:current_script_dir = expand('<sfile>:p:h')
-"source s:current_script_dir . '/plugin.vim'
-"source s:current_script_dir . '/config.vim'
-"source s:current_script_dir . '/keymap.vim'
-"source s:current_script_dir . '/macro.vim'
-"endif
+" Global directory.
+let g:opm_vim_script_dir = expand('<sfile>:p:h')
+let &runtimepath .= ',' . g:opm_vim_script_dir
 
-source ~/.vim/plugin.vim
-source ~/.vim/config.vim
-source ~/.vim/keymap.vim
-source ~/.vim/macro.vim
+" Python settings.
+let s:home_dir = $HOME
+let s:user_name = $USER
+let s:opy_prefix = 'opy'
+let s:opy_version = '3.6.1'
+let s:opy_python_path = s:home_dir . '/.pyenv/versions/' .
+            \ s:opy_prefix . '-' .
+            \ s:user_name . '-' .
+            \ s:opy_version . '/bin/python'
+if filereadable(s:opy_python_path)
+   let g:python3_host_prog = s:opy_python_path
+   let g:loaded_python_provider = 1 " To disable Python 2 support.
+endif
+
+" Vim setting files.
+execute 'source ' . g:opm_vim_script_dir . '/vim/plugin.vim'
+execute 'source ' . g:opm_vim_script_dir . '/vim/config.vim'
+execute 'source ' . g:opm_vim_script_dir . '/vim/keymap.vim'
+execute 'source ' . g:opm_vim_script_dir . '/vim/macro.vim'
 

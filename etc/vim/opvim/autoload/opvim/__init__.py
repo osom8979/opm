@@ -3,8 +3,12 @@
 
 from .config import *
 
-__add__ = ['runDefault']
+__add__ = ['init', 'runCMake']
 
-def runDefault():
+def init():
     pass
+
+def runCMake(flags):
+    pass
+
 
