@@ -36,6 +36,12 @@ def getDefaultProjectJsonPath():
 def getProjectMode():
     return vim.eval('g:opvim_project_mode')
 
+def setProjectMode(mode):
+    vim.command('let g:opvim_project_mode = "{}"'.format(mode))
+
+def getDefaultProjectMode():
+    return vim.eval('g:opvim_default_project_mode')
+
 def getCMakeGenerator():
     return vim.eval('g:opvim_cmake_generator')
 

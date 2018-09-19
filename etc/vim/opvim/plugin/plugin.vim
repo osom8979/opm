@@ -24,8 +24,12 @@ if !exists('g:opvim_project_json_name')
     let g:opvim_project_json_name = 'opvim.json'
 endif
 
+if !exists('g:opvim_default_project_mode')
+    let g:opvim_default_project_mode = 'debug'
+endif
+
 if !exists('g:opvim_project_mode')
-    let g:opvim_project_mode = 'debug'
+    let g:opvim_project_mode = g:opvim_default_project_mode
 endif
 
 if !exists('g:opvim_asyncrun_enable')
@@ -46,7 +50,7 @@ endif
 
 command! -nargs=0 OpvimPreview  call opvim#Preview()
 command! -nargs=? OpvimExec     call opvim#Exec(<f-args>)
-command! -nargs=1 OpvimMode     call opvim#Mode(<args>)
+command! -nargs=? OpvimMode     call opvim#Mode(<f-args>)
 
 "command! -nargs=? OpvimCMake    call opvim#CMake(<f-args>)
 "command! -nargs=? OpvimBuild    call opvim#Build(<f-args>)

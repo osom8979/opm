@@ -31,8 +31,8 @@ class Project:
         try:
             with open(json_path) as f:
                 return json.load(f)
-        except IOError:
-            #print('File IO Error: {}'.format(json_path))
+        except IOError as err:
+            #print('File IO Error: {}'.format(err))
             pass
         return None
 
@@ -45,9 +45,23 @@ class Project:
         print('Current mode: {}'.format(self.mode))
         if self.json_data is not None:
             pprint.pprint(self.json_data)
+        else:
+            print('-- Not found project --')
+
+    def getDictionary(self):
+        return self.json_data
 
 def getGlobalProject():
     return Project(getDefaultProjectJsonPath(), getProjectMode())
+
+def getFirstMode():
+    # try:
+    #     dic = getGlobalProject().getDictionary()
+    #     if 'cmake' in dic:
+    #         return ['cmake'][0]
+    #     else:
+    # except:
+    return None
 
 def previewGlobalProject():
     getGlobalProject().preview()

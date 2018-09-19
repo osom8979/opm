@@ -18,7 +18,7 @@ opvim.init()
 EOF
 endfunction
 
-function! s:RunPreview()
+function! s:RunPreview() abort
 python3 << EOF
 import opvim
 opvim.preview()
@@ -37,6 +37,13 @@ function! s:RunCMake() abort
 python3 << EOF
 import opvim
 opvim.cmake()
+EOF
+endfunction
+
+function! s:AutoMode() abort
+python3 << EOF
+import opvim
+opvim.autoMode()
 EOF
 endfunction
 
@@ -83,8 +90,12 @@ function! opvim#Exec(...) abort
     endif
 endfunction
 
-function! opvim#Mode(mode)
-    let g:opvim_project_mode = a:mode
+function! opvim#Mode(...)
+    if a:0 > 0
+        let g:opvim_project_mode = a:1
+    else
+        call s:AutoMode()
+    endif
 endfunction
 
 function! opvim#CMake() abort
