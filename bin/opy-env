@@ -47,7 +47,7 @@ if [[ -z $PYENV_CMD ]]; then
     if [[ "$PLATFORM" == "MacOSX" ]]; then
         BREW_CMD=`which brew`
         if [[ -z $BREW_CMD ]]; then
-            echo "Not found brew command."
+            echo "Not found brew command -> Install brew ..."
             ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
         fi
 
@@ -56,14 +56,19 @@ if [[ -z $PYENV_CMD ]]; then
             exit 1
         fi
 
-        echo "Install pyenv from brew command."
+        echo "Install pyenv from brew ..."
         brew update
-        brew install pyenv
-        brew install pyenv-virtualenv
+        brew install pyenv pyenv-virtualenv
     else
         GIT_CMD=`which git`
         if [[ -z $GIT_CMD ]]; then
-            echo "Not found git command."
+            echo "Not found git command -> Install git ..."
+            sudo apt-get update
+            sudo apt-get install -y git
+        fi
+
+        GIT_CMD=`which git`
+        if [[ -z $GIT_CMD ]]; then
             exit 1
         fi
 
@@ -90,13 +95,23 @@ FIND_PYTHON_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^${
 if [[ -z $FIND_PYTHON_ENV ]]; then
     echo "Not found $OPY_PYTHON_VERSION pyenv."
     if [[ "$PLATFORM" == "MacOSX" ]]; then
+        echo "Install dependencies ..."
+        brew update
+        brew install openssl readline xz
+
         echo "Use the homebrew's OpenSSL."
         echo " * See also: https://github.com/pyenv/pyenv/wiki/Common-build-problems"
+        echo "Install python from pyenv ..."
         CFLAGS="-I$(brew --prefix openssl)/include" \
         LDFLAGS="-L$(brew --prefix openssl)/lib"    \
         PYTHON_CONFIGURE_OPTS="--enable-framework"  \
             pyenv install $OPY_PYTHON_VERSION
     else
+        echo "Install dependencies ..."
+        sudo apt-get update
+        sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev xz-utils tk-dev
+
+        echo "Install python from pyenv ..."
         PYTHON_CONFIGURE_OPTS="--enable-shared" \
             pyenv install $OPY_PYTHON_VERSION
     fi
