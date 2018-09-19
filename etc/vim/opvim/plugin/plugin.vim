@@ -13,15 +13,11 @@ call opvim#Initialize()
 let g:opvim_loaded = 1
 
 if !exists('g:opvim_cmake_path')
-    if exists('g:opvim_cmake_which')
+    if exists('g:opvim_cmake_which') " init from python code.
         let g:opvim_cmake_path = g:opvim_cmake_which
     else
         let g:opvim_cmake_path = 'cmake'
     endif
-endif
-
-if !exists('g:opvim_cmake_generator')
-    let g:opvim_cmake_generator = 'Makefile'
 endif
 
 if !exists('g:opvim_project_json_name')
@@ -50,12 +46,17 @@ endif
 
 command! -nargs=0 OpvimPreview  call opvim#Preview()
 command! -nargs=? OpvimExec     call opvim#Exec(<f-args>)
+command! -nargs=1 OpvimMode     call opvim#Mode(<args>)
+
 "command! -nargs=? OpvimCMake    call opvim#CMake(<f-args>)
 "command! -nargs=? OpvimBuild    call opvim#Build(<f-args>)
 "command! -nargs=? OpvimDebug    call opvim#Debug(<f-args>)
 "command! -nargs=? OpvimTest     call opvim#Test(<f-args>)
-"command! -nargs=1 OpvimMode     call opvim#Mode(<f-args>)
 
 cnoreabbrev oop OpvimPreview
 cnoreabbrev ooe OpvimExec
+cnoreabbrev oom OpvimMode
+
+" QuickMenu
+noremap <silent>` :call quickmenu#toggle(0)<CR>
 

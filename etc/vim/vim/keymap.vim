@@ -5,22 +5,28 @@ let mapleader="\\"
 " Common setting.
 " Yanked text to vi command prompt: <C-r>"
 
+" Terminal settings.
+if has('nvim')
+tnoremap <ESC> <C-\><C-n>
+endif
+
 " Open window.
-nnoremap  <leader><leader>1  :NERDTreeToggle<CR>
-nnoremap  <leader><leader>2  :Tagbar<CR>
-nnoremap  <leader><leader>3  :call ToggleQuickfixBuffer()<CR>
-"nnoremap <leader><leader>3  :GundoToggle<CR>
-"nnoremap <leader><leader>4  :SrcExplToggle<CR>
+noremap  <leader><leader>1  <ESC>:NERDTreeToggle<CR>
+noremap  <leader><leader>2  <ESC>:Tagbar<CR>
+noremap  <leader><leader>3  <ESC>:call ToggleQuickfixBuffer()<CR>
+noremap  <leader><leader>4  <ESC>:call ToggleTerminalBuffer()<CR>
+"noremap <leader><leader>8  <ESC>:GundoToggle<CR>
+"noremap <leader><leader>9  <ESC>:SrcExplToggle<CR>
 
 " Jump NERDTree window.
-nnoremap  <leader>1  :NERDTreeFocus<CR>
-nnoremap  <leader>2  :NERDTreeFocus<CR><C-w>w
+noremap  <leader>1  <ESC>:NERDTreeFocus<CR>
+noremap  <leader>2  <ESC>:NERDTreeFocus<CR><C-w>w
 
 " Buffer settings.
-noremap  <F1>      :call MovePrevModifiableBuffer()<CR>
-noremap  <F2>      :call MoveNextModifiableBuffer()<CR>
-nnoremap <leader>w :call CloseAndMoveNextBuffer()<CR>
-nnoremap <leader>W :call CloseAnotherBuffer()<CR>
+noremap  <F1>       <ESC>:call MovePrevModifiableBuffer()<CR>
+noremap  <F2>       <ESC>:call MoveNextModifiableBuffer()<CR>
+noremap  <leader>w  <ESC>:call CloseAndMoveNextBuffer()<CR>
+noremap  <leader>W  <ESC>:call CloseAnotherBuffer()<CR>
 
 " Clipboard settings.
 noremap  <F3> "+Y
@@ -66,16 +72,8 @@ nnoremap <F9> :make<CR>:copen<CR>
 imap <C-J> <ESC>a<Plug>snipMateNextOrTrigger
 smap <C-J> <Plug>snipMateNextOrTrigger
 
-" QuickMenu
-noremap <silent><F12> :call quickmenu#toggle(0)<CR>
-
 " Open ctrlp window.
 "noremap <leader><leader>o :CtrlP<CR>
-
-" Terminal settings.
-if has('nvim')
-tnoremap <Esc> <C-\><C-n>
-endif
 
 " ----------------
 " COMMAND SETTING.

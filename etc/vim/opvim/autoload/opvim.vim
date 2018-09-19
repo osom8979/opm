@@ -33,13 +33,13 @@ opvim.execute(vim.eval('a:cmds'))
 EOF
 endfunction
 
-"function! s:RunCMake(flags) abort
-"python3 << EOF
-"import opvim
-"opvim.cmake(vim.eval('a:flags'))
-"EOF
-"endfunction
-"
+function! s:RunCMake() abort
+python3 << EOF
+import opvim
+opvim.cmake()
+EOF
+endfunction
+
 "function! s:RunBuild(flags) abort
 "python3 << EOF
 "import opvim
@@ -83,11 +83,14 @@ function! opvim#Exec(...) abort
     endif
 endfunction
 
-"function! opvim#CMake(...) abort
-"    let flags = a:0 > 0 ? a:1 : ''
-"    call s:RunCMake(flags)
-"endfunction
-"
+function! opvim#Mode(mode)
+    let g:opvim_project_mode = a:mode
+endfunction
+
+function! opvim#CMake() abort
+    call s:RunCMake()
+endfunction
+
 "function! opvim#Build(...) abort
 "    let flags = a:0 > 0 ? a:1 : ''
 "    call s:RunBuild(flags)
@@ -107,8 +110,4 @@ endfunction
 "    let flags = a:0 > 0 ? a:1 : ''
 "    call s:RunOpen(flags)
 "endfunction
-"
-"function! opvim#Mode(mode)
-"    let g:opvim_project_mode = a:mode
-"endfunction
-"
+

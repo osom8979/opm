@@ -37,6 +37,7 @@ let s:BUFFER_NAME = 'B_NAME'
 let s:BUFFER_LINE = 'B_LINE'
 
 let s:QUICKFIX_NAME = "[Quickfix List]"
+let s:TERMINAL_REGEX = "term://.*"
 
 function! GetBufferInfoDictionary(num, f1, f2, f3, f4, f5, name, line)
     return {
@@ -158,6 +159,16 @@ function! FindBufferWithName(name)
     return {}
 endfunction
 
+function! FindBufferWithRegexName(regex)
+    for cursor in split(GetCurrentBuffersOutput(), '\n')
+        let dic = GetBufferInfoDictionaryWithString(cursor)
+        if !empty(matchstr(dic[s:BUFFER_NAME], a:regex))
+            return dic
+        endif
+    endfor
+    return {}
+endfunction
+
 function! GetCurrentModifiableListedBufferInfoList()
     let result = []
     for cursor in split(GetCurrentBuffersOutput(), '\n')
@@ -189,8 +200,28 @@ function! ToggleQuickfixBuffer()
     if ExistsQuickfixBuffer()
         silent execute 'cclose'
     else
-        silent execute 'copen'
-        silent execute 'wincmd p'
+        silent execute 'copen | wincmd p'
+    endif
+endfunction
+
+"" --------------------
+"" Terminal operations.
+"" --------------------
+
+function! FindTerminalBuffer()
+    return FindBufferWithRegexName(s:TERMINAL_REGEX)
+endfunction
+
+function! ToggleTerminalBuffer()
+    let height = 10
+    if exists('g:default_terminal_height')
+        let height = g:default_terminal_height
+    endif
+    let dic = FindTerminalBuffer()
+    if !empty(dic) && IsActiveBuffer(dic)
+        silent execute 'bdelete! ' . dic[s:BUFFER_NUM]
+    else
+        silent execute '10split term://bash -l | startinsert'
     endif
 endfunction
 
@@ -242,7 +273,7 @@ function! CloseAndMoveNextBuffer()
     if next != -1
         silent execute 'buffer ' . buffers[next][s:BUFFER_NUM]
     endif
-    silent execute 'bdelete ' . buffers[index][s:BUFFER_NUM]
+    silent execute 'bdelete! ' . buffers[index][s:BUFFER_NUM]
 endfunction
 
 function! CloseAnotherBuffer()
@@ -257,7 +288,7 @@ function! CloseAnotherBuffer()
 
     for cursor in buffers
         if cursor[s:BUFFER_NUM] != current
-            silent execute 'bdelete ' . cursor[s:BUFFER_NUM]
+            silent execute 'bdelete! ' . cursor[s:BUFFER_NUM]
         endif
     endfor
 endfunction
