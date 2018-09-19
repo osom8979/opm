@@ -5,18 +5,22 @@ let mapleader="\\"
 " Common setting.
 " Yanked text to vi command prompt: <C-r>"
 
-" Help message.
-"noremap <leader>? <ESC>:call OpmHelp()<CR>
+" Open window.
+nnoremap  <leader><leader>1  :NERDTreeToggle<CR>
+nnoremap  <leader><leader>2  :Tagbar<CR>
+nnoremap  <leader><leader>3  :call ToggleQuickfixBuffer()<CR>
+"nnoremap <leader><leader>3  :GundoToggle<CR>
+"nnoremap <leader><leader>4  :SrcExplToggle<CR>
+
+" Jump NERDTree window.
+nnoremap  <leader>1  :NERDTreeFocus<CR>
+nnoremap  <leader>2  :NERDTreeFocus<CR><C-w>w
 
 " Buffer settings.
 noremap  <F1>      :call MovePrevModifiableBuffer()<CR>
 noremap  <F2>      :call MoveNextModifiableBuffer()<CR>
 nnoremap <leader>w :call CloseAndMoveNextBuffer()<CR>
 nnoremap <leader>W :call CloseAnotherBuffer()<CR>
-
-" Tab settings.
-"nnoremap <leader><F1>   :tabprevious<CR>
-"nnoremap <leader><F2>   :tabNext<CR>
 
 " Clipboard settings.
 noremap  <F3> "+Y
@@ -25,10 +29,16 @@ vnoremap <F3> "+y
 vnoremap <F4> "+gP
 inoremap <F4> <ESC>"+gpa
 
+" Quick-fix settings.
+nnoremap <leader><F1>   :cprevious<CR>
+nnoremap <leader><F2>   :cnext<CR>
+
 " Makefile settings.
-nnoremap <F9>                   :make<CR>:copen<CR>
-nnoremap <leader><leader><F1>   :cprevious<CR>
-nnoremap <leader><leader><F2>   :cnext<CR>
+nnoremap <F9> :make<CR>:copen<CR>
+
+" Tab settings.
+"nnoremap <leader><F1>   :tabprevious<CR>
+"nnoremap <leader><F2>   :tabNext<CR>
 
 " Ctags settings.
 "nnoremap  <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
@@ -59,28 +69,10 @@ smap <C-J> <Plug>snipMateNextOrTrigger
 " QuickMenu
 noremap <silent><F12> :call quickmenu#toggle(0)<CR>
 
-" ---------------
-" WINDOW SETTING.
-" ---------------
-
-" Open window.
-nnoremap  <leader><leader>1  :NERDTreeToggle<CR>
-nnoremap  <leader><leader>2  :Tagbar<CR>
-nnoremap  <leader><leader>3  :call ToggleQuickfixBuffer()<CR>
-"nnoremap <leader><leader>3  :GundoToggle<CR>
-"nnoremap <leader><leader>4  :SrcExplToggle<CR>
-
-" Jump NERDTree window.
-nnoremap  <leader>1  :NERDTreeFocus<CR>
-nnoremap  <leader>2  :NERDTreeFocus<CR><C-w>w
-
 " Open ctrlp window.
 "noremap <leader><leader>o :CtrlP<CR>
 
-" ----------------------
-" Terminal Mode SETTING.
-" ----------------------
-
+" Terminal settings.
 if has('nvim')
 tnoremap <Esc> <C-\><C-n>
 endif

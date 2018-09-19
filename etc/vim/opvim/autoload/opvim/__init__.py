@@ -1,32 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from .config import *
+from .common import *
+from .project import *
 
-__add__ = ['init', 'execute', 'cmake', 'build', 'debug', 'test', 'open', 'preview']
+__add__ = ['init', 'preview', 'execute']
 
 def init():
-    config.initGlobalVariables()
-    return True
-
-def execute(flags):
-    config.execute(flags)
-
-def cmake(flags):
-    pass
-
-def build(flags):
-    pass
-
-def debug(flags):
-    pass
-
-def test(flags):
-    pass
-
-def open(flags):
-    pass
+    common.setDefaultCMakeWhich()
 
 def preview():
-    config.preview()
+    project.previewGlobalProject()
+
+def execute(flags):
+    common.execute(flags)
+
+# def cmake(flags):
+#     common.cmake(flags)
+#     pass
+#
+# def build(flags):
+#     pass
+#
+# def debug(flags):
+#     pass
+#
+# def test(flags):
+#     pass
 

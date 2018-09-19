@@ -4,12 +4,13 @@ if exists('g:opvim_loaded')
     finish
 endif
 
-let g:opvim_loaded = 1
 call opvim#Initialize()
 
 "" ----------------------------
 "" Global settings & variables.
 "" ----------------------------
+
+let g:opvim_loaded = 1
 
 if !exists('g:opvim_cmake_path')
     if exists('g:opvim_cmake_which')
@@ -19,8 +20,12 @@ if !exists('g:opvim_cmake_path')
     endif
 endif
 
-if !exists('g:opvim_project_name')
-    let g:opvim_project_name = 'opvim.json'
+if !exists('g:opvim_cmake_generator')
+    let g:opvim_cmake_generator = 'Makefile'
+endif
+
+if !exists('g:opvim_project_json_name')
+    let g:opvim_project_json_name = 'opvim.json'
 endif
 
 if !exists('g:opvim_project_mode')
@@ -43,20 +48,14 @@ endif
 "" Command & KeyMap.
 "" -----------------
 
-command! -nargs=? OpvimExec     call opvim#Exec(<f-args>)
-command! -nargs=? OpvimCMake    call opvim#CMake(<f-args>)
-command! -nargs=? OpvimBuild    call opvim#Build(<f-args>)
-command! -nargs=? OpvimDebug    call opvim#Debug(<f-args>)
-command! -nargs=? OpvimTest     call opvim#Test(<f-args>)
-command! -nargs=? OpvimOpen     call opvim#Open(<f-args>)
-command! -nargs=? OpvimMode     call opvim#Mode(<f-args>)
 command! -nargs=0 OpvimPreview  call opvim#Preview()
+command! -nargs=? OpvimExec     call opvim#Exec(<f-args>)
+"command! -nargs=? OpvimCMake    call opvim#CMake(<f-args>)
+"command! -nargs=? OpvimBuild    call opvim#Build(<f-args>)
+"command! -nargs=? OpvimDebug    call opvim#Debug(<f-args>)
+"command! -nargs=? OpvimTest     call opvim#Test(<f-args>)
+"command! -nargs=1 OpvimMode     call opvim#Mode(<f-args>)
 
-nnoremap <leader><leader><leader>c  :OpvimCMake<CR>
-nnoremap <leader><leader><leader>b  :OpvimBuild<CR>
-nnoremap <leader><leader><leader>d  :OpvimDebug<CR>
-nnoremap <leader><leader><leader>t  :OpvimTest<CR>
-nnoremap <leader><leader><leader>o  :OpvimOpen<CR>
-nnoremap <leader><leader><leader>m  :OpvimMode<CR>
-nnoremap <leader><leader><leader>p  :OpvimPreview<CR>
+cnoreabbrev oop OpvimPreview
+cnoreabbrev ooe OpvimExec
 
