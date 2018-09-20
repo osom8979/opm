@@ -47,13 +47,13 @@ opvim.cmake()
 EOF
 endfunction
 
-"function! s:RunBuild(flags) abort
-"python3 << EOF
-"import opvim
-"opvim.build(vim.eval('a:flags'))
-"EOF
-"endfunction
-"
+function! s:RunBuild(target) abort
+python3 << EOF
+import opvim
+opvim.build(vim.eval('a:target'))
+EOF
+endfunction
+
 "function! s:RunDebug(flags) abort
 "python3 << EOF
 "import opvim
@@ -102,11 +102,14 @@ function! opvim#CMake() abort
     call s:RunCMake()
 endfunction
 
-"function! opvim#Build(...) abort
-"    let flags = a:0 > 0 ? a:1 : ''
-"    call s:RunBuild(flags)
-"endfunction
-"
+function! opvim#Build(...) abort
+    if a:0 > 0
+        call s:RunBuild(a:1)
+    else
+        call s:RunBuild('')
+    endif
+endfunction
+
 "function! opvim#Debug(...) abort
 "    let flags = a:0 > 0 ? a:1 : ''
 "    call s:RunDebug(flags)

@@ -6,7 +6,7 @@ from .project import *
 
 import os
 
-__add__ = ['init', 'preview', 'execute', 'autoMode']
+__add__ = ['init', 'preview', 'execute', 'autoMode', 'cmake', 'build']
 
 def init():
     common.setDefaultCMakeWhich()
@@ -30,7 +30,6 @@ def cmake():
     if not proj.exists():
         common.eprint('Project is not exists.')
         return
-
     if not proj.existsMode():
         common.eprint('{} mode is not exists.'.format(proj.mode))
         return
@@ -46,9 +45,26 @@ def cmake():
     cmds += ' {} {} {}'.format(common.getCMakePath(), cmake_flags, root_dir)
     common.execute(cmds)
 
-# def build(flags):
-#     pass
-#
+def build(target=str()):
+    proj = project.getDefaultProject()
+    if not proj.exists():
+        common.eprint('Project is not exists.')
+        return
+    if not proj.existsMode():
+        common.eprint('{} mode is not exists.'.format(proj.mode))
+        return
+
+    root_dir = proj.getRoot()
+    cmake_dir = os.path.join(root_dir, proj.getCurrentCMakeDirectory())
+    build_flags = proj.getCurrentBuildFlags()
+
+    cmds = '-cwd={}'.format(cmake_dir)
+    cmds += ' {} --build {}'.format(common.getCMakePath(), cmake_dir)
+    if target:
+        cmds += ' --target {}'.format(target)
+    cmds += ' -- {}'.format(build_flags)
+    common.execute(cmds)
+
 # def debug(flags):
 #     pass
 #

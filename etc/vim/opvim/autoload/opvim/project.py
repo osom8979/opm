@@ -109,6 +109,15 @@ class Project:
     def getCurrentCMakeFlags(self):
         return self.getCMakeFlags(self.mode)
 
+    def getBuildFlags(self, mode):
+        mode_data = self.getCMakeDictionary(mode)
+        if mode_data and 'build' in mode_data:
+            return mode_data['build'].strip()
+        return str()
+
+    def getCurrentBuildFlags(self):
+        return self.getBuildFlags(self.mode)
+
     def preview(self):
         print('Project root: {}'.format(self.getRoot()))
         print('OPM-VIM json: {}'.format(self.json_path))
@@ -123,6 +132,7 @@ class Project:
             print('[{}]:'.format(mode))
             print(' - dir: {}'.format(self.getCMakeDirectory(mode)))
             print(' - flags: {}'.format(self.getCMakeFlags(mode)))
+            print(' - build: {}'.format(self.getBuildFlags(mode)))
 
         #pprint.pprint(self.json_data)
         pass
