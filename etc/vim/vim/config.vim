@@ -205,5 +205,8 @@ if has('autocmd')
 
     " Show Tagbar window.
     "autocmd TabEnter * Tagbar
+
+    " Remove tailing whitespace.
+    autocmd FileType vim,c,cpp,java,php,ruby,python autocmd BufWritePre <buffer> :%s/\s\+$//e
 endif
 
