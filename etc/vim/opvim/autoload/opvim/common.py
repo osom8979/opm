@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import os
+import sys
 import vim
 import json
 import pprint
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 def getCurrentWorkingDirectory():
     return os.getcwd()
@@ -16,7 +22,7 @@ def which(name):
     return None
 
 def whichCMakePath():
-    return which('cmake') 
+    return which('cmake')
 
 def setCMakeWhich(cmake_path):
     vim.command('let g:opvim_cmake_which = "{}"'.format(cmake_path))
