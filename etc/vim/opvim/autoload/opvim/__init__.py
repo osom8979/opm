@@ -23,10 +23,10 @@ def autoMode():
         print('Set to default project-mode: {}'.format(mode))
     common.setProjectMode(mode)
 
-# def cmake(flags):
-#     common.cmake(flags)
-#     pass
-#
+def cmake(flags):
+    common.cmake(flags)
+    pass
+
 # def build(flags):
 #     pass
 #

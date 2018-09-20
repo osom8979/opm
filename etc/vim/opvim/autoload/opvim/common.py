@@ -48,8 +48,8 @@ def setProjectMode(mode):
 def getDefaultProjectMode():
     return vim.eval('g:opvim_default_project_mode')
 
-def getCMakeGenerator():
-    return vim.eval('g:opvim_cmake_generator')
+def getDefaultBuildPrefix():
+    return vim.eval('g:opvim_default_build_prefix')
 
 def execute(cmd):
     if isAsyncEnable():

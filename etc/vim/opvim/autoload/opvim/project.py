@@ -8,7 +8,7 @@ import json
 import pprint
 
 CMAKE_KEY = 'cmake'
-GENERATOR_KEY = 'generator'
+DEBUG_KEY = 'debug'
 
 class Project:
     """
@@ -17,7 +17,8 @@ class Project:
 
     json_path = ''
     json_data = ''
-    mode = ''
+    prefix = 'build-'
+    mode = 'debug'
 
     def __init__(self, json_path, **kwargs):
         self.json_path = json_path
@@ -25,6 +26,8 @@ class Project:
 
         if 'mode' in kwargs:
             self.mode = kwargs['mode']
+        if 'prefix' in kwargs:
+            self.prefix = kwargs['prefix']
 
     def __str__(self):
         return '{}:{}'.format(self.json_path, self.mode)
@@ -59,10 +62,49 @@ class Project:
             return list(self.json_data[CMAKE_KEY].keys())
         return list()
 
-    def getGenerator(self):
-        if self.exists() and GENERATOR_KEY in self.json_data:
-            return self.json_data[GENERATOR_KEY]
+    def getCMakeDictionary(self, mode):
+        if self.exists() and mode in self.getModes():
+            return self.json_data[CMAKE_KEY][mode]
+        return dict()
+
+    def getDefaultCMakeDirectory(self, mode):
+        return self.prefix + mode
+
+    def getCMakeDirectory(self, mode):
+        mode_data = self.getCMakeDictionary(mode)
+        if mode_data and 'dir' in mode_data:
+            return mode_data['dir'].strip()
+        return self.getDefaultCMakeDirectory(mode).strip()
+
+    def getCurrentCMakeDirectory(self):
+        return self.getCMakeDirectory(self.mode)
+
+    def getDefaultCMakeBuildType(self, mode):
+        lower_mode = mode.lower()
+        if lower_mode == 'debug':
+            return 'Debug'
+        if lower_mode == 'release':
+            return 'Release'
+        if lower_mode == 'release':
+            return 'RelWithDebInfo'
+        if lower_mode == 'minsizerel':
+            return 'MinSizeRel'
         return str()
+
+    def getDefaultCMakeFlags(self, mode):
+        result = str()
+        result += ' -DCMAKE_EXPORT_COMPILE_COMMANDS=ON'
+        result += ' -DCMAKE_BUILD_TYPE={}'.format(self.getDefaultCMakeBuildType(mode))
+        return result
+
+    def getCMakeFlags(self, mode):
+        mode_data = self.getCMakeDictionary(mode)
+        if mode_data and 'flags' in mode_data:
+            return mode_data['flags'].strip()
+        return self.getDefaultCMakeFlags(mode).strip()
+
+    def getCurrentCMakeFlags(self):
+        return self.getCMakeFlags(self.mode)
 
     def preview(self):
         print('Project root: {}'.format(self.getRoot()))
@@ -73,13 +115,20 @@ class Project:
             print('-- Not found project --')
             return
 
-        print('Generator: {}'.format(self.getGenerator()))
-        print('Mode list: {}'.format(self.getModes()))
-        pprint.pprint(self.json_data)
+        for mode in self.getModes():
+            mode_data = self.getCMakeDictionary(mode)
+            print('[{}]:'.format(mode))
+            print(' - dir: {}'.format(self.getCMakeDirectory(mode)))
+            print(' - flags: {}'.format(self.getCMakeFlags(mode)))
+
+        #pprint.pprint(self.json_data)
+        pass
+
 
 def getGlobalProject():
     return Project(getDefaultProjectJsonPath(),
-                   mode=getProjectMode())
+                   mode=getProjectMode(),
+                   prefix=getDefaultBuildPrefix())
 
 def getFirstMode():
     modes = getGlobalProject().getModes()

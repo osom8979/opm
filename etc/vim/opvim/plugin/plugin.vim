@@ -28,6 +28,10 @@ if !exists('g:opvim_default_project_mode')
     let g:opvim_default_project_mode = 'debug'
 endif
 
+if !exists('g:opvim_default_build_prefix')
+    let g:opvim_default_build_prefix = 'build-'
+endif
+
 if !exists('g:opvim_project_mode')
     let g:opvim_project_mode = g:opvim_default_project_mode
 endif
