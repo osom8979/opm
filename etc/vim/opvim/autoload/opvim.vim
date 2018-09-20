@@ -33,17 +33,17 @@ opvim.execute(vim.eval('a:cmds'))
 EOF
 endfunction
 
-function! s:RunCMake() abort
-python3 << EOF
-import opvim
-opvim.cmake()
-EOF
-endfunction
-
 function! s:AutoMode() abort
 python3 << EOF
 import opvim
 opvim.autoMode()
+EOF
+endfunction
+
+function! s:RunCMake() abort
+python3 << EOF
+import opvim
+opvim.cmake()
 EOF
 endfunction
 

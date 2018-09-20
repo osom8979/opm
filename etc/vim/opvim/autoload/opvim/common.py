@@ -30,6 +30,9 @@ def setCMakeWhich(cmake_path):
 def setDefaultCMakeWhich():
     setCMakeWhich(whichCMakePath())
 
+def getCMakePath():
+    return vim.eval('g:opvim_cmake_path')
+
 def isAsyncEnable():
     return int(vim.eval('g:opvim_asyncrun_enable')) is 1
 

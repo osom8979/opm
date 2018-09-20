@@ -62,6 +62,9 @@ class Project:
             return list(self.json_data[CMAKE_KEY].keys())
         return list()
 
+    def existsMode(self):
+        return self.mode in self.getModes()
+
     def getCMakeDictionary(self, mode):
         if self.exists() and mode in self.getModes():
             return self.json_data[CMAKE_KEY][mode]
@@ -125,18 +128,18 @@ class Project:
         pass
 
 
-def getGlobalProject():
+def getDefaultProject():
     return Project(getDefaultProjectJsonPath(),
                    mode=getProjectMode(),
                    prefix=getDefaultBuildPrefix())
 
+def previewDefaultProject():
+    getDefaultProject().preview()
+
 def getFirstMode():
-    modes = getGlobalProject().getModes()
+    modes = getDefaultProject().getModes()
     if modes:
         return modes[0]
     else:
         return None
-
-def previewGlobalProject():
-    getGlobalProject().preview()
 
