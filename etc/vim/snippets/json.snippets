@@ -1,0 +1,33 @@
+snippet snip-opvim-default
+	{
+	    "cmake": {
+	        "debug" : {
+	            "dir" : "build-debug",
+	            "flags" : "-DCMAKE_BUILD_TYPE=Debug",
+	            "build" : "-j8 VERBOSE=1"
+	        },
+	        "release" : {
+	        },
+	        "ninja" : {
+	            "flags" : "-GNinja -DCMAKE_BUILD_TYPE=Debug"
+	        }
+	    },
+	    "debug" : {
+	        "gdb-out" : {
+	            "type" : "gdb",
+	            "cmds" : "--args ./build-debug/a.out --verbose"
+	        },
+	        "lldb-out" : {
+	            "type" : "lldb",
+	            "cmds" : "-- ./build-debug/a.out --verbose"
+	        }
+	    },
+	    "script" : {
+	        "custom-script": {
+	            "cwd" : "",
+	            "cmds" :"pwd"
+	        }
+	    }
+	}
+
+
