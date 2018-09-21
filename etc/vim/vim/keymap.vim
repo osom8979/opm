@@ -15,7 +15,7 @@ noremap  <leader><leader>1  <ESC>:NERDTreeToggle<CR>
 noremap  <leader><leader>2  <ESC>:Tagbar<CR>
 noremap  <leader><leader>3  <ESC>:call ToggleQuickfixBuffer()<CR>
 noremap  <leader><leader>4  <ESC>:call ToggleTerminalBuffer()<CR>
-noremap  <leader><leader>9  <ESC>:GundoToggle<CR>
+noremap  <leader><leader>=  <ESC>:GundoToggle<CR>
 "noremap <leader><leader>8  <ESC>:SrcExplToggle<CR>
 
 " Jump NERDTree window.
