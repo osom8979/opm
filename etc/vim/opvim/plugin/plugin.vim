@@ -36,16 +36,8 @@ if !exists('g:opvim_project_mode')
     let g:opvim_project_mode = g:opvim_default_project_mode
 endif
 
-if !exists('g:opvim_asyncrun_enable')
-    if exists('g:asyncrun_support')
-        let g:opvim_asyncrun_enable = 1
-    else
-        let g:opvim_asyncrun_enable = 0
-    endif
-endif
-
-if !exists('g:opvim_debugging')
-    let g:opvim_debugging = 0
+if !exists('g:opvim_quickmenu_id')
+    let g:opvim_quickmenu_id = 100
 endif
 
 "" -----------------
@@ -58,7 +50,23 @@ command! -nargs=?       OpvimMode     call opvim#Mode(<f-args>)
 command! -nargs=0       OpvimCMake    call opvim#CMake()
 command! -nargs=?       OpvimBuild    call opvim#Build(<f-args>)
 command! -nargs=?       OpvimDebug    call opvim#Debug(<f-args>)
+command! -nargs=?       OpvimScript   call opvim#Script(<f-args>)
 
-" QuickMenu
-noremap <leader>` :call quickmenu#toggle(0)<CR>
+" -----------------
+" Update QuickMenu.
+" -----------------
+
+noremap <leader>` <ESC>:call quickmenu#toggle(g:opvim_quickmenu_id)<CR>
+
+function! g:ReloadQuickMenu()
+    call quickmenu#current(g:opvim_quickmenu_id)
+    call quickmenu#reset()
+    call quickmenu#header('OPMVIM {%{g:opvim_project_mode}}')
+    call quickmenu#append('# COMMAND', '')
+    call quickmenu#append('Preview', 'OpvimPreview', 'Preview opvim project')
+    call quickmenu#append('CMake', 'OpvimCMake', 'Run cmake')
+    call quickmenu#append('Build', 'OpvimBuild', 'Run build')
+    call opvim#UpdateQuickMenu()
+endfunction
+call g:ReloadQuickMenu()
 

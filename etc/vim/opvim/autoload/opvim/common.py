@@ -12,6 +12,9 @@ import pprint
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
+def command(flags):
+    vim.command(flags)
+
 def getCurrentWorkingDirectory():
     return os.getcwd()
 
@@ -25,16 +28,13 @@ def whichCMakePath():
     return which('cmake')
 
 def setCMakeWhich(cmake_path):
-    vim.command('let g:opvim_cmake_which = "{}"'.format(cmake_path))
+    command('let g:opvim_cmake_which = "{}"'.format(cmake_path))
 
 def setDefaultCMakeWhich():
     setCMakeWhich(whichCMakePath())
 
 def getCMakePath():
     return vim.eval('g:opvim_cmake_path')
-
-def isAsyncEnable():
-    return int(vim.eval('g:opvim_asyncrun_enable')) is 1
 
 def getProjectJsonName():
     return vim.eval('g:opvim_project_json_name')
@@ -46,7 +46,7 @@ def getProjectMode():
     return vim.eval('g:opvim_project_mode')
 
 def setProjectMode(mode):
-    vim.command('let g:opvim_project_mode = "{}"'.format(mode))
+    command('let g:opvim_project_mode = "{}"'.format(mode))
 
 def getDefaultProjectMode():
     return vim.eval('g:opvim_default_project_mode')
@@ -55,8 +55,8 @@ def getDefaultBuildPrefix():
     return vim.eval('g:opvim_default_build_prefix')
 
 def execute(cmd):
-    if isAsyncEnable():
-        vim.command(':AsyncRun {}'.format(cmd))
-    else:
-        vim.command(':cexpr system("{}")'.format(cmd))
+    command(':AsyncRun {}'.format(cmd))
+
+def executeSync(cmd):
+    command(':cexpr system("{}")'.format(cmd))
 

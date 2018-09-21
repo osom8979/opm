@@ -138,6 +138,11 @@ let g:gundo_right = 1
 let g:gundo_width = 25
 let g:gundo_preview_height = 15
 
+" QuickMenu
+" L: enable cursorline
+" H: cmdline help
+let g:quickmenu_options = "HL"
+
 " python-mode
 let g:pymode_folding = 0
 let g:pymode_lint_ignore = 'E203,E221,E266,E272,E301,E302'

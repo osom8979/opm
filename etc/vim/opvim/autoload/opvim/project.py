@@ -173,20 +173,38 @@ class Project:
             return self.json_data[DEBUG_KEY][key]
         return dict()
 
-    def checkDebugType(self, key):
-        lower_key = key.lower()
-        if lower_key == DEBUG_TYPE_GDB:
-            return True
-        if lower_key == DEBUG_TYPE_LLDB:
-            return True
-        if lower_key == DEBUG_TYPE_PDB:
-            return True
-        return False
+    def getDebugCwd(self, key):
+        debug_data = self.getDebugDictionary(key)
+        if debug_data and 'cwd' in debug_data:
+            return debug_data['cwd'].strip()
+        return self.getRoot()
+
+    def getCheckedDebugType(self, debug_type):
+        lower_type = debug_type.lower()
+        if lower_type == DEBUG_TYPE_GDB:
+            return DEBUG_TYPE_GDB
+        elif lower_type == DEBUG_TYPE_LLDB:
+            return DEBUG_TYPE_LLDB
+        elif lower_type == DEBUG_TYPE_PDB:
+            return DEBUG_TYPE_PDB
+        return str()
+
+    def getDebugCommandPrefix(self, debug_type):
+        lower_type = debug_type.lower()
+        if lower_type == DEBUG_TYPE_GDB:
+            return ':GdbStart gdb'
+        elif lower_type == DEBUG_TYPE_LLDB:
+            return ':GdbStartLLDB lldb'
+        elif lower_type == DEBUG_TYPE_PDB:
+            return ':GdbStartPDB python -m pdb'
+        return str()
 
     def getDebugType(self, key):
         debug_data = self.getDebugDictionary(key)
         if debug_data and 'type' in debug_data:
-            return debug_data['type'].strip()
+            checked_type = self.getCheckedDebugType(debug_data['type'].strip())
+            if checked_type:
+                return checked_type
         return str()
 
     def getDebugCmds(self, key):
@@ -237,8 +255,12 @@ class Project:
 
         for debug_key in self.getDebugKeys():
             is_success = True
+            debug_cwd = self.getDebugCwd(debug_key)
+            if not os.path.isdir(debug_cwd):
+                debug_cwd = '-- ERROR --'
+                is_success = False
             debug_type = self.getDebugType(debug_key)
-            if not self.checkDebugType(debug_type):
+            if not debug_type:
                 debug_type = '-- ERROR --'
                 is_success = False
             debug_cmds = self.getDebugCmds(debug_key)
@@ -247,6 +269,7 @@ class Project:
                 is_success = False
             if show_error or is_success:
                 print('[DEBUG:{}]:'.format(debug_key))
+                print(' - cwd: {}'.format(debug_cwd))
                 print(' - type: {}'.format(debug_type))
                 print(' - cmds: {}'.format(debug_cmds))
 

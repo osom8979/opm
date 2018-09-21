@@ -6,7 +6,18 @@ from .project import *
 
 import os
 
-__add__ = ['init', 'preview', 'execute', 'autoMode', 'cmake', 'build']
+__add__ = ['init', 'preview', 'execute', 'autoMode', 'cmake', 'build', 'debug', 'script',
+           'updateQuickMenu']
+
+def defaultProject():
+    proj = project.getDefaultProject()
+    if not proj.exists():
+        common.eprint('Project is not exists.')
+        return None
+    if not proj.existsCurrentMode():
+        common.eprint('{} mode is not exists.'.format(proj.mode))
+        return None
+    return proj
 
 def init():
     common.setDefaultCMakeWhich()
@@ -17,6 +28,9 @@ def preview(show_error=True):
 def execute(flags):
     common.execute(flags)
 
+def command(flags):
+    common.command(flags)
+
 def autoMode():
     mode = project.getFirstMode()
     if mode is None:
@@ -26,12 +40,8 @@ def autoMode():
     common.setProjectMode(mode)
 
 def cmake():
-    proj = project.getDefaultProject()
-    if not proj.exists():
-        common.eprint('Project is not exists.')
-        return
-    if not proj.existsCurrentMode():
-        common.eprint('{} mode is not exists.'.format(proj.mode))
+    proj = defaultProject()
+    if not proj:
         return
 
     root_dir = proj.getRoot()
@@ -46,12 +56,8 @@ def cmake():
     common.execute(cmds)
 
 def build(target=str()):
-    proj = project.getDefaultProject()
-    if not proj.exists():
-        common.eprint('Project is not exists.')
-        return
-    if not proj.existsCurrentMode():
-        common.eprint('{} mode is not exists.'.format(proj.mode))
+    proj = defaultProject()
+    if not proj:
         return
 
     root_dir = proj.getRoot()
@@ -65,9 +71,77 @@ def build(target=str()):
     cmds += ' -- {}'.format(build_flags)
     common.execute(cmds)
 
-# def debug(flags):
-#     pass
-#
-# def test(flags):
-#     pass
+def debug(debug_key):
+    proj = defaultProject()
+    if not proj:
+        return
+
+    ## -- current not working -- ##
+    # debug_cwd = proj.getDebugCwd(debug_key)
+    # if not os.path.isdir(debug_cwd):
+    #     common.eprint('No such directory: {}'.format(debug_cwd))
+    #     return
+
+    debug_type = proj.getDebugType(debug_key)
+    if not debug_type:
+        common.eprint('Unknown {} type'.format(debug_type))
+        return
+
+    debug_cmds = proj.getDebugCmds(debug_key)
+    if not debug_cmds:
+        common.eprint('Undefined cmd')
+        return
+
+    cmds = proj.getDebugCommandPrefix(debug_type)
+    cmds += ' {}'.format(debug_cmds)
+    common.command(cmds)
+
+def script(script_key):
+    proj = defaultProject()
+    if not proj:
+        return
+
+    script_cwd = proj.getScriptCwd(script_key)
+    if not os.path.isdir(script_cwd):
+        common.eprint('No such directory: {}'.format(script_cwd))
+        return
+
+    script_cmds = proj.getScriptCmds(script_key)
+    if not script_cmds:
+        common.eprint('Undefined cmd')
+        return
+
+    cmds = '-cwd={}'.format(script_cwd)
+    cmds += ' {}'.format(script_cmds)
+    common.execute(cmds)
+
+def appendQuickMenuSection(title):
+    common.command('call quickmenu#append("# {}", "")'.format(title))
+
+def appendQuickMenu(text, action, options):
+    common.command('call quickmenu#append("{}", "{}", "{}")'.format(text, action, options))
+
+def updateQuickMenu():
+    proj = project.getDefaultProject()
+    if not proj.exists() or not proj.existsCurrentMode():
+        # Don't print to stderr.
+        return
+
+    validated_keys = list()
+    for key in proj.getDebugKeys():
+        if proj.getDebugType(key) and proj.getDebugCmds(key):
+            validated_keys.append(key)
+
+    appendQuickMenuSection('OPVIM DEBUG')
+    for vkey in validated_keys:
+        appendQuickMenu(vkey, 'OpvimDebug ' + vkey, 'Run debugger ' + vkey)
+
+    validated_keys = list()
+    for key in proj.getScriptKeys():
+        if proj.getScriptCmds(key):
+            validated_keys.append(key)
+
+    appendQuickMenuSection('OPVIM SCRIPT')
+    for vkey in validated_keys:
+        appendQuickMenu(vkey, 'OpvimScript ' + vkey, 'Run script ' + vkey)
 

@@ -15,8 +15,8 @@ noremap  <leader><leader>1  <ESC>:NERDTreeToggle<CR>
 noremap  <leader><leader>2  <ESC>:Tagbar<CR>
 noremap  <leader><leader>3  <ESC>:call ToggleQuickfixBuffer()<CR>
 noremap  <leader><leader>4  <ESC>:call ToggleTerminalBuffer()<CR>
-"noremap <leader><leader>8  <ESC>:GundoToggle<CR>
-"noremap <leader><leader>9  <ESC>:SrcExplToggle<CR>
+noremap  <leader><leader>9  <ESC>:GundoToggle<CR>
+"noremap <leader><leader>8  <ESC>:SrcExplToggle<CR>
 
 " Jump NERDTree window.
 noremap  <leader>1  <ESC>:NERDTreeFocus<CR>
@@ -35,16 +35,16 @@ vnoremap <F3> "+y
 vnoremap <F4> "+gP
 inoremap <F4> <ESC>"+gpa
 
+" Tab settings.
+nnoremap <leader><F1>  :tabprevious<CR>
+nnoremap <leader><F2>  :tabNext<CR>
+
 " Quick-fix settings.
-nnoremap <leader><F1>   :cprevious<CR>
-nnoremap <leader><F2>   :cnext<CR>
+nnoremap <F5>  :cprevious<CR>
+nnoremap <F6>  :cnext<CR>
 
 " Makefile settings.
 "nnoremap <F9> :make<CR>:copen<CR>
-
-" Tab settings.
-"nnoremap <leader><F1>   :tabprevious<CR>
-"nnoremap <leader><F2>   :tabNext<CR>
 
 " Tags settings.
 nnoremap  <leader>t <ESC>:tags<CR>

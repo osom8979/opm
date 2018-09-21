@@ -21,7 +21,7 @@ endfunction
 function! s:RunPreview(show_error) abort
 python3 << EOF
 import opvim
-opvim.preview(int(vim.eval('a:show_error')) == 1)
+opvim.preview(int(vim.eval('a:show_error')) is 1)
 EOF
 endfunction
 
@@ -54,10 +54,24 @@ opvim.build(vim.eval('a:target'))
 EOF
 endfunction
 
-function! s:RunDebug(flags) abort
+function! s:RunDebug(debug_key) abort
 python3 << EOF
 import opvim
-opvim.debug(vim.eval('a:flags'))
+opvim.debug(vim.eval('a:debug_key'))
+EOF
+endfunction
+
+function! s:RunScript(script_key) abort
+python3 << EOF
+import opvim
+opvim.script(vim.eval('a:script_key'))
+EOF
+endfunction
+
+function! s:UpdateQuickMenu() abort
+python3 << EOF
+import opvim
+opvim.updateQuickMenu()
 EOF
 endfunction
 
@@ -103,8 +117,11 @@ function! opvim#Debug(...) abort
     call s:RunDebug(a:0 > 0 ? a:1 : '')
 endfunction
 
-"function! opvim#Open(...) abort
-"    let flags = a:0 > 0 ? a:1 : ''
-"    call s:RunOpen(flags)
-"endfunction
+function! opvim#Script(...) abort
+    call s:RunScript(a:0 > 0 ? a:1 : '')
+endfunction
+
+function! opvim#UpdateQuickMenu() abort
+    call s:UpdateQuickMenu()
+endfunction
 

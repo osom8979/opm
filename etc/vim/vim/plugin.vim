@@ -41,9 +41,9 @@ NeoBundle 'majutsushi/tagbar'          " tagbar window.
 NeoBundle 'easymotion/vim-easymotion'  " motions on speed.
 NeoBundle 'kshenoy/vim-signature'      " display marks.
 NeoBundle 'scrooloose/nerdcommenter'   " language dependent commenter.
+NeoBundle 'sjl/gundo.vim'              " undo tree.
 "NeoBundle 'edkolev/promptline.vim'    " generate a fast shell prompt.
 "NeoBundle 'tpope/vim-surround'        " quoting/parenthesizing made simple.
-"NeoBundle 'sjl/gundo.vim'             " undo tree.
 "NeoBundle 'zakj/vim-showmarks'        " show mark list bar.
 NeoBundle 'scrooloose/syntastic'       " syntax checking hacks for vim.
 
