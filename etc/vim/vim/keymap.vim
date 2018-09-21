@@ -40,16 +40,16 @@ nnoremap <leader><F1>   :cprevious<CR>
 nnoremap <leader><F2>   :cnext<CR>
 
 " Makefile settings.
-nnoremap <F9> :make<CR>:copen<CR>
+"nnoremap <F9> :make<CR>:copen<CR>
 
 " Tab settings.
 "nnoremap <leader><F1>   :tabprevious<CR>
 "nnoremap <leader><F2>   :tabNext<CR>
 
-" Ctags settings.
-"nnoremap  <leader>t :tselect <C-R>=expand("<cword>")<CR><CR>
-"nnoremap  <leader>{ :tp<CR>
-"nnoremap  <leader>} :tn<CR>
+" Tags settings.
+nnoremap  <leader>t <ESC>:tags<CR>
+nnoremap  <leader>[ <ESC>:tprevious<CR>
+nnoremap  <leader>] <ESC>:tnext<CR>
 
 " Cscope settings.
 "nnoremap  <C-\>s  :cs find s <C-R>=expand("<cword>")<CR><CR>

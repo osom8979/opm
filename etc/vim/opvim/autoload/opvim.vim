@@ -18,10 +18,10 @@ opvim.init()
 EOF
 endfunction
 
-function! s:RunPreview() abort
+function! s:RunPreview(show_error) abort
 python3 << EOF
 import opvim
-opvim.preview()
+opvim.preview(int(vim.eval('a:show_error')) == 1)
 EOF
 endfunction
 
@@ -54,32 +54,25 @@ opvim.build(vim.eval('a:target'))
 EOF
 endfunction
 
-"function! s:RunDebug(flags) abort
-"python3 << EOF
-"import opvim
-"opvim.debug(vim.eval('a:flags'))
-"EOF
-"endfunction
-"
-"function! s:RunTest(flags) abort
-"python3 << EOF
-"import opvim
-"opvim.test(vim.eval('a:flags'))
-"EOF
-"endfunction
+function! s:RunDebug(flags) abort
+python3 << EOF
+import opvim
+opvim.debug(vim.eval('a:flags'))
+EOF
+endfunction
 
 " --------------
 " Public script.
 " --------------
 
-function! opvim#Initialize()
+function! opvim#Initialize() abort
     if has('nvim') && has('python3')
         call s:InitPython()
     endif
 endfunction
 
-function! opvim#Preview()
-    call s:RunPreview()
+function! opvim#Preview(show_error) abort
+    call s:RunPreview(a:show_error)
 endfunction
 
 function! opvim#Exec(...) abort
@@ -90,7 +83,7 @@ function! opvim#Exec(...) abort
     endif
 endfunction
 
-function! opvim#Mode(...)
+function! opvim#Mode(...) abort
     if a:0 > 0
         let g:opvim_project_mode = a:1
     else
@@ -103,23 +96,13 @@ function! opvim#CMake() abort
 endfunction
 
 function! opvim#Build(...) abort
-    if a:0 > 0
-        call s:RunBuild(a:1)
-    else
-        call s:RunBuild('')
-    endif
+    call s:RunBuild(a:0 > 0 ? a:1 : '')
 endfunction
 
-"function! opvim#Debug(...) abort
-"    let flags = a:0 > 0 ? a:1 : ''
-"    call s:RunDebug(flags)
-"endfunction
-"
-"function! opvim#Test(...) abort
-"    let flags = a:0 > 0 ? a:1 : ''
-"    call s:RunTest(flags)
-"endfunction
-"
+function! opvim#Debug(...) abort
+    call s:RunDebug(a:0 > 0 ? a:1 : '')
+endfunction
+
 "function! opvim#Open(...) abort
 "    let flags = a:0 > 0 ? a:1 : ''
 "    call s:RunOpen(flags)

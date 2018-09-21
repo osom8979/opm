@@ -52,22 +52,12 @@ endif
 "" Command & KeyMap.
 "" -----------------
 
-command! -nargs=0  OpvimPreview  call opvim#Preview()
-command! -nargs=?  OpvimExec     call opvim#Exec(<f-args>)
-command! -nargs=?  OpvimMode     call opvim#Mode(<f-args>)
-command! -nargs=0  OpvimCMake    call opvim#CMake()
-command! -nargs=?  OpvimBuild    call opvim#Build(<f-args>)
-
-"command! -nargs=?  OpvimDebug    call opvim#Debug(<f-args>)
-"command! -nargs=?  OpvimTest     call opvim#Test(<f-args>)
-
-cnoreabbrev  oop    OpvimPreview
-cnoreabbrev  ooe    OpvimExec
-cnoreabbrev  oom    OpvimMode
-cnoreabbrev  ooc    OpvimCMake
-cnoreabbrev  cmake  OpvimCMake
-cnoreabbrev  oob    OpvimBuild
-cnoreabbrev  build  OpvimBuild
+command! -nargs=0 -bang OpvimPreview  call opvim#Preview(<bang>0)
+command! -nargs=?       OpvimExec     call opvim#Exec(<f-args>)
+command! -nargs=?       OpvimMode     call opvim#Mode(<f-args>)
+command! -nargs=0       OpvimCMake    call opvim#CMake()
+command! -nargs=?       OpvimBuild    call opvim#Build(<f-args>)
+command! -nargs=?       OpvimDebug    call opvim#Debug(<f-args>)
 
 " QuickMenu
 noremap <leader>` :call quickmenu#toggle(0)<CR>

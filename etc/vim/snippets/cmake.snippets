@@ -5,5 +5,5 @@ snippet snip-default
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 	set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lpthread")
 	set (SOURCE_FILES ${2:SourceFiles})
-	add_executable (${PROJECT_NAME} ${SourceFiles})
+	add_executable (${PROJECT_NAME} ${SOURCE_FILES})
 

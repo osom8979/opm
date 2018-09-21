@@ -11,8 +11,8 @@ __add__ = ['init', 'preview', 'execute', 'autoMode', 'cmake', 'build']
 def init():
     common.setDefaultCMakeWhich()
 
-def preview():
-    project.previewDefaultProject()
+def preview(show_error=True):
+    project.previewDefaultProject(show_error)
 
 def execute(flags):
     common.execute(flags)
@@ -30,7 +30,7 @@ def cmake():
     if not proj.exists():
         common.eprint('Project is not exists.')
         return
-    if not proj.existsMode():
+    if not proj.existsCurrentMode():
         common.eprint('{} mode is not exists.'.format(proj.mode))
         return
 
@@ -50,7 +50,7 @@ def build(target=str()):
     if not proj.exists():
         common.eprint('Project is not exists.')
         return
-    if not proj.existsMode():
+    if not proj.existsCurrentMode():
         common.eprint('{} mode is not exists.'.format(proj.mode))
         return
 

@@ -197,16 +197,19 @@ if has('autocmd')
 
     " Show NERDTree window.
     autocmd VimEnter * NERDTree | wincmd p
-    autocmd TabEnter * NERDTree | wincmd p
+    "autocmd TabEnter * NERDTree | wincmd p
 
     " Show Quick-fix window.
     autocmd VimEnter * copen | wincmd p
-    autocmd TabEnter * copen | wincmd p
+    "autocmd TabEnter * copen | wincmd p
 
     " Show Tagbar window.
     "autocmd TabEnter * Tagbar
 
     " Remove tailing whitespace.
     autocmd FileType vim,c,cpp,java,php,ruby,python autocmd BufWritePre <buffer> :%s/\s\+$//e
+
+    " CMakeLists.txt
+    autocmd BufNewFile,BufRead CMakeLists.txt set filetype=cmake
 endif
 
