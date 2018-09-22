@@ -7,7 +7,7 @@ from .project import *
 import os
 
 __add__ = ['init', 'preview', 'execute', 'autoMode', 'cmake', 'build', 'debug', 'script',
-           'updateQuickMenu']
+           'updateQuickMenu', 'updateQuickMenuMode']
 
 def defaultProject():
     proj = project.getDefaultProject()
@@ -132,7 +132,7 @@ def updateQuickMenu():
         if proj.getDebugType(key) and proj.getDebugCmds(key):
             validated_keys.append(key)
 
-    appendQuickMenuSection('OPVIM DEBUG')
+    appendQuickMenuSection('DEBUG')
     for vkey in validated_keys:
         appendQuickMenu(vkey, 'OpvimDebug ' + vkey, 'Run debugger ' + vkey)
 
@@ -141,7 +141,12 @@ def updateQuickMenu():
         if proj.getScriptCmds(key):
             validated_keys.append(key)
 
-    appendQuickMenuSection('OPVIM SCRIPT')
+    appendQuickMenuSection('SCRIPT')
     for vkey in validated_keys:
         appendQuickMenu(vkey, 'OpvimScript ' + vkey, 'Run script ' + vkey)
+
+def updateQuickMenuMode():
+    proj = project.getDefaultProject()
+    for mode in proj.getModes():
+        appendQuickMenu(mode, 'OpvimMode ' + mode, 'Change {} mode'.format(mode))
 

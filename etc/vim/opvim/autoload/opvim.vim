@@ -75,6 +75,13 @@ opvim.updateQuickMenu()
 EOF
 endfunction
 
+function! s:UpdateQuickMenuMode() abort
+python3 << EOF
+import opvim
+opvim.updateQuickMenuMode()
+EOF
+endfunction
+
 " --------------
 " Public script.
 " --------------
@@ -123,5 +130,9 @@ endfunction
 
 function! opvim#UpdateQuickMenu() abort
     call s:UpdateQuickMenu()
+endfunction
+
+function! opvim#UpdateQuickMenuMode() abort
+    call s:UpdateQuickMenuMode()
 endfunction
 

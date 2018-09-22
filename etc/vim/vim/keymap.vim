@@ -84,3 +84,7 @@ command! HexMode   execute '%!xxd'
 command! TextMode  execute '%!xxd -r'
 command! Help      execute ':call PrintHelpMessage()'
 
+command! CMake     execute 'OpvimCMake'
+command! Build     execute 'OpvimBuild'
+command! Mode      execute 'OpvimModeMenu'
+
