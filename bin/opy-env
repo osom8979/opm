@@ -40,6 +40,7 @@ fi
 
 PYENV_CMD=`PATH=~/.pyenv/bin/:$PATH which pyenv`
 PLATFORM=`platform`
+INSTALL_RESULT_CODE=0
 
 if [[ -z $PYENV_CMD ]]; then
     echo "Not found pyenv command."
@@ -59,6 +60,7 @@ if [[ -z $PYENV_CMD ]]; then
         echo "Install pyenv from brew ..."
         brew update
         brew install pyenv pyenv-virtualenv
+        INSTALL_RESULT_CODE=$?
     else
         GIT_CMD=`which git`
         if [[ -z $GIT_CMD ]]; then
@@ -74,6 +76,12 @@ if [[ -z $PYENV_CMD ]]; then
 
         echo "Install pyenv from pyenv-installer (see: https://github.com/pyenv/pyenv-installer)"
         curl -L https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer | bash
+        INSTALL_RESULT_CODE=$?
+    fi
+
+    if [[ $INSTALL_RESULT_CODE -ne 0 ]]; then
+        echo "Install failure: $INSTALL_RESULT_CODE"
+        exit 1
     fi
 
     PYENV_CMD=`PATH=~/.pyenv/bin/:$PATH which pyenv`
@@ -91,29 +99,79 @@ export PATH="~/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
 
+function getPackageListOfNotExists {
+    if [[ "$PLATFORM" == "MacOSX" ]]; then
+        # Mac - Homebrew
+        local package_list=`brew list -1`
+    else
+        # Ubuntu - dpkg
+        local package_list=`dpkg -l | sed -n '/+++/,$p' | sed -n '2,$p' | awk '{print $2}'`
+    fi
+    local check_list=$1
+    local result_list=' '
+    for cursor in $check_list; do
+        if [[ -z $(echo ${package_list} | grep ${cursor}) ]]; then
+            result_list="$result_list $cursor"
+        fi
+    done
+    echo $result_list
+}
+
+function installDependencies {
+    if [[ "$PLATFORM" == "MacOSX" ]]; then
+        local list="openssl readline xz"
+    else
+        local list="make build-essential libssl-dev zlib1g-dev libbz2-dev"
+        list="$list libreadline-dev libsqlite3-dev wget curl llvm "
+        list="$list libncurses5-dev xz-utils tk-dev"
+    fi
+    INSTALL_LIST=`getPackageListOfNotExists "$list"`
+    if [[ ! -z $INSTALL_LIST ]]; then
+        if [[ "$PLATFORM" == "MacOSX" ]]; then
+            brew update
+            # brew upgrade pyenv pyenv-virtualenv
+            brew install $INSTALL_LIST
+            return $?
+        else
+            sudo apt-get update
+            sudo apt-get install -y $INSTALL_LIST
+            return $?
+        fi
+    fi
+    return 0
+}
+
 FIND_PYTHON_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^${OPY_PYTHON_VERSION_REGEX}$"`
 if [[ -z $FIND_PYTHON_ENV ]]; then
     echo "Not found $OPY_PYTHON_VERSION pyenv."
-    if [[ "$PLATFORM" == "MacOSX" ]]; then
-        echo "Install dependencies ..."
-        brew update
-        brew install openssl readline xz
+    echo "Check & Install dependencies ..."
 
+    installDependencies
+    INSTALL_RESULT_CODE=$?
+    if [[ $INSTALL_RESULT_CODE -ne 0 ]]; then
+        echo "Install dependencies failure: $INSTALL_RESULT_CODE"
+        exit 1
+    fi
+
+    if [[ "$PLATFORM" == "MacOSX" ]]; then
         echo "Use the homebrew's OpenSSL."
         echo " * See also: https://github.com/pyenv/pyenv/wiki/Common-build-problems"
-        echo "Install python from pyenv ..."
+        echo "Install python from pyenv (--enable-framework) ..."
         CFLAGS="-I$(brew --prefix openssl)/include" \
         LDFLAGS="-L$(brew --prefix openssl)/lib"    \
         PYTHON_CONFIGURE_OPTS="--enable-framework"  \
             pyenv install $OPY_PYTHON_VERSION
+        INSTALL_RESULT_CODE=$?
     else
-        echo "Install dependencies ..."
-        sudo apt-get update
-        sudo apt-get install -y make build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev xz-utils tk-dev
-
-        echo "Install python from pyenv ..."
+        echo "Install python from pyenv (--enable-shared) ..."
         PYTHON_CONFIGURE_OPTS="--enable-shared" \
             pyenv install $OPY_PYTHON_VERSION
+        INSTALL_RESULT_CODE=$?
+    fi
+
+    if [[ $INSTALL_RESULT_CODE -ne 0 ]]; then
+        echo "Install failure: $INSTALL_RESULT_CODE"
+        exit 1
     fi
 fi
 
@@ -142,10 +200,10 @@ if [[ -z $OPY_ECHO ]]; then
 fi
 
 if [[ $OPY_ECHO -ne 0 ]]; then
-echo "[OSOM Python Environment]"
-echo "* Python version: $(python --version 2>&1)"
-echo "* Python executable: $(which python)"
-echo "* Pyenv which python: $(pyenv which python)"
-echo "* Pyenv version: $(pyenv version | awk '{print($1);}')"
+    echo "[OSOM Python Environment]"
+    echo "* Python version: $(python --version 2>&1)"
+    echo "* Python executable: $(which python)"
+    echo "* Pyenv which python: $(pyenv which python)"
+    echo "* Pyenv version: $(pyenv version | awk '{print($1);}')"
 fi
 
