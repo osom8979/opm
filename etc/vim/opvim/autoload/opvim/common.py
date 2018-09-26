@@ -28,35 +28,56 @@ def whichCMakePath():
     return which('cmake')
 
 def setCMakeWhich(cmake_path):
-    command('let g:opvim_cmake_which = "{}"'.format(cmake_path))
+    vim.vars['opvim_cmake_which'] = cmake_path
 
 def setDefaultCMakeWhich():
     setCMakeWhich(whichCMakePath())
 
 def getCMakePath():
-    return vim.eval('g:opvim_cmake_path')
+    return vim.vars['opvim_cmake_path']
 
 def getProjectJsonName():
-    return vim.eval('g:opvim_project_json_name')
+    return vim.vars['opvim_project_json_name']
 
 def getDefaultProjectJsonPath():
     return os.path.join(getCurrentWorkingDirectory(), getProjectJsonName())
 
 def getProjectMode():
-    return vim.eval('g:opvim_project_mode')
+    return vim.vars['opvim_project_mode']
 
 def setProjectMode(mode):
-    command('let g:opvim_project_mode = "{}"'.format(mode))
+    vim.vars['opvim_project_mode'] = mode
 
 def getDefaultProjectMode():
-    return vim.eval('g:opvim_default_project_mode')
+    return vim.vars['opvim_default_project_mode']
 
 def getDefaultBuildPrefix():
-    return vim.eval('g:opvim_default_build_prefix')
+    return vim.vars['opvim_default_build_prefix']
+
+def getDebuggingPreview():
+    return int(vim.vars['opvim_debugging_preview']) is 1
+
+def getDebuggingWindowHeight():
+    return int(vim.vars['opvim_debugging_window_height'])
 
 def execute(cmd):
     command(':AsyncRun {}'.format(cmd))
 
 def executeSync(cmd):
     command(':cexpr system("{}")'.format(cmd))
+
+DEBUG_TYPE_GDB = 'gdb'
+DEBUG_TYPE_LLDB = 'lldb'
+DEBUG_TYPE_PDB = 'pdb'
+
+def getCheckedDebugType(debug_type):
+    lower_type = debug_type.lower()
+    if lower_type == DEBUG_TYPE_GDB:
+        return DEBUG_TYPE_GDB
+    elif lower_type == DEBUG_TYPE_LLDB:
+        return DEBUG_TYPE_LLDB
+    elif lower_type == DEBUG_TYPE_PDB:
+        return DEBUG_TYPE_PDB
+    return str()
+
 

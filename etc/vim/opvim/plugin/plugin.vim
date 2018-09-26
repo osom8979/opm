@@ -36,6 +36,14 @@ if !exists('g:opvim_project_mode')
     let g:opvim_project_mode = g:opvim_default_project_mode
 endif
 
+if !exists('g:opvim_debugging_preview')
+    let g:opvim_debugging_preview = 1
+endif
+
+if !exists('g:opvim_debugging_window_height')
+    let g:opvim_debugging_window_height = 10
+endif
+
 if !exists('g:opvim_quickmenu_id')
     let g:opvim_quickmenu_id = 100
 endif
@@ -74,13 +82,13 @@ call g:ReloadQuickMenu()
 "" Command & KeyMap.
 "" -----------------
 
-command! -nargs=0 -bang OpvimPreview  call opvim#Preview(<bang>0)
-command! -nargs=?       OpvimExec     call opvim#Exec(<f-args>)
-command! -nargs=?       OpvimMode     call opvim#Mode(<f-args>)
-command! -nargs=0       OpvimModeMenu call quickmenu#bottom(g:opvim_quickmenu_mode_id)
-command! -nargs=0       OpvimCMake    call opvim#CMake()
-command! -nargs=?       OpvimBuild    call opvim#Build(<f-args>)
-command! -nargs=?       OpvimDebug    call opvim#Debug(<f-args>)
-command! -nargs=?       OpvimScript   call opvim#Script(<f-args>)
-command! -nargs=0       OpvimReload   call g:ReloadQuickMenu()
+command! -nargs=0 -bang               OpvimPreview  call opvim#Preview(<bang>0)
+command! -nargs=? -complete=shellcmd  OpvimExec     call opvim#Exec(<f-args>)
+command! -nargs=?                     OpvimMode     call opvim#Mode(<f-args>)
+command! -nargs=0                     OpvimModeMenu call quickmenu#bottom(g:opvim_quickmenu_mode_id)
+command! -nargs=0                     OpvimCMake    call opvim#CMake()
+command! -nargs=?                     OpvimBuild    call opvim#Build(<f-args>)
+command! -nargs=?                     OpvimDebug    call opvim#Debug(<f-args>)
+command! -nargs=?                     OpvimScript   call opvim#Script(<f-args>)
+command! -nargs=0                     OpvimReload   call g:ReloadQuickMenu()
 

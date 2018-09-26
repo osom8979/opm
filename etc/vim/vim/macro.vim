@@ -36,8 +36,8 @@ let s:BUFFER_F5   = 'B_F5'
 let s:BUFFER_NAME = 'B_NAME'
 let s:BUFFER_LINE = 'B_LINE'
 
-let s:QUICKFIX_NAME = "[Quickfix List]"
-let s:TERMINAL_REGEX = "term://.*"
+let s:QUICKFIX_NAME = '[Quickfix List]'
+let s:TERMINAL_REGEX = 'term://.*'
 
 function! GetBufferInfoDictionary(num, f1, f2, f3, f4, f5, name, line)
     return {

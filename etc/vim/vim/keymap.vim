@@ -75,6 +75,9 @@ smap <C-J> <Plug>snipMateNextOrTrigger
 " Open ctrlp window.
 "noremap <leader><leader>o :CtrlP<CR>
 
+" YouCompleteMe
+noremap  <leader>gg  <ESC>:YcmCompleter GoTo<CR>
+
 " ----------------
 " COMMAND SETTING.
 " ----------------

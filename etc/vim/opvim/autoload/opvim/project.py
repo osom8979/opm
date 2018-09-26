@@ -11,10 +11,6 @@ CMAKE_KEY = 'cmake'
 DEBUG_KEY = 'debug'
 SCRIPT_KEY = 'script'
 
-DEBUG_TYPE_GDB = 'gdb'
-DEBUG_TYPE_LLDB = 'lldb'
-DEBUG_TYPE_PDB = 'pdb'
-
 class Project:
     """
     opm-vim project class.
@@ -179,30 +175,10 @@ class Project:
             return debug_data['cwd'].strip()
         return self.getRoot()
 
-    def getCheckedDebugType(self, debug_type):
-        lower_type = debug_type.lower()
-        if lower_type == DEBUG_TYPE_GDB:
-            return DEBUG_TYPE_GDB
-        elif lower_type == DEBUG_TYPE_LLDB:
-            return DEBUG_TYPE_LLDB
-        elif lower_type == DEBUG_TYPE_PDB:
-            return DEBUG_TYPE_PDB
-        return str()
-
-    def getDebugCommandPrefix(self, debug_type):
-        lower_type = debug_type.lower()
-        if lower_type == DEBUG_TYPE_GDB:
-            return ':GdbStart gdb'
-        elif lower_type == DEBUG_TYPE_LLDB:
-            return ':GdbStartLLDB lldb'
-        elif lower_type == DEBUG_TYPE_PDB:
-            return ':GdbStartPDB python -m pdb'
-        return str()
-
     def getDebugType(self, key):
         debug_data = self.getDebugDictionary(key)
         if debug_data and 'type' in debug_data:
-            checked_type = self.getCheckedDebugType(debug_data['type'].strip())
+            checked_type = getCheckedDebugType(debug_data['type'].strip())
             if checked_type:
                 return checked_type
         return str()

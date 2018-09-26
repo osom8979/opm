@@ -3,6 +3,7 @@
 
 from .common import *
 from .project import *
+from .debugging import *
 
 import os
 
@@ -76,15 +77,14 @@ def debug(debug_key):
     if not proj:
         return
 
-    ## -- current not working -- ##
-    # debug_cwd = proj.getDebugCwd(debug_key)
-    # if not os.path.isdir(debug_cwd):
-    #     common.eprint('No such directory: {}'.format(debug_cwd))
-    #     return
-
     debug_type = proj.getDebugType(debug_key)
     if not debug_type:
         common.eprint('Unknown {} type'.format(debug_type))
+        return
+
+    debug_cwd = proj.getDebugCwd(debug_key)
+    if not os.path.isdir(debug_cwd):
+        common.eprint('No such directory: {}'.format(debug_cwd))
         return
 
     debug_cmds = proj.getDebugCmds(debug_key)
@@ -92,9 +92,7 @@ def debug(debug_key):
         common.eprint('Undefined cmd')
         return
 
-    cmds = proj.getDebugCommandPrefix(debug_type)
-    cmds += ' {}'.format(debug_cmds)
-    common.command(cmds)
+    debugging.getDebugging(debug_type, debug_cwd, debug_cmds).run()
 
 def script(script_key):
     proj = defaultProject()
