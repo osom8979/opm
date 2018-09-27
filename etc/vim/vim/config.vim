@@ -208,7 +208,7 @@ if has('autocmd')
     "autocmd TabEnter * NERDTree | wincmd p
 
     " Show Quick-fix window.
-    autocmd VimEnter * copen | wincmd p
+    "autocmd VimEnter * copen | wincmd p
     "autocmd TabEnter * copen | wincmd p
 
     " Show Tagbar window.
