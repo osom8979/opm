@@ -3,6 +3,9 @@
 let s:False = 0
 let s:True  = 1
 
+let g:default_quickfix_height = 10
+let g:default_terminal_height = 10
+
 function! TrimLeft(text)
     return substitute(a:text, '^[ \t]*', '', '')
 endfunction
@@ -197,10 +200,14 @@ function! ExistsQuickfixBuffer()
 endfunction
 
 function! ToggleQuickfixBuffer()
+    let height = 10
+    if exists('g:default_quickfix_height')
+        let height = g:default_quickfix_height
+    endif
     if ExistsQuickfixBuffer()
         silent execute 'cclose'
     else
-        silent execute 'copen | wincmd p'
+        silent execute 'belowright ' . height . 'copen | wincmd p'
     endif
 endfunction
 
@@ -221,7 +228,7 @@ function! ToggleTerminalBuffer()
     if !empty(dic) && IsActiveBuffer(dic)
         silent execute 'bdelete! ' . dic[s:BUFFER_NUM]
     else
-        silent execute '10split term://bash -l | startinsert'
+        silent execute 'belowright ' . height . 'split term://bash -l | startinsert'
     endif
 endfunction
 

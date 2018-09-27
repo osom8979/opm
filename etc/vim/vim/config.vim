@@ -48,6 +48,9 @@ set nofoldenable " no folding.
 set noswapfile   " no swap file.
 "set nobackup    " no backup.
 
+"set winminheight=10 " The minimal height of a window
+"set winminwidth=10  " The minimal width of a window
+
 " make that backspace key work the way it should
 set backspace=indent,eol,start
 
@@ -135,7 +138,7 @@ let g:SrcExpl_refreshTime = 100
 
 " Gundo
 let g:gundo_right = 1
-let g:gundo_width = 25
+let g:gundo_width = 50
 let g:gundo_preview_height = 15
 
 " QuickMenu

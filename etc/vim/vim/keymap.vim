@@ -36,20 +36,20 @@ vnoremap <F4> "+gP
 inoremap <F4> <ESC>"+gpa
 
 " Tab settings.
-nnoremap <leader><F1>  :tabprevious<CR>
-nnoremap <leader><F2>  :tabNext<CR>
+noremap <leader><F1>  <ESC>:tabprevious<CR>
+noremap <leader><F2>  <ESC>:tabNext<CR>
 
 " Quick-fix settings.
-nnoremap <F5>  :cprevious<CR>
-nnoremap <F6>  :cnext<CR>
+noremap <F5>  <ESC>:cprevious<CR>
+noremap <F6>  <ESC>:cnext<CR>
 
 " Makefile settings.
 "nnoremap <F9> :make<CR>:copen<CR>
 
 " Tags settings.
-nnoremap  <leader>t <ESC>:tags<CR>
-nnoremap  <leader>[ <ESC>:tprevious<CR>
-nnoremap  <leader>] <ESC>:tnext<CR>
+"noremap  <leader>t <ESC>:tags<CR>
+"noremap  <leader>[ <ESC>:tprevious<CR>
+"noremap  <leader>] <ESC>:tnext<CR>
 
 " Cscope settings.
 "nnoremap  <C-\>s  :cs find s <C-R>=expand("<cword>")<CR><CR>
@@ -89,5 +89,4 @@ command! Help      execute ':call PrintHelpMessage()'
 
 command! CMake     execute 'OpvimCMake'
 command! Build     execute 'OpvimBuild'
-command! Mode      execute 'OpvimModeMenu'
 
