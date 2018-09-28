@@ -100,6 +100,10 @@ elseif has('nvim')
     set list
 endif
 
+" a.vim
+let g:alternateExtensions_cpp = "h,hpp,hh"
+let g:alternateExtensions_hh = "cpp,cc,cxx"
+
 " NERDTree
 let g:NERDTreeWinPos = "left"
 let g:NERDTreeWinSize = 25
