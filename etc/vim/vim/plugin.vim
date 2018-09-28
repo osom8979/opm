@@ -69,6 +69,21 @@ NeoBundle 'a.vim'         " source <-> header.
 " Themes
 "NeoBundle 'nanotech/jellybeans.vim'
 
+" Clang-based themes
+if has('nvim')
+NeoBundle  'arakashic/chromatica.nvim'   " clang based syntax highlighting for neovim.
+"NeoBundle 'bbchung/Clamp'               " neovim plugin to highlight c-family code. (Bug!)
+else
+" For now, at least, color_coded is not supporting neovim.
+"NeoBundleLazy 'jeaye/color_coded', {
+"    \   'build': {
+"    \       'unix': 'rm -f CMakeCache.txt && cmake . && make && make install',
+"    \   },
+"    \   'autoload': { 'filetypes' : ['c', 'cpp', 'objc', 'objcpp'] },
+"    \   'build_commands' : ['cmake', 'make']
+"    \}
+endif
+
 " Auto completion.
 "NeoBundle 'OmniCppComplete' " Ctags auto complete popup.
 "NeoBundle 'AutoComplPop'    " auto complete popup.

@@ -42,4 +42,5 @@ execute 'source ' . g:opm_vim_script_dir . '/vim/plugin.vim'
 execute 'source ' . g:opm_vim_script_dir . '/vim/config.vim'
 execute 'source ' . g:opm_vim_script_dir . '/vim/keymap.vim'
 execute 'source ' . g:opm_vim_script_dir . '/vim/macro.vim'
+execute 'source ' . g:opm_vim_script_dir . '/vim/syntax.vim'
 

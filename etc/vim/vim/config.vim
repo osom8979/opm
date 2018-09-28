@@ -100,9 +100,27 @@ elseif has('nvim')
     set list
 endif
 
+" doxygen-syntax
+let g:load_doxygen_syntax = 1
+
+" clamp
+if has('unix') && substitute(system('uname -s'), '\n', '', '') == 'Darwin'
+let g:clamp_libclang_file = '/Library/Developer/CommandLineTools/usr/lib/libclang.dylib'
+endif
+
 " a.vim
 let g:alternateExtensions_cpp = "h,hpp,hh"
 let g:alternateExtensions_hh = "cpp,cc,cxx"
+
+" chromatica.nvim
+let g:chromatica#enable_at_startup=1
+let g:chromatica#delay_ms = 80
+let g:chromatica#use_pch = 1
+let g:chromatica#highlight_feature_level = 1
+let g:chromatica#responsive_mode = 0
+if has('unix') && substitute(system('uname -s'), '\n', '', '') == 'Darwin'
+let g:chromatica#libclang_path = '/Library/Developer/CommandLineTools/usr/lib/libclang.dylib'
+endif
 
 " NERDTree
 let g:NERDTreeWinPos = "left"

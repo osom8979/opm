@@ -1,7 +1,23 @@
 [PLUGIN]
-visSum: Computes sum of selected numbers. Usage :VisSum in VisualMode.
-VisIncr: Increasing/Decreasing columns. Usage: :II or :II -1
-SnipMate: Textual snippets. Usage: <C-J>
-AsyncRun: Run Async Shell Commands. Usage: :AsyncRun[!] {args}
-vim-easymotion: Vim motions on speed. Usage: <leader><leader>f
+visSum: Computes sum of selected numbers
+ * :VisSum (in VisualMode)
+
+VisIncr: Increasing/Decreasing columns
+ * :II
+ * :II -1
+
+SnipMate: Textual snippets
+ * <C-J>
+
+asyncRun: Run Async Shell Commands
+ * :AsyncRun[!] {args}
+
+vim-easymotion: Vim motions on speed
+ * <leader><leader>f
+
+chromatica: Clang based syntax highlighting plugin for Neovim
+ * :UpdateRemotePlugins
+ * :ChromaticaStart
+ * :ChromaticaStop
+ * :ChromaticaToggle
 
