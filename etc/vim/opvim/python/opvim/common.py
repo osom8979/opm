@@ -60,8 +60,13 @@ def getDebuggingPreview():
 def getDebuggingWindowHeight():
     return int(vim.vars['opvim_debugging_window_height'])
 
+def getShowQuickfixIfExecute():
+    return int(vim.vars['show_quickfix_if_execute'])
+
 def execute(cmd):
     command(':AsyncRun {}'.format(cmd))
+    if getShowQuickfixIfExecute():
+        command('if exists("*ToggleQuickfixBuffer") | call ToggleQuickfixBuffer(1) | else | silent execute "belowright copen | wincmd p" | endif')
 
 def executeSync(cmd):
     command(':cexpr system("{}")'.format(cmd))

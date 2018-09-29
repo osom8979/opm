@@ -199,14 +199,17 @@ function! ExistsQuickfixBuffer()
     return IsActiveBuffer(dic)
 endfunction
 
-function! ToggleQuickfixBuffer()
-    let height = 10
-    if exists('g:default_quickfix_height')
-        let height = g:default_quickfix_height
-    endif
+function! ToggleQuickfixBuffer(...)
     if ExistsQuickfixBuffer()
-        silent execute 'cclose'
+        let force_enable_show = a:0 > 0 ? a:1 : 0
+        if force_enable_show == 0
+            silent execute 'cclose'
+        endif
     else
+        let height = 10
+        if exists('g:default_quickfix_height')
+            let height = g:default_quickfix_height
+        endif
         silent execute 'belowright ' . height . 'copen | wincmd p'
     endif
 endfunction
@@ -219,15 +222,18 @@ function! FindTerminalBuffer()
     return FindBufferWithRegexName(s:TERMINAL_REGEX)
 endfunction
 
-function! ToggleTerminalBuffer()
-    let height = 10
-    if exists('g:default_terminal_height')
-        let height = g:default_terminal_height
-    endif
+function! ToggleTerminalBuffer(...)
     let dic = FindTerminalBuffer()
     if !empty(dic) && IsActiveBuffer(dic)
-        silent execute 'bdelete! ' . dic[s:BUFFER_NUM]
+        let force_enable_show = a:0 > 0 ? a:1 : 0
+        if force_enable_show == 0
+            silent execute 'bdelete! ' . dic[s:BUFFER_NUM]
+        endif
     else
+        let height = 10
+        if exists('g:default_terminal_height')
+            let height = g:default_terminal_height
+        endif
         silent execute 'belowright ' . height . 'split term://bash -l | startinsert'
     endif
 endfunction

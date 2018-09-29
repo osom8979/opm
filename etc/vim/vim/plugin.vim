@@ -71,8 +71,8 @@ NeoBundle 'a.vim'         " source <-> header.
 
 " Clang-based themes
 if has('nvim')
-NeoBundle  'arakashic/chromatica.nvim'   " clang based syntax highlighting for neovim.
-"NeoBundle 'bbchung/Clamp'               " neovim plugin to highlight c-family code. (Bug!)
+"NeoBundle 'arakashic/chromatica.nvim'  " clang based syntax highlighting for neovim.
+"NeoBundle 'bbchung/Clamp'              " neovim plugin to highlight c-family code.
 else
 " For now, at least, color_coded is not supporting neovim.
 "NeoBundleLazy 'jeaye/color_coded', {

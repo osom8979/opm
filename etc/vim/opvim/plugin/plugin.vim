@@ -52,19 +52,24 @@ if !exists('g:opvim_quickmenu_mode_id')
     let g:opvim_quickmenu_mode_id = 101
 endif
 
+if !exists('g:show_quickfix_if_execute')
+    let g:show_quickfix_if_execute = 1
+endif
+
 " -----------------
 " Update QuickMenu.
 " -----------------
 
 noremap <leader>` <ESC>:call quickmenu#toggle(g:opvim_quickmenu_id)<CR>
 
-function! g:ReloadQuickMenu()
+function! g:OpvimReloadQuickMenu()
     call quickmenu#current(g:opvim_quickmenu_id)
     call quickmenu#reset()
     call quickmenu#header('OPVIM {%{g:opvim_project_mode}}')
     call quickmenu#append('# COMPILE', '')
     call quickmenu#append('CMake', 'OpvimCMake', 'Run cmake')
     call quickmenu#append('Build', 'OpvimBuild', 'Run build')
+    call quickmenu#append('Mode', 'OpvimModeMenu', 'Select mode')
     call opvim#UpdateQuickMenu()
     call quickmenu#append('# UTILITY', '')
     call quickmenu#append('Preview', 'OpvimPreview', 'Preview opvim project')
@@ -76,7 +81,6 @@ function! g:ReloadQuickMenu()
     call quickmenu#append('# MODES', '')
     call opvim#UpdateQuickMenuMode()
 endfunction
-call g:ReloadQuickMenu()
 
 "" -----------------
 "" Command & KeyMap.
@@ -90,5 +94,14 @@ command! -nargs=0                     OpvimCMake    call opvim#CMake()
 command! -nargs=?                     OpvimBuild    call opvim#Build(<f-args>)
 command! -nargs=?                     OpvimDebug    call opvim#Debug(<f-args>)
 command! -nargs=?                     OpvimScript   call opvim#Script(<f-args>)
-command! -nargs=0                     OpvimReload   call g:ReloadQuickMenu()
+command! -nargs=0                     OpvimReload   call g:OpvimReloadQuickMenu()
+
+if has('vim_starting')
+    augroup OpvimAutoCommands
+        autocmd!
+        autocmd VimEnter * call g:OpvimReloadQuickMenu()
+    augroup END
+else
+    call g:OpvimReloadQuickMenu()
+endif
 

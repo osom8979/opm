@@ -1,104 +1,35 @@
 " OPM-VIM PLUGIN AUTOLOAD.
 
-" ---------------
-" Private script.
-" ---------------
+" Python directory. (see also: filename-modifiers)
+let s:python_dir = expand('<sfile>:p:h:h') . '/python'
+let s:python_until_eof = has('python3') ? 'python3 << EOF' : 'python << EOF'
+let s:python_command = has('python3') ? 'py3 ' : 'py '
 
-" Python directory.
-let s:opvim_autoload_dir = expand('<sfile>:p:h')
+function! s:Pyeval(eval_string)
+    if has('python3')
+        return py3eval(a:eval_string)
+    endif
+    return pyeval(a:eval_string)
+endfunction
 
-function! s:InitPython() abort
-python3 << EOF
+function! opvim#Initialize() abort
+exec s:python_until_eof
 import sys
 import vim
-OPVIM_AUTOLOAD_DIR = vim.eval('s:opvim_autoload_dir')
-sys.path.insert(0, OPVIM_AUTOLOAD_DIR)
+sys.path.insert(0, vim.eval('s:python_dir'))
+global opvim
 import opvim
 opvim.init()
 EOF
 endfunction
 
-function! s:RunPreview(show_error) abort
-python3 << EOF
-import opvim
-opvim.preview(int(vim.eval('a:show_error')) is 1)
-EOF
-endfunction
-
-function! s:RunExec(cmds) abort
-python3 << EOF
-import vim
-import opvim
-opvim.execute(vim.eval('a:cmds'))
-EOF
-endfunction
-
-function! s:AutoMode() abort
-python3 << EOF
-import opvim
-opvim.autoMode()
-EOF
-endfunction
-
-function! s:RunCMake() abort
-python3 << EOF
-import opvim
-opvim.cmake()
-EOF
-endfunction
-
-function! s:RunBuild(target) abort
-python3 << EOF
-import opvim
-opvim.build(vim.eval('a:target'))
-EOF
-endfunction
-
-function! s:RunDebug(debug_key) abort
-python3 << EOF
-import opvim
-opvim.debug(vim.eval('a:debug_key'))
-EOF
-endfunction
-
-function! s:RunScript(script_key) abort
-python3 << EOF
-import opvim
-opvim.script(vim.eval('a:script_key'))
-EOF
-endfunction
-
-function! s:UpdateQuickMenu() abort
-python3 << EOF
-import opvim
-opvim.updateQuickMenu()
-EOF
-endfunction
-
-function! s:UpdateQuickMenuMode() abort
-python3 << EOF
-import opvim
-opvim.updateQuickMenuMode()
-EOF
-endfunction
-
-" --------------
-" Public script.
-" --------------
-
-function! opvim#Initialize() abort
-    if has('nvim') && has('python3')
-        call s:InitPython()
-    endif
-endfunction
-
 function! opvim#Preview(show_error) abort
-    call s:RunPreview(a:show_error)
+    call s:Pyeval('opvim.preview(' . (a:show_error?'1':'0') . ')')
 endfunction
 
 function! opvim#Exec(...) abort
     if a:0 > 0
-        call s:RunExec(a:1)
+        call s:Pyeval('opvim.preview(' . a:1 . ')')
     else
         throw 'Argument required.'
     endif
@@ -108,31 +39,31 @@ function! opvim#Mode(...) abort
     if a:0 > 0
         let g:opvim_project_mode = a:1
     else
-        call s:AutoMode()
+        call s:Pyeval('opvim.autoMode()')
     endif
 endfunction
 
 function! opvim#CMake() abort
-    call s:RunCMake()
+    call s:Pyeval('opvim.cmake()')
 endfunction
 
 function! opvim#Build(...) abort
-    call s:RunBuild(a:0 > 0 ? a:1 : '')
+    call s:Pyeval('opvim.build(' . (a:0>0?a:1:'') . ')')
 endfunction
 
 function! opvim#Debug(...) abort
-    call s:RunDebug(a:0 > 0 ? a:1 : '')
+    call s:Pyeval('opvim.debug(' . (a:0>0?a:1:'') . ')')
 endfunction
 
 function! opvim#Script(...) abort
-    call s:RunScript(a:0 > 0 ? a:1 : '')
+    call s:Pyeval('opvim.script(' . (a:0>0?a:1:'') . ')')
 endfunction
 
 function! opvim#UpdateQuickMenu() abort
-    call s:UpdateQuickMenu()
+    call s:Pyeval('opvim.updateQuickMenu()')
 endfunction
 
 function! opvim#UpdateQuickMenuMode() abort
-    call s:UpdateQuickMenuMode()
+    call s:Pyeval('opvim.updateQuickMenuMode()')
 endfunction
 
