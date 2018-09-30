@@ -71,6 +71,25 @@ def execute(cmd):
 def executeSync(cmd):
     command(':cexpr system("{}")'.format(cmd))
 
+def loadJsonData(json_path):
+    if not os.path.isfile(json_path):
+        #print('Not found file: {}'.format(json_path))
+        return None
+    try:
+        with open(json_path) as f:
+            return json.load(f)
+    except IOError as err:
+        eprint('File IO Error: {}'.format(err))
+    except json.decoder.JSONDecodeError as err:
+        eprint('JSON Decode Error: {}'.format(err))
+    except:
+        eprint('Unknown JOSN Error')
+    return None
+
+def saveJsonData(json_path, json_data, indent=4):
+    with open(json_path, 'w') as f:
+        f.write(json.dumps(json_data, indent=indent))
+
 DEBUG_TYPE_GDB = 'gdb'
 DEBUG_TYPE_LLDB = 'lldb'
 DEBUG_TYPE_PDB = 'pdb'
@@ -84,5 +103,4 @@ def getCheckedDebugType(debug_type):
     elif lower_type == DEBUG_TYPE_PDB:
         return DEBUG_TYPE_PDB
     return str()
-
 
