@@ -7,7 +7,7 @@ from .debugging import *
 
 import os
 
-__add__ = ['init', 'preview', 'execute', 'autoMode', 'cmake', 'build', 'debug', 'script',
+__add__ = ['init', 'preview', 'execute', 'setMode', 'getMode', 'cmake', 'build', 'debug', 'script',
            'updateQuickMenu', 'updateQuickMenuMode']
 
 def defaultProject():
@@ -16,7 +16,7 @@ def defaultProject():
         common.eprint('Project is not exists.')
         return None
     if not proj.existsCurrentMode():
-        common.eprint('{} mode is not exists.'.format(proj.mode))
+        common.eprint('{} mode is not exists.'.format(proj.getMode()))
         return None
     return proj
 
@@ -32,13 +32,15 @@ def execute(flags):
 def command(flags):
     common.command(flags)
 
-def autoMode():
-    mode = project.getFirstMode()
-    if mode is None:
-        mode = getDefaultProjectMode()
-        print('Not found project-mode.')
-        print('Set to default project-mode: {}'.format(mode))
-    common.setProjectMode(mode)
+def setMode(mode=str()):
+    proj = project.getDefaultProject()
+    if mode:
+        proj.setMode(mode)
+    else:
+        proj.setAutoMode()
+
+def getMode():
+    return project.getDefaultProject().getMode()
 
 def cmake():
     proj = defaultProject()
@@ -52,7 +54,9 @@ def cmake():
     if not os.path.isdir(cmake_dir):
         os.mkdir(cmake_dir)
 
-    cmds = '-cwd={}'.format(cmake_dir)
+    cmds = str()
+    if cmake_dir:
+        cmds += ' -cwd={}'.format(cmake_dir)
     cmds += ' {} {} {}'.format(common.getCMakePath(), cmake_flags, root_dir)
     common.execute(cmds)
 
@@ -65,7 +69,9 @@ def build(target=str()):
     cmake_dir = os.path.join(root_dir, proj.getCurrentCMakeDirectory())
     build_flags = proj.getCurrentBuildFlags()
 
-    cmds = '-cwd={}'.format(cmake_dir)
+    cmds = str()
+    if cmake_dir:
+        cmds += ' -cwd={}'.format(cmake_dir)
     cmds += ' {} --build {}'.format(common.getCMakePath(), cmake_dir)
     if target:
         cmds += ' --target {}'.format(target)
@@ -83,10 +89,6 @@ def debug(debug_key):
         return
 
     debug_cwd = proj.getDebugCwd(debug_key)
-    if not os.path.isdir(debug_cwd):
-        common.eprint('No such directory: {}'.format(debug_cwd))
-        return
-
     debug_cmds = proj.getDebugCmds(debug_key)
     if not debug_cmds:
         common.eprint('Undefined cmd')
@@ -100,16 +102,14 @@ def script(script_key):
         return
 
     script_cwd = proj.getScriptCwd(script_key)
-    if not os.path.isdir(script_cwd):
-        common.eprint('No such directory: {}'.format(script_cwd))
-        return
-
     script_cmds = proj.getScriptCmds(script_key)
     if not script_cmds:
         common.eprint('Undefined cmd')
         return
 
-    cmds = '-cwd={}'.format(script_cwd)
+    cmds = str()
+    if script_cwd:
+        cmds += ' -cwd={}'.format(script_cwd)
     cmds += ' {}'.format(script_cmds)
     common.execute(cmds)
 

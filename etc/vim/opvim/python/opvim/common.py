@@ -42,15 +42,6 @@ def getProjectJsonName():
 def getDefaultProjectJsonPath():
     return os.path.join(getCurrentWorkingDirectory(), getProjectJsonName())
 
-def getProjectMode():
-    return vim.vars['opvim_project_mode']
-
-def setProjectMode(mode):
-    vim.vars['opvim_project_mode'] = mode
-
-def getDefaultProjectMode():
-    return vim.vars['opvim_default_project_mode']
-
 def getDefaultBuildPrefix():
     return vim.vars['opvim_default_build_prefix']
 
@@ -89,6 +80,8 @@ def loadJsonData(json_path):
 def saveJsonData(json_path, json_data, indent=4):
     with open(json_path, 'w') as f:
         f.write(json.dumps(json_data, indent=indent))
+        return True
+    return False
 
 DEBUG_TYPE_GDB = 'gdb'
 DEBUG_TYPE_LLDB = 'lldb'

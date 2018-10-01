@@ -36,11 +36,11 @@ function! opvim#Exec(...) abort
 endfunction
 
 function! opvim#Mode(...) abort
-    if a:0 > 0
-        let g:opvim_project_mode = a:1
-    else
-        call s:Pyeval('opvim.autoMode()')
-    endif
+    call s:Pyeval('opvim.setMode("' . (a:0>0?a:1:'') . '")')
+endfunction
+
+function! opvim#GetMode(...) abort
+    return s:Pyeval('opvim.getMode()')
 endfunction
 
 function! opvim#CMake() abort
@@ -48,15 +48,15 @@ function! opvim#CMake() abort
 endfunction
 
 function! opvim#Build(...) abort
-    call s:Pyeval('opvim.build(' . (a:0>0?a:1:'') . ')')
+    call s:Pyeval('opvim.build("' . (a:0>0?a:1:'') . '")')
 endfunction
 
 function! opvim#Debug(...) abort
-    call s:Pyeval('opvim.debug(' . (a:0>0?a:1:'') . ')')
+    call s:Pyeval('opvim.debug("' . (a:0>0?a:1:'') . '")')
 endfunction
 
 function! opvim#Script(...) abort
-    call s:Pyeval('opvim.script(' . (a:0>0?a:1:'') . ')')
+    call s:Pyeval('opvim.script("' . (a:0>0?a:1:'') . '")')
 endfunction
 
 function! opvim#UpdateQuickMenu() abort

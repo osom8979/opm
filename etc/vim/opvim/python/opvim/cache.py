@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .common import *
+import os
 
 MODE_KEY = 'mode'
 
@@ -10,17 +11,15 @@ class Cache:
     opm-vim cache class.
     """
 
-    json_path = ''
-    json_data = ''
+    json_path = str()
+    json_data = dict()
     json_indent = 4
-    mode = 'debug'
 
     def __init__(self, json_path):
         self.json_path = json_path
+        if not os.path.isfile(json_path):
+            self.save()
         self.json_data = loadJsonData(json_path)
-
-    def __str__(self):
-        return '{}:{}'.format(self.json_path, self.mode)
 
     def exists(self):
         """ Exists json dictionary? """
@@ -28,7 +27,7 @@ class Cache:
 
     def save(self):
         """ Save json file. """
-        saveJsonData(self.json_path, self.json_data, self.json_indent)
+        return saveJsonData(self.json_path, self.json_data, self.json_indent)
 
     ## -----------------------
     ## JSON First Depth Nodes.
@@ -41,7 +40,7 @@ class Cache:
 
     def setMode(self, mode):
         if self.exists():
-            json_data[MODE_KEY] = mode
+            self.json_data[MODE_KEY] = mode
             return True
         return False
 

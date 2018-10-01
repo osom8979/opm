@@ -18,8 +18,9 @@ snippet snip-opvim-default
 	            "cmds" : "--args ./build-debug/a.out --verbose"
 	        },
 	        "lldb-out" : {
+	            "cwd" : "build-debug",
 	            "type" : "lldb",
-	            "cmds" : "-- ./build-debug/a.out --verbose"
+	            "cmds" : "-- ./a.out --verbose"
 	        }
 	    },
 	    "script" : {

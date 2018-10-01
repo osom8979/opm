@@ -24,16 +24,8 @@ if !exists('g:opvim_project_json_name')
     let g:opvim_project_json_name = 'opvim.json'
 endif
 
-if !exists('g:opvim_default_project_mode')
-    let g:opvim_default_project_mode = 'debug'
-endif
-
 if !exists('g:opvim_default_build_prefix')
     let g:opvim_default_build_prefix = 'build-'
-endif
-
-if !exists('g:opvim_project_mode')
-    let g:opvim_project_mode = g:opvim_default_project_mode
 endif
 
 if !exists('g:opvim_debugging_preview')
@@ -65,7 +57,7 @@ noremap <leader>` <ESC>:call quickmenu#toggle(g:opvim_quickmenu_id)<CR>
 function! g:OpvimReloadQuickMenu()
     call quickmenu#current(g:opvim_quickmenu_id)
     call quickmenu#reset()
-    call quickmenu#header('OPVIM {%{g:opvim_project_mode}}')
+    call quickmenu#header('OPVIM {%{opvim#GetMode()}}')
     call quickmenu#append('# COMPILE', '')
     call quickmenu#append('CMake', 'OpvimCMake', 'Run cmake')
     call quickmenu#append('Build', 'OpvimBuild', 'Run build')
@@ -77,7 +69,7 @@ function! g:OpvimReloadQuickMenu()
 
     call quickmenu#current(g:opvim_quickmenu_mode_id)
     call quickmenu#reset()
-    call quickmenu#header('CHANGE OPVIM MODE {%{g:opvim_project_mode}}')
+    call quickmenu#header('CHANGE OPVIM MODE {%{opvim#GetMode()}}')
     call quickmenu#append('# MODES', '')
     call opvim#UpdateQuickMenuMode()
 endfunction

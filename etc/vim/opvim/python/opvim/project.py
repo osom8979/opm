@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .common import *
+from .cache import *
 import os
 import sys
 import json
@@ -16,22 +17,37 @@ class Project:
     opm-vim project class.
     """
 
-    json_path = ''
-    json_data = ''
+    json_path = str()
+    json_data = dict()
     prefix = 'build-'
-    mode = 'debug'
+    cache = object()
 
     def __init__(self, json_path, **kwargs):
         self.json_path = json_path
         self.json_data = loadJsonData(json_path)
+        self.cache = Cache(json_path + '.cache')
 
-        if 'mode' in kwargs:
-            self.mode = kwargs['mode']
         if 'prefix' in kwargs:
             self.prefix = kwargs['prefix']
 
+        ## After initialization.
+        if not self.getMode():
+            self.setAutoMode()
+
+    def getMode(self):
+        return self.cache.getMode()
+
+    def setMode(self, mode):
+        self.cache.setMode(mode)
+        self.cache.save()
+
+    def setAutoMode(self):
+        modes = self.getModes()
+        if modes:
+            self.setMode(modes[0])
+
     def __str__(self):
-        return '{}:{}'.format(self.json_path, self.mode)
+        return '{}:{}'.format(self.json_path, self.getMode())
 
     def exists(self):
         """ Exists json dictionary? """
@@ -75,7 +91,7 @@ class Project:
         return mode in self.getModes()
 
     def existsCurrentMode(self):
-        return self.existsMode(self.mode)
+        return self.existsMode(self.getMode())
 
     def existsDebugKey(self, key):
         return key in self.getDebugKeys()
@@ -102,7 +118,7 @@ class Project:
         return self.getDefaultCMakeDirectory(mode).strip()
 
     def getCurrentCMakeDirectory(self):
-        return self.getCMakeDirectory(self.mode)
+        return self.getCMakeDirectory(self.getMode())
 
     ## ------------
     ## CMake flags.
@@ -133,7 +149,7 @@ class Project:
         return self.getDefaultCMakeFlags(mode).strip()
 
     def getCurrentCMakeFlags(self):
-        return self.getCMakeFlags(self.mode)
+        return self.getCMakeFlags(self.getMode())
 
     def getBuildFlags(self, mode):
         mode_data = self.getCMakeDictionary(mode)
@@ -142,7 +158,7 @@ class Project:
         return str()
 
     def getCurrentBuildFlags(self):
-        return self.getBuildFlags(self.mode)
+        return self.getBuildFlags(self.getMode())
 
     ## -----------------
     ## Debug operations.
@@ -201,7 +217,8 @@ class Project:
     def preview(self, show_error=True):
         print('Project root: {}'.format(self.getRoot()))
         print('OPM-VIM json: {}'.format(self.json_path))
-        print('Current mode: {}'.format(self.mode))
+        print('Cache json: {}'.format(self.cache.json_path))
+        print('Current mode: {}'.format(self.getMode()))
 
         if not self.exists():
             print('-- Not found project --')
@@ -258,7 +275,6 @@ class Project:
 
 def getDefaultProject():
     return Project(getDefaultProjectJsonPath(),
-                   mode=getProjectMode(),
                    prefix=getDefaultBuildPrefix())
 
 def previewDefaultProject(show_error=True):
