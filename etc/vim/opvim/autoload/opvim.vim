@@ -29,7 +29,7 @@ endfunction
 
 function! opvim#Exec(...) abort
     if a:0 > 0
-        call s:Pyeval('opvim.preview(' . a:1 . ')')
+        call s:Pyeval('opvim.execute("' . a:1 . '")')
     else
         throw 'Argument required.'
     endif
