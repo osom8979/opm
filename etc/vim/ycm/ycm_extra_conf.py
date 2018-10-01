@@ -2,6 +2,7 @@
 
 import os
 import platform
+import json
 import __main__ as main
 import ycm_core
 
@@ -24,12 +25,61 @@ CPP_UPPER_EXTENSIONS = ['.C', '.C++', '.CC', '.CP', '.CPP', '.CXX']
 HEADER_LOWER_EXTENSIONS = ['.h', '.h++', '.hh', '.hp', '.hpp', '.hxx', '.cuh', '.inl', '.pch']
 
 SOURCE_EXTENSIONS = list()
-SOURCE_EXTENSIONS.append(CUDA_LOWER_EXTENSIONS)
-SOURCE_EXTENSIONS.append(CUDA_UPPER_EXTENSIONS)
-SOURCE_EXTENSIONS.append(OBJC_LOWER_EXTENSIONS)
-SOURCE_EXTENSIONS.append(OBJC_UPPER_EXTENSIONS)
-SOURCE_EXTENSIONS.append(CPP_LOWER_EXTENSIONS)
-SOURCE_EXTENSIONS.append(CPP_UPPER_EXTENSIONS)
+SOURCE_EXTENSIONS.extend(CUDA_LOWER_EXTENSIONS)
+SOURCE_EXTENSIONS.extend(CUDA_UPPER_EXTENSIONS)
+SOURCE_EXTENSIONS.extend(OBJC_LOWER_EXTENSIONS)
+SOURCE_EXTENSIONS.extend(OBJC_UPPER_EXTENSIONS)
+SOURCE_EXTENSIONS.extend(CPP_LOWER_EXTENSIONS)
+SOURCE_EXTENSIONS.extend(CPP_UPPER_EXTENSIONS)
+
+# Check opvim project.
+OPVIM_JSON_NAME = 'opvim.json'
+OPVIM_JSON_PATH = os.path.join(WORKING_DIR, OPVIM_JSON_NAME)
+OPVIM_CACHE_NAME = OPVIM_JSON_NAME + '.cache'
+OPVIM_CACHE_PATH = os.path.join(WORKING_DIR, OPVIM_CACHE_NAME)
+
+def loadJsonData(json_path):
+    if not os.path.isfile(json_path):
+        return None
+    try:
+        with open(json_path) as f:
+            return json.load(f)
+    except:
+        pass
+    return None
+
+def getCurrentMode(cache_path):
+    mode_key = 'mode'
+    cache_json = loadJsonData(cache_path)
+    if cache_json and mode_key in cache_json:
+        return cache_json[mode_key]
+    return str()
+
+def getCMakeWorkingDirectory(opvim_path, mode):
+    cmake_key = 'cmake'
+    dir_key = 'dir'
+    proj_json = loadJsonData(opvim_path)
+    if not proj_json:
+        return str()
+    if not cmake_key in proj_json:
+        return str()
+    if not mode in proj_json[cmake_key]:
+        return str()
+    if not dir_key in proj_json[cmake_key][mode]:
+        return str()
+    return proj_json[cmake_key][mode][dir_key]
+
+def getCurrentCMakeDirectory(opvim_path, cache_path):
+    default_prefix = 'build-'
+    mode = getCurrentMode(cache_path)
+    if not mode:
+        return str()
+    cmake_dir = getCMakeWorkingDirectory(opvim_path, mode)
+    if cmake_dir:
+        return cmake_dir
+    return default_prefix + mode
+
+CURRNET_CMAKE_BUILD_DIR = getCurrentCMakeDirectory(OPVIM_JSON_PATH, OPVIM_CACHE_PATH)
 
 # Set this to the absolute path to the folder (NOT the file!) containing the
 # compile_commands.json file to use that instead of 'flags'. See here for
@@ -41,14 +91,9 @@ SOURCE_EXTENSIONS.append(CPP_UPPER_EXTENSIONS)
 #
 # Most projects will NOT need to set this to anything; you can just change the
 # 'flags' list of compilation flags. Notice that YCM itself uses that approach.
-COMPILATION_DATABASE_DIR = WORKING_DIR
+COMPILATION_DATABASE_DIR = CURRNET_CMAKE_BUILD_DIR
 COMPILATION_DATABASE_NAME = 'compile_commands.json'
 COMPILATION_DATABASE_PATH = os.path.join(COMPILATION_DATABASE_DIR, COMPILATION_DATABASE_NAME)
-
-# OPVIM SETTINGS.
-OPVIM_JSON = 'opvim.json'
-OPVIM_PATH = os.path.join(WORKING_DIR, OPVIM_JSON)
-
 if os.path.isfile(COMPILATION_DATABASE_PATH):
     COMPILATION_DATABASE = ycm_core.CompilationDatabase(COMPILATION_DATABASE_DIR)
 else:
@@ -68,7 +113,6 @@ DEFAULT_FLAGS = [
          '-I.',
          '-I./include',
          '-I./src']
-
 if platform.system() != 'Windows':
     DEFAULT_FLAGS.append('-std=c++14')
 
@@ -82,6 +126,11 @@ FLAGS_READY = True
 
 def isHeaderFile(filename):
     return os.path.splitext(filename)[1].lower() in HEADER_LOWER_EXTENSIONS
+
+def writeLog(message, enable=ENABLE_WRITE_LOG):
+    if enable and WRITE_INFO_FILE:
+        with open(WRITE_INFO_FILE, 'a') as f:
+            f.write(message)
 
 def getCompilationInfoForFile(filename, database):
     """
@@ -117,12 +166,7 @@ def Settings(**kwargs):
             final_flags = list(compilation_info.compiler_flags_)
             final_cwd = str(compilation_info.compiler_working_dir_)
 
-    if ENABLE_WRITE_LOG and WRITE_INFO_FILE:
-        with open(WRITE_INFO_FILE, 'a') as f:
-            f.write('Filename: {}\n'.format(filename))
-            f.write('Flags: {}\n'.format(final_flags))
-            f.write('Working: {}\n'.format(final_cwd))
-            f.write('\n')
+    writeLog('Filename: {}\nFlags: {}\nWorking: {}\n\n'.format(filename, final_flags, final_cwd))
 
     return {'flags': final_flags,
             'include_paths_relative_to_dir': final_cwd,

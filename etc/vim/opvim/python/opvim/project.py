@@ -25,7 +25,8 @@ class Project:
     def __init__(self, json_path, **kwargs):
         self.json_path = json_path
         self.json_data = loadJsonData(json_path)
-        self.cache = Cache(json_path + '.cache')
+        auto_create_cache = self.json_data is not None
+        self.cache = Cache(json_path + '.cache', auto_create=auto_create_cache)
 
         if 'prefix' in kwargs:
             self.prefix = kwargs['prefix']

@@ -15,9 +15,12 @@ class Cache:
     json_data = dict()
     json_indent = 4
 
-    def __init__(self, json_path):
+    def __init__(self, json_path, **kwargs):
+        auto_create = True
+        if 'auto_create' in kwargs:
+            auto_create = kwargs['auto_create']
         self.json_path = json_path
-        if not os.path.isfile(json_path):
+        if not os.path.isfile(json_path) and auto_create:
             self.save()
         self.json_data = loadJsonData(json_path)
 
