@@ -36,6 +36,10 @@ if !exists('g:opvim_debugging_window_height')
     let g:opvim_debugging_window_height = 10
 endif
 
+if !exists('g:opvim_debugging_temp_script_path')
+    let g:opvim_debugging_temp_script_path = ''
+endif
+
 if !exists('g:opvim_quickmenu_id')
     let g:opvim_quickmenu_id = 100
 endif
@@ -47,6 +51,11 @@ endif
 if !exists('g:show_quickfix_if_execute')
     let g:show_quickfix_if_execute = 1
 endif
+
+" Cache variables.
+" -- Don't change this variables --
+let g:opvim_cache_debugging_temp_script_path = ''
+let g:opvim_cache_debugging_job_id = 0
 
 " -----------------
 " Update QuickMenu.
@@ -87,6 +96,8 @@ command! -nargs=?                     OpvimBuild    call opvim#Build(<f-args>)
 command! -nargs=?                     OpvimDebug    call opvim#Debug(<f-args>)
 command! -nargs=?                     OpvimScript   call opvim#Script(<f-args>)
 command! -nargs=0                     OpvimReload   call g:OpvimReloadQuickMenu()
+
+command! -nargs=0 OpvimDebugDone call opvim#ExitDebug()
 
 if has('vim_starting')
     augroup OpvimAutoCommands

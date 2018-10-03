@@ -1,4 +1,5 @@
-" OPM-VIM PLUGIN AUTOLOAD.
+" Osom Project Manager for VIM
+" PLUGIN AUTOLOAD.
 
 " Python directory. (see also: filename-modifiers)
 let s:python_dir = expand('<sfile>:p:h:h') . '/python'
@@ -65,5 +66,18 @@ endfunction
 
 function! opvim#UpdateQuickMenuMode() abort
     call s:Pyeval('opvim.updateQuickMenuMode()')
+endfunction
+
+" --------
+" Debugger
+" --------
+
+function! opvim#OnDebuggerExit(job_id, data, event)
+    "call s:Pyeval('opvim.onDebuggerExit()')
+    echo 'Call opvim#OnDebuggerExit() !!'
+endfunction
+
+function! opvim#ExitDebug()
+    call rpcrequest(g:opvim_cache_debugging_job_id, 'exit')
 endfunction
 
