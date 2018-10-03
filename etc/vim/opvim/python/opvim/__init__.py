@@ -94,7 +94,7 @@ def debug(debug_key):
         common.eprint('Undefined cmd')
         return
 
-    debugging.getDebugging(debug_type, debug_cwd, debug_cmds).run()
+    debugging.startDebugging(debug_type, debug_cwd, debug_cmds)
 
 def script(script_key):
     proj = defaultProject()

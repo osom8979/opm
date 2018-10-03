@@ -72,12 +72,36 @@ endfunction
 " Debugger
 " --------
 
+" How to work:
+" LLDB(GDB) <-{stdio}-> |FIFO| <-{stdio}-> Server(PYTHON) <-{callback}-> vim
+"
+" Work process:
+" 1. create FIFO
+" 2. start fifo server
+" 3. start debugger (LLDB or GDB)
+" 4. server & debugger handshake
+" 5. [WORKING] ...
+" 6-1. if debugger dead
+"  * {on_exit} callback
+" 6-2. if dead request
+"  * request debugger kill
+"  * debugger dead
+"  * {on_exit} callback
+" 7. kill fifo server.
+" 8. {on_exit} callback from the fifo server.
+" 9. unlink FIFO
+
+function! opvim#OnDebuggerFifoExit(job_id, data, event)
+    echo 'Call opvim#OnDebuggerFifoExit() !!'
+endfunction
+
 function! opvim#OnDebuggerExit(job_id, data, event)
     "call s:Pyeval('opvim.onDebuggerExit()')
     echo 'Call opvim#OnDebuggerExit() !!'
+    call jobstop(g:opvim_cache_debugging_fifo_server_job_id)
 endfunction
 
 function! opvim#ExitDebug()
-    call rpcrequest(g:opvim_cache_debugging_job_id, 'exit')
+    "call rpcrequest(g:opvim_cache_debugging_job_id, 'exit')
 endfunction
 

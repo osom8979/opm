@@ -2,26 +2,27 @@
 # -*- coding: utf-8 -*-
 
 import os
-import errno
+import signal
 import optparse
 import shlex
-import threading
 import json
-import lldb
 
-# Don't use neovim package.
-# (Not working in MacOS system python)
+from neovim import attach
 
-class BackgroundServer:
+class FifoServer:
     """
     LLDB Background Server.
     """
 
     fifo_path = str()
-    fifo = object()
+    nvim_socket_path = str()
 
-    def __init__(self, fifo_path):
+    fifo = object()
+    nvim = object()
+
+    def __init__(self, fifo_path, nvim_socket_path):
         self.fifo_path = fifo_path
+        self.nvim_socket_path = nvim_socket_path
 
     def exit(self):
         self.fifo.write('{"kill":1}')
@@ -29,6 +30,10 @@ class BackgroundServer:
     def run(self):
         self.fifo = open(self.fifo)
         if not self.fifo:
+            return False
+
+        self.nvim = attach('socket', path=self.nvim_socket_path)
+        if not self.nvim:
             return False
 
         is_running = True
@@ -58,30 +63,32 @@ class BackgroundServer:
 global fifo_server
 fifo_server = object()
 
-def onBackgroundServer(fifo_path):
-    server = BackgroundServer(fifo_path)
-    server.run()
+def onJobStopCallback(signum, frame):
+    fifo_server.exit()
 
 def createOptionParser():
     parser = optparse.OptionParser(add_help_option=False)
     parser.add_option('-f', '--fifo', type='string', dest='fifo', help='FIFO path')
+    parser.add_option('-n', '--nvim', type='string', dest='nvim', help='NeoVim socket path')
     return parser
 
-def init(debugger, command, result, internal_dict):
-    #target = debugger.GetSelectedTarget()
-    #process = target.GetProcess()
-    #thread = process.GetSelectedThread()
-
+def main():
     try:
         (options, args) = createOptionParser().parse_args(shlex.split(command))
     except:
-        result.SetError("Option parsing failed.")
-        return
+        raise "Option parsing failed."
 
     if not options.fifo:
         result.SetError("Not defined fifo path.")
-        return
+    if not options.nvim:
+        result.SetError("Not defined nvim socket path.")
 
-    t = threading.Thread(target=onBackgroundServer, args=(options.fifo,))
-    t.start()
+    signal.signal(signal.SIGINT, onJobStopCallback)
+    signal.signal(signal.SIGTERM, onJobStopCallback)
+
+    fifo_server = FifoServer(options.fifo, options.nvim)
+    return fifo_server.run()
+
+if __name__ == '__main__':
+    main()
 

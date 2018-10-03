@@ -51,17 +51,23 @@ def getDebuggingPreview():
 def getDebuggingWindowHeight():
     return int(vim.vars['opvim_debugging_window_height'])
 
-def getDebuggingTempScriptPath():
-    return vim.vars['opvim_debugging_temp_script_path']
-
-def setDebuggingTempScriptPath(path):
-    vim.vars['opvim_debugging_temp_script_path'] = path
-
 def getCacheDebuggingTempScriptPath():
     return vim.vars['opvim_cache_debugging_temp_script_path']
 
 def setCacheDebuggingTempScriptPath(path):
     vim.vars['opvim_cache_debugging_temp_script_path'] = path
+
+def getCacheDebuggingTempFifoPath():
+    return vim.vars['opvim_cache_debugging_temp_fifo_path']
+
+def setCacheDebuggingTempFifoPath(path):
+    vim.vars['opvim_cache_debugging_temp_fifo_path'] = path
+
+def getCacheDebuggingFifoServerJobId():
+    return vim.vars['opvim_cache_debugging_fifo_server_job_id']
+
+def setCacheDebuggingFifoServerJobId(value):
+    vim.vars['opvim_cache_debugging_fifo_server_job_id'] = value
 
 def getShowQuickfixIfExecute():
     return int(vim.vars['show_quickfix_if_execute'])

@@ -36,10 +36,6 @@ if !exists('g:opvim_debugging_window_height')
     let g:opvim_debugging_window_height = 10
 endif
 
-if !exists('g:opvim_debugging_temp_script_path')
-    let g:opvim_debugging_temp_script_path = ''
-endif
-
 if !exists('g:opvim_quickmenu_id')
     let g:opvim_quickmenu_id = 100
 endif
@@ -55,7 +51,8 @@ endif
 " Cache variables.
 " -- Don't change this variables --
 let g:opvim_cache_debugging_temp_script_path = ''
-let g:opvim_cache_debugging_job_id = 0
+let g:opvim_cache_debugging_temp_fifo_path = ''
+let g:opvim_cache_debugging_fifo_server_job_id = 0
 
 " -----------------
 " Update QuickMenu.
