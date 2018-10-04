@@ -13,6 +13,26 @@ function! s:Pyeval(eval_string)
     return pyeval(a:eval_string)
 endfunction
 
+function! s:EchoWarning(message)
+    echohl WarningMsg
+    echo a:message
+    echohl None
+endfunction
+
+function! s:JoinStringList(string_list)
+    if len(a:string_list) == 0
+        return ''
+    else
+        let total_message = a:string_list[0]
+        if len(a:string_list) > 1
+            for line in a:string_list[1:]
+                let total_message += '\n' . line
+            endfor
+        endif
+        return total_message
+    endif
+endfunction
+
 function! opvim#Initialize() abort
 exec s:python_until_eof
 import sys
@@ -79,12 +99,17 @@ endfunction
 " 1. create FIFO
 " 2. start fifo server
 " 3. start debugger (LLDB or GDB)
-" 4. server & debugger handshake
+" 4. (SKIP) server & debugger handshake
 " 5. [WORKING] ...
 " 6-1. if debugger dead
 "  * {on_exit} callback
+"  * server jobstop()
 " 6-2. if dead request
 "  * request debugger kill
+"  * debugger dead
+"  * {on_exit} callback
+" 6-3. if dead from user request
+"  * write debugger kill to FIFO
 "  * debugger dead
 "  * {on_exit} callback
 " 7. kill fifo server.
@@ -92,19 +117,15 @@ endfunction
 " 9. unlink FIFO
 
 function! opvim#OnDebuggerFifoStdout(job_id, data, event)
-    for line in a:data
-        echo line
-    endfor
+    echo s:JoinStringList(a:data)
 endfunction
 
 function! opvim#OnDebuggerFifoStderr(job_id, data, event)
-    for line in a:data
-        echo line
-    endfor
+    call s:EchoWarning(s:JoinStringList(a:data))
 endfunction
 
 function! opvim#OnDebuggerFifoExit(job_id, data, event)
-    echo 'Call opvim#OnDebuggerFifoExit() !!'
+    echo 'Debugging done. (job_id:' . a:job_id . ', exit:' . a:data . ')'
 endfunction
 
 function! opvim#OnDebuggerExit(job_id, data, event)
