@@ -91,14 +91,25 @@ endfunction
 " 8. {on_exit} callback from the fifo server.
 " 9. unlink FIFO
 
+function! opvim#OnDebuggerFifoStdout(job_id, data, event)
+    for line in a:data
+        echo line
+    endfor
+endfunction
+
+function! opvim#OnDebuggerFifoStderr(job_id, data, event)
+    for line in a:data
+        echo line
+    endfor
+endfunction
+
 function! opvim#OnDebuggerFifoExit(job_id, data, event)
     echo 'Call opvim#OnDebuggerFifoExit() !!'
 endfunction
 
 function! opvim#OnDebuggerExit(job_id, data, event)
-    "call s:Pyeval('opvim.onDebuggerExit()')
-    echo 'Call opvim#OnDebuggerExit() !!'
     call jobstop(g:opvim_cache_debugging_fifo_server_job_id)
+    let g:opvim_cache_debugging_fifo_server_job_id = 0
 endfunction
 
 function! opvim#ExitDebug()

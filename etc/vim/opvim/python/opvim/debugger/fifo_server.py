@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import signal
 import optparse
-import shlex
 import json
 
 from neovim import attach
@@ -28,7 +28,7 @@ class FifoServer:
         self.fifo.write('{"kill":1}')
 
     def run(self):
-        self.fifo = open(self.fifo)
+        self.fifo = open(self.fifo_path)
         if not self.fifo:
             return False
 
@@ -74,14 +74,14 @@ def createOptionParser():
 
 def main():
     try:
-        (options, args) = createOptionParser().parse_args(shlex.split(command))
+        (options, args) = createOptionParser().parse_args(sys.argv)
     except:
         raise "Option parsing failed."
 
     if not options.fifo:
-        result.SetError("Not defined fifo path.")
+        raise "Not defined fifo path."
     if not options.nvim:
-        result.SetError("Not defined nvim socket path.")
+        raise "Not defined nvim socket path."
 
     signal.signal(signal.SIGINT, onJobStopCallback)
     signal.signal(signal.SIGTERM, onJobStopCallback)

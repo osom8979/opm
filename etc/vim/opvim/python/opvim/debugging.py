@@ -4,9 +4,10 @@
 from .common import *
 import os
 import sys
-import vim
 import tempfile
-import sys
+import optparse
+import shlex
+import vim
 
 SCRIPT_PATH = os.path.abspath(__file__)
 SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
@@ -102,28 +103,53 @@ def removeFifo():
     temp_fifo_path = getCacheDebuggingTempFifoPath()
     if os.path.isfile(temp_fifo_path):
         os.remove(temp_fifo_path)
-    os.rmdir(os.path.dirname(temp_fifo_path))
+    temp_fifo_dir = os.path.dirname(temp_fifo_path)
+    if os.path.isdir(temp_fifo_dir):
+        os.rmdir(temp_fifo_dir)
     setCacheDebuggingTempFifoPath('') # clear cache.
 
 def newFifo():
     removeFifo()
     return createFifo()
 
+def getCommandsListWithArgs(command, args):
+    result_command = '["{}"'.format(command)
+    parser = optparse.OptionParser(add_help_option=False)
+    (_, parsed_args) = parser.parse_args(shlex.split(args))
+    for a in parsed_args:
+        result_command += ',"{}"'.format(a)
+    return result_command + ']'
+
 def getCommands(debug_type, debugger_script_path, user_args):
     if debug_type == DEBUG_TYPE_GDB:
-        return 'gdb {}'.format(user_args)
+        return '"gdb {}"'.format(user_args)
     elif debug_type == DEBUG_TYPE_LLDB:
-        return 'lldb -S {} {}'.format(debugger_script_path, user_args)
+        return '"lldb -S {} {}"'.format(debugger_script_path, user_args)
     elif debug_type == DEBUG_TYPE_PDB:
-        return ''
+        return '""'
     else:
         raise 'Unknown debug type: {}'.format(debug_type)
 
-def getTerminalOption(on_exit, cwd=str()):
-    if cwd:
-        return "{'cwd':'" + cwd + "','on_exit':'" + on_exit + "'}"
-    else:
-        return "{'on_exit':'" + on_exit + "'}"
+def getTerminalOptions(cwd):
+    return "{'cwd':'" + cwd + "','on_exit':'opvim#OnDebuggerExit'}"
+
+def getFifoJobCommandsList(temp_fifo_path):
+    return '["{}", "{}", "{}", "{}"]'.format(
+            sys.executable,
+            FIFO_SERVER_PATH,
+            "--fifo=" + temp_fifo_path,
+            "--nvim=" + os.environ['NVIM_LISTEN_ADDRESS'])
+
+def getFifoJobOptions():
+    return "{" \
+           "'on_stdout':'opvim#OnDebuggerFifoStdout'," \
+           "'on_stderr':'opvim#OnDebuggerFifoStderr'," \
+           "'on_exit':'opvim#OnDebuggerFifoExit'"      \
+           "}"
+
+# ---------------
+# Debugging class
+# ---------------
 
 class Debugging:
     """
@@ -158,21 +184,28 @@ class Debugging:
         temp_script_path = newInitScript(self.debug_type, temp_fifo_path)
 
         final_cmds = getCommands(self.debug_type, temp_script_path, args)
-        final_opts = getTerminalOption('opvim#OnDebuggerExit', cwd)
+        final_opts = getTerminalOptions(cwd)
+
+        global_job_store = 'opvim_cache_debugging_fifo_server_job_id'
+        fifo_cmds = getFifoJobCommandsList(temp_fifo_path)
+        fifo_opts = getFifoJobOptions()
 
         if getDebuggingPreview():
-            print('cmds: {}'.format(final_cmds))
-            print('options: {}'.format(final_opts))
+            print('FIFO path: {}'.format(temp_fifo_path))
+            print('FIFO server cmds: {}'.format(fifo_cmds))
+            print('FIFO server opts: {}'.format(fifo_opts))
+            print('Debugger cmds: {}'.format(final_cmds))
+            print('Debugger opts: {}'.format(final_opts))
 
         # Start background jobs.
-        job_store = 'g:opvim_cache_debugging_fifo_server_job_id'
-        fifo_cmds = '{} {}'.format(sys.executable, FIFO_SERVER_PATH)
-        fifo_opts = getTerminalOption('opvim#OnDebuggerFifoExit')
-        command('let {} = jobstart({}, {})'.format(job_store, fifo_cmds, fifo_opts))
+        command('let g:{} = jobstart({}, {})'.format(global_job_store, fifo_cmds, fifo_opts))
+
+        if getDebuggingPreview():
+            print('FIFO server: job ID: {}'.format(vim.vars[global_job_store]))
 
         # Start Debugger
         command('belowright {}new'.format(height))
-        command('termopen("{}", {})'.format(final_cmds, final_opts))
+        command('call termopen({}, {})'.format(final_cmds, final_opts))
         command('startinsert')
 
 # -----------------

@@ -27,7 +27,7 @@ class BackgroundServer:
         self.fifo.write('{"kill":1}')
 
     def run(self):
-        self.fifo = open(self.fifo)
+        self.fifo = open(self.fifo_path)
         if not self.fifo:
             return False
 
