@@ -8,7 +8,7 @@ from .debugging import *
 import os
 
 __add__ = ['init', 'preview', 'execute', 'setMode', 'getMode', 'cmake', 'build', 'debug', 'script',
-           'updateQuickMenu', 'updateQuickMenuMode']
+           'updateQuickMenu', 'updateQuickMenuMode', 'onFifoLogging']
 
 def defaultProject():
     proj = project.getDefaultProject()
@@ -147,4 +147,18 @@ def updateQuickMenuMode():
     proj = project.getDefaultProject()
     for mode in proj.getModes():
         appendQuickMenu(mode, 'OpvimMode ' + mode, 'Change {} mode'.format(mode))
+
+def onFifoLogging(log_prefix, message):
+    if not message:
+        return
+
+    final_message = message
+
+    setting_dir = common.getProjectSettingDir()
+    fifo_name = common.getDebuggingFifoName()
+    log_name = fifo_name + '.log'
+    log_path = os.path.join(setting_dir, log_name)
+
+    with open(log_path, 'a') as f:
+        f.write(log_prefix + final_message)
 

@@ -26,7 +26,7 @@ function! s:JoinStringList(string_list)
         let total_message = a:string_list[0]
         if len(a:string_list) > 1
             for line in a:string_list[1:]
-                let total_message += '\n' . line
+                let total_message .= "\n" . line
             endfor
         endif
         return total_message
@@ -116,21 +116,27 @@ endfunction
 " 8. {on_exit} callback from the fifo server.
 " 9. unlink FIFO
 
+function! opvim#OnDebuggerExit(job_id, data, event)
+    call jobstop(g:opvim_debugging_fifo_server_id)
+    let g:opvim_debugging_fifo_server_id = 0
+endfunction
+
 function! opvim#OnDebuggerFifoStdout(job_id, data, event)
-    echo s:JoinStringList(a:data)
+exec s:python_until_eof
+import vim
+opvim.onFifoLogging('[OUT] ', vim.eval('s:JoinStringList(a:data)'))
+EOF
 endfunction
 
 function! opvim#OnDebuggerFifoStderr(job_id, data, event)
-    call s:EchoWarning(s:JoinStringList(a:data))
+exec s:python_until_eof
+import vim
+opvim.onFifoLogging('[ERR] ', vim.eval('s:JoinStringList(a:data)'))
+EOF
 endfunction
 
 function! opvim#OnDebuggerFifoExit(job_id, data, event)
     echo 'Debugging done. (job_id:' . a:job_id . ', exit:' . a:data . ')'
-endfunction
-
-function! opvim#OnDebuggerExit(job_id, data, event)
-    call jobstop(g:opvim_debugging_fifo_server_id)
-    let g:opvim_debugging_fifo_server_id = 0
 endfunction
 
 function! opvim#ExitDebug()

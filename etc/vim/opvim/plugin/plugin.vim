@@ -40,7 +40,6 @@ if !exists('g:opvim_project_cache_json_name')
     let g:opvim_project_cache_json_name = 'opvim.cache.json'
 endif
 
-
 " [[ DEVELOPER ]]
 
 if !exists('g:opvim_developer_debug')
