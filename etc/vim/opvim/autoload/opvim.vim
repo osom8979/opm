@@ -129,8 +129,8 @@ function! opvim#OnDebuggerFifoExit(job_id, data, event)
 endfunction
 
 function! opvim#OnDebuggerExit(job_id, data, event)
-    call jobstop(g:opvim_cache_debugging_fifo_server_job_id)
-    let g:opvim_cache_debugging_fifo_server_job_id = 0
+    call jobstop(g:opvim_debugging_fifo_server_id)
+    let g:opvim_debugging_fifo_server_id = 0
 endfunction
 
 function! opvim#ExitDebug()

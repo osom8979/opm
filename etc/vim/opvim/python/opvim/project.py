@@ -20,16 +20,27 @@ class Project:
     json_path = str()
     json_data = dict()
     prefix = 'build-'
+    setting_dir = '.opvim'
+    cache_name = 'opvim.cache.json'
     cache = object()
 
     def __init__(self, json_path, **kwargs):
         self.json_path = json_path
         self.json_data = loadJsonData(json_path)
-        auto_create_cache = self.json_data is not None
-        self.cache = Cache(json_path + '.cache', auto_create=auto_create_cache)
 
         if 'prefix' in kwargs:
             self.prefix = kwargs['prefix']
+        if 'setting_dir' in kwargs:
+            self.setting_dir = kwargs['setting_dir']
+        if 'cache_name' in kwargs:
+            self.cache_name = kwargs['cache_name']
+
+        exists_json = self.json_data is not None
+        if exists_json and not os.path.exists(self.setting_dir):
+            os.mkdir(self.setting_dir)
+
+        cache_path = os.path.join(self.setting_dir, self.cache_name)
+        self.cache = Cache(cache_path, auto_create=exists_json)
 
         ## After initialization.
         if not self.getMode():
@@ -269,14 +280,16 @@ class Project:
         #pprint.pprint(self.json_data)
         pass
 
-    ## -----------------------
-    ## -- Project class END --
-    ## -----------------------
 
+## -----
+## Utils
+## -----
 
 def getDefaultProject():
     return Project(getDefaultProjectJsonPath(),
-                   prefix=getDefaultBuildPrefix())
+                   prefix=getDefaultBuildPrefix(),
+                   setting_dir=getProjectSettingDir(),
+                   cache_name=getProjectCacheJsonName())
 
 def previewDefaultProject(show_error=True):
     getDefaultProject().preview(show_error)

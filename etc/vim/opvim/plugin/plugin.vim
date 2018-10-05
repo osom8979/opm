@@ -12,6 +12,8 @@ call opvim#Initialize()
 
 let g:opvim_loaded = 1
 
+" [[ CMAKE ]]
+
 if !exists('g:opvim_cmake_path')
     if exists('g:opvim_cmake_which') " init from python code.
         let g:opvim_cmake_path = g:opvim_cmake_which
@@ -20,21 +22,55 @@ if !exists('g:opvim_cmake_path')
     endif
 endif
 
+" [[ PROJECT ]]
+
 if !exists('g:opvim_project_json_name')
     let g:opvim_project_json_name = 'opvim.json'
+endif
+
+if !exists('g:opvim_project_setting_dir_name')
+    let g:opvim_project_setting_dir_name = '.opvim'
 endif
 
 if !exists('g:opvim_default_build_prefix')
     let g:opvim_default_build_prefix = 'build-'
 endif
 
-if !exists('g:opvim_debugging_preview')
-    let g:opvim_debugging_preview = 1
+if !exists('g:opvim_project_cache_json_name')
+    let g:opvim_project_cache_json_name = 'opvim.cache.json'
 endif
+
+
+" [[ DEVELOPER ]]
+
+if !exists('g:opvim_developer_debug')
+    let g:opvim_developer_debug = 1
+endif
+
+" [[ QUICK-FIX ]]
+
+if !exists('g:show_quickfix_if_execute')
+    let g:show_quickfix_if_execute = 1
+endif
+
+" [[ DEBUGGING ]]
 
 if !exists('g:opvim_debugging_window_height')
     let g:opvim_debugging_window_height = 10
 endif
+
+if !exists('g:opvim_debugging_script_name')
+    let g:opvim_debugging_script_name = 'debugging-init.py'
+endif
+
+if !exists('g:opvim_debugging_fifo_name')
+    let g:opvim_debugging_fifo_name = 'debugging.fifo'
+endif
+
+" Debugging cache (Don't change this variables)
+let g:opvim_debugging_fifo_server_id = 0
+
+" [[ QUICK-MENU ]]
 
 if !exists('g:opvim_quickmenu_id')
     let g:opvim_quickmenu_id = 100
@@ -43,16 +79,6 @@ endif
 if !exists('g:opvim_quickmenu_mode_id')
     let g:opvim_quickmenu_mode_id = 101
 endif
-
-if !exists('g:show_quickfix_if_execute')
-    let g:show_quickfix_if_execute = 1
-endif
-
-" Cache variables.
-" -- Don't change this variables --
-let g:opvim_cache_debugging_temp_script_path = ''
-let g:opvim_cache_debugging_temp_fifo_path = ''
-let g:opvim_cache_debugging_fifo_server_job_id = 0
 
 " -----------------
 " Update QuickMenu.

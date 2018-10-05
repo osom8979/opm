@@ -17,6 +17,8 @@ FIFO_SERVER_PATH = os.path.join(DEBUGGER_DIR, 'fifo_server.py')
 LLDB_SCRIPT_PATH = os.path.join(DEBUGGER_DIR, 'lldb_script.py')
 GDB_SCRIPT_PATH = os.path.join(DEBUGGER_DIR, 'gdb_script.py')
 
+GLOBAL_JOB_STORE_KEY = GLOBAL_KEY_DEBUGGING_FIFO_SERVER_ID
+
 # ----------
 # Exceptions
 # ----------
@@ -186,11 +188,10 @@ class Debugging:
         final_cmds = getCommands(self.debug_type, temp_script_path, args)
         final_opts = getTerminalOptions(cwd)
 
-        global_job_store = 'opvim_cache_debugging_fifo_server_job_id'
         fifo_cmds = getFifoJobCommandsList(temp_fifo_path)
         fifo_opts = getFifoJobOptions()
 
-        if getDebuggingPreview():
+        if isDeveloperDebug():
             print('FIFO path: {}'.format(temp_fifo_path))
             print('FIFO server cmds: {}'.format(fifo_cmds))
             print('FIFO server opts: {}'.format(fifo_opts))
@@ -198,10 +199,10 @@ class Debugging:
             print('Debugger opts: {}'.format(final_opts))
 
         # Start background jobs.
-        command('let g:{} = jobstart({}, {})'.format(global_job_store, fifo_cmds, fifo_opts))
+        command('let g:{} = jobstart({}, {})'.format(GLOBAL_JOB_STORE_KEY, fifo_cmds, fifo_opts))
 
-        if getDebuggingPreview():
-            print('FIFO server: job ID: {}'.format(vim.vars[global_job_store]))
+        if isDeveloperDebug():
+            print('FIFO server: job ID: {}'.format(getGlobalVariable(GLOBAL_JOB_STORE_KEY)))
 
         # Start Debugger
         command('belowright {}new'.format(height))
