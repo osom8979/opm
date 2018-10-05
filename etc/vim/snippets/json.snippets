@@ -3,32 +3,32 @@ snippet snip-opvim-default
 	    "cmake": {
 	        "debug" : {
 	            "dir" : "build-debug",
-	            "flags" : "-DCMAKE_BUILD_TYPE=Debug",
-	            "build" : "-j8 VERBOSE=1"
+	            "flags" : "-GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+	            "build" : "-j 6"
 	        },
 	        "release" : {
-	        },
-	        "ninja" : {
-	            "flags" : "-GNinja -DCMAKE_BUILD_TYPE=Debug"
+	            "dir" : "build-release",
+	            "flags" : "-GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+	            "build" : "-j 6"
 	        }
 	    },
 	    "debug" : {
-	        "gdb-out" : {
+	        "gdb-debug" : {
+	            "cwd" : "build-debug",
 	            "type" : "gdb",
-	            "cmds" : "--args ./build-debug/a.out --verbose"
+	            "cmds" : "--args ./main --verbose"
 	        },
-	        "lldb-out" : {
+	        "lldb-debug" : {
 	            "cwd" : "build-debug",
 	            "type" : "lldb",
-	            "cmds" : "-- ./a.out --verbose"
+	            "cmds" : "-- ./main --verbose"
 	        }
 	    },
 	    "script" : {
-	        "custom-script": {
+	        "pwd": {
 	            "cwd" : "",
 	            "cmds" :"pwd"
 	        }
 	    }
 	}
-
 
