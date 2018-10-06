@@ -92,7 +92,7 @@ if has('gui_running')
     set guioptions-=T  " no toolbar.
     set linespace=0    " vim line space.
     set lines=50       " vim line size.
-    set columns=150    " vim column size.
+    set columns=80     " vim column size.
     "winpos 0 0        " vim window position.
 elseif has('nvim')
     " whitespace setting.
