@@ -16,27 +16,55 @@ WRITE_INFO_FILE = 'ycm_extra_conf.log'
 CUDA_LOWER_EXTENSIONS = ['.cu']
 CUDA_UPPER_EXTENSIONS = ['.CU']
 
+CUDA_HEADER_LOWER_EXTENSIONS = ['.cuh']
+CUDA_HEADER_UPPER_EXTENSIONS = ['.CUH']
+
 OBJC_LOWER_EXTENSIONS = ['.m', '.mm']
 OBJC_UPPER_EXTENSIONS = ['.M', '.MM']
 
-CPP_LOWER_EXTENSIONS = ['.c', '.c++', '.cc', '.cp', '.cpp', '.cxx']
-CPP_UPPER_EXTENSIONS = ['.C', '.C++', '.CC', '.CP', '.CPP', '.CXX']
+C_LOWER_EXTENSIONS = ['.c']
+C_UPPER_EXTENSIONS = ['.C']
 
-HEADER_LOWER_EXTENSIONS = ['.h', '.h++', '.hh', '.hp', '.hpp', '.hxx', '.cuh', '.inl', '.pch']
+CPP_LOWER_EXTENSIONS = ['.c++', '.cc', '.cp', '.cpp', '.cxx']
+CPP_UPPER_EXTENSIONS = ['.C++', '.CC', '.CP', '.CPP', '.CXX']
+
+CPP_HEADER_LOWER_EXTENSIONS = ['.h', '.h++', '.hh', '.hp', '.hpp', '.hxx', '.inl', '.pch']
 
 SOURCE_EXTENSIONS = list()
 SOURCE_EXTENSIONS.extend(CUDA_LOWER_EXTENSIONS)
 SOURCE_EXTENSIONS.extend(CUDA_UPPER_EXTENSIONS)
 SOURCE_EXTENSIONS.extend(OBJC_LOWER_EXTENSIONS)
 SOURCE_EXTENSIONS.extend(OBJC_UPPER_EXTENSIONS)
+SOURCE_EXTENSIONS.extend(C_LOWER_EXTENSIONS)
+SOURCE_EXTENSIONS.extend(C_UPPER_EXTENSIONS)
 SOURCE_EXTENSIONS.extend(CPP_LOWER_EXTENSIONS)
 SOURCE_EXTENSIONS.extend(CPP_UPPER_EXTENSIONS)
 
+HEADER_LOWER_EXTENSIONS = list()
+HEADER_LOWER_EXTENSIONS.extend(CUDA_HEADER_LOWER_EXTENSIONS)
+HEADER_LOWER_EXTENSIONS.extend(CPP_HEADER_LOWER_EXTENSIONS)
+
+def getExtensionLower(filename):
+    return os.path.splitext(filename)[1].lower()
+
+def isHeaderExtension(extension):
+    return extension in HEADER_LOWER_EXTENSIONS
+
+def isCudaExtension(extension):
+    return extension in CUDA_LOWER_EXTENSIONS or extension in CUDA_HEADER_LOWER_EXTENSIONS
+
+def isCExtension(extension):
+    return extension in C_LOWER_EXTENSIONS
+
+def isObjectiveCExtension(extension):
+    return extension in OBJC_LOWER_EXTENSIONS
+
 # Check opvim project.
 OPVIM_JSON_NAME = 'opvim.json'
+SETTING_DIR_NAME = '.opvim'
 OPVIM_JSON_PATH = os.path.join(WORKING_DIR, OPVIM_JSON_NAME)
-OPVIM_CACHE_NAME = OPVIM_JSON_NAME + '.cache'
-OPVIM_CACHE_PATH = os.path.join(WORKING_DIR, OPVIM_CACHE_NAME)
+OPVIM_CACHE_NAME = 'opvim.cache.json'
+OPVIM_CACHE_PATH = os.path.join(WORKING_DIR, SETTING_DIR_NAME, OPVIM_CACHE_NAME)
 
 def loadJsonData(json_path):
     if not os.path.isfile(json_path):
@@ -107,7 +135,6 @@ DEFAULT_FLAGS = [
          '-Wno-variadic-macros',
          '-fexceptions',
          #'-DNDEBUG',
-         '-x', 'c++',
          '-isystem', '/usr/include',
          '-isystem', '/usr/local/include',
          '-I.',
@@ -116,6 +143,18 @@ DEFAULT_FLAGS = [
 if platform.system() != 'Windows':
     DEFAULT_FLAGS.append('-std=c++14')
 
+def updateLanguageTypeFromExtension(filename):
+    extension = getExtensionLower(filename)
+    DEFAULT_FLAGS.append('-x')
+    if isCudaExtension(extension):
+        DEFAULT_FLAGS.append('cuda')
+    elif isCExtension(extension):
+        DEFAULT_FLAGS.append('c')
+    elif isObjectiveCExtension(extension):
+        DEFAULT_FLAGS.append('objc')
+    else:
+        DEFAULT_FLAGS.append('c++')
+
 # a boolean indicating whether or not the result of this call (i.e. the list of flags) should be cached for this file name.
 # Defaults to True. If unsure, the default is almost always correct.
 DO_CACHE = True
@@ -123,9 +162,6 @@ DO_CACHE = True
 # a boolean indicating that the flags should be used. Defaults to True. If unsure, the default is almost always correct.
 FLAGS_READY = True
 
-
-def isHeaderFile(filename):
-    return os.path.splitext(filename)[1].lower() in HEADER_LOWER_EXTENSIONS
 
 def writeLog(message, enable=ENABLE_WRITE_LOG):
     if enable and WRITE_INFO_FILE:
@@ -139,7 +175,8 @@ def getCompilationInfoForFile(filename, database):
     corresponding source file, if any. If one exists, the flags for that file
     should be good enough.
     """
-    if isHeaderFile(filename):
+    extension = getExtensionLower(filename)
+    if isHeaderExtension(extension):
         basename = os.path.splitext(filename)[0]
         for extension in SOURCE_EXTENSIONS:
             replacement_source_file = basename + extension
@@ -157,16 +194,21 @@ def Settings(**kwargs):
     language = kwargs['language'] # cfamily, python
     client_data = kwargs['client_data'] # client_data['v:version']
 
+    updateLanguageTypeFromExtension(filename)
+
+    use_database = False
     final_flags = DEFAULT_FLAGS
     final_cwd = WORKING_DIR
 
     if COMPILATION_DATABASE:
         compilation_info = getCompilationInfoForFile(filename, COMPILATION_DATABASE)
         if compilation_info:
+            use_database = True
             final_flags = list(compilation_info.compiler_flags_)
             final_cwd = str(compilation_info.compiler_working_dir_)
 
-    writeLog('Filename: {}\nFlags: {}\nWorking: {}\n\n'.format(filename, final_flags, final_cwd))
+    writeLog('Database: {}\nFilename: {}\nFlags: {}\nWorking: {}\n\n'.format(
+             use_database, filename, final_flags, final_cwd))
 
     return {'flags': final_flags,
             'include_paths_relative_to_dir': final_cwd,
