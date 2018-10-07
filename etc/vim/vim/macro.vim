@@ -39,6 +39,15 @@ let s:BUFFER_F5   = 'B_F5'
 let s:BUFFER_NAME = 'B_NAME'
 let s:BUFFER_LINE = 'B_LINE'
 
+" u: unlisted
+" %: current
+" #: alternate
+" a: active
+" h: hidden
+" =: readonly
+" +: modified
+" x: errors
+
 let s:QUICKFIX_NAME = '[Quickfix List]'
 let s:TERMINAL_REGEX = 'term://.*'
 
