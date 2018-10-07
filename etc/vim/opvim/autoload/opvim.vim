@@ -6,6 +6,12 @@ let s:python_dir = expand('<sfile>:p:h:h') . '/python'
 let s:python_until_eof = has('python3') ? 'python3 << EOF' : 'python << EOF'
 let s:python_command = has('python3') ? 'py3 ' : 'py '
 
+let s:breakpoint_window_name = '[OPVIM>BREAKPOINT]'
+
+sign define OpvimBreakpointEnable   text=●
+sign define OpvimBreakpointDisable  text=○
+sign define OpvimCurrentLine        text=⇒
+
 function! s:Pyeval(eval_string)
     if has('python3')
         return py3eval(a:eval_string)
@@ -142,4 +148,32 @@ endfunction
 function! opvim#ExitDebug()
     "call rpcrequest(g:opvim_cache_debugging_job_id, 'exit')
 endfunction
+
+function! opvim#UpdateViewWindow()
+    " Buffer-local options
+    setlocal filetype=opvim " Vim can detect the type of file that is edited.
+    setlocal noreadonly     " in case the "view" mode is used
+    setlocal buftype=nofile " The value of this option specifies the type of a buffer.
+    setlocal bufhidden=hide " Hide the buffer (don't unload it)
+    setlocal noswapfile     " Do not create a swapfile.
+    setlocal nobuflisted    " Hide in the buffer list.
+    setlocal nomodifiable   " Buffer contents cannot be changed.
+    setlocal textwidth=0    " Disable maximum width of text that is being inserted.
+
+    " Window-local options
+    setlocal nolist
+    setlocal nowrap
+    setlocal winfixheight
+    setlocal nospell
+    setlocal nonumber
+
+    " Fold options.
+    setlocal nofoldenable
+    setlocal foldcolumn=0
+endfunction
+
+function! opvim#OpenBreakpointWindow()
+    exe 'silent keepalt topleft 10new ' . s:breakpoint_window_name
+endfunction
+
 
