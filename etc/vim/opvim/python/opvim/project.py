@@ -285,11 +285,19 @@ class Project:
 ## Utils
 ## -----
 
-def getDefaultProject():
-    return Project(getDefaultProjectJsonPath(),
-                   prefix=getDefaultBuildPrefix(),
-                   setting_dir=getProjectSettingDir(),
-                   cache_name=getProjectCacheJsonName())
+def getDefaultProject(force_reload=False):
+    global project
+    try:
+        project
+    except NameError:
+        force_reload = True
+
+    if force_reload:
+        project = Project(getDefaultProjectJsonPath(),
+                          prefix=getDefaultBuildPrefix(),
+                          setting_dir=getProjectSettingDir(),
+                          cache_name=getProjectCacheJsonName())
+    return project
 
 def previewDefaultProject(show_error=True):
     getDefaultProject().preview(show_error)

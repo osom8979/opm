@@ -39,6 +39,26 @@ function! s:JoinStringList(string_list)
     endif
 endfunction
 
+" -----------
+" breakpoints
+" -----------
+
+function! s:GetCurrentAbsolutePath()
+    return expand('%:p')
+endfunction
+
+function! s:GetCurrentLineNumber()
+    return line('.')
+endfunction
+
+function! s:GetCurrentBreakpoint()
+    return s:GetCurrentAbsolutePath() . "\t" . s:GetCurrentLineNumber()
+endfunction
+
+" ------------
+" opvim prefix
+" ------------
+
 function! opvim#Initialize() abort
 exec s:python_until_eof
 import sys
@@ -175,5 +195,4 @@ endfunction
 function! opvim#OpenBreakpointWindow()
     exe 'silent keepalt topleft 10new ' . s:breakpoint_window_name
 endfunction
-
 

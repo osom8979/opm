@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from .common import *
+from .breakpoint import *
 import os
 
 MODE_KEY = 'mode'
+BREAKPOINTS_KEY = 'bp'
 
 class Cache:
     """
@@ -32,9 +34,9 @@ class Cache:
         """ Save json file. """
         return saveJsonData(self.json_path, self.json_data, self.json_indent)
 
-    ## -----------------------
-    ## JSON First Depth Nodes.
-    ## -----------------------
+    ## ----------------------
+    ## JSON First Depth Nodes
+    ## ----------------------
 
     def getMode(self):
         if self.exists() and MODE_KEY in self.json_data:
@@ -46,4 +48,19 @@ class Cache:
             self.json_data[MODE_KEY] = mode
             return True
         return False
+
+    def getBreakpoints(self):
+        if self.exists() and BREAKPOINTS_KEY in self.json_data:
+            return self.json_data[BREAKPOINTS_KEY]
+        return str()
+
+    def setBreakpoints(self, breakpoints):
+        if self.exists():
+            self.json_data[BREAKPOINTS_KEY] = breakpoints
+            return True
+        return False
+
+    ## -----------
+    ## Breakpoints
+    ## -----------
 

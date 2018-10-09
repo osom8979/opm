@@ -30,14 +30,28 @@ endfunction
 "" Buffer operations.
 "" -----------------
 
-let s:BUFFER_NUM  = 'B_NUM'
-let s:BUFFER_F1   = 'B_F1'
-let s:BUFFER_F2   = 'B_F2'
-let s:BUFFER_F3   = 'B_F3'
-let s:BUFFER_F4   = 'B_F4'
-let s:BUFFER_F5   = 'B_F5'
+let s:BUFFER_NUM  = 'B_NUM'  " [0:2]
+let s:BUFFER_F1   = 'B_F1'   " [3] u
+let s:BUFFER_F2   = 'B_F2'   " [4] % #
+let s:BUFFER_F3   = 'B_F3'   " [5] a h
+let s:BUFFER_F4   = 'B_F4'   " [6] - = R F ?
+let s:BUFFER_F5   = 'B_F5'   " [7] + x
 let s:BUFFER_NAME = 'B_NAME'
 let s:BUFFER_LINE = 'B_LINE'
+
+" Indicators (chars in the same column are mutually exclusive):
+" u    an unlisted buffer (only displayed when [!] is used) |unlisted-buffer|
+"  %    the buffer in the current window
+"  #    the alternate buffer for ":e #" and CTRL-^
+"   a    an active buffer: it is loaded and visible
+"   h    a hidden buffer: It is loaded, but currently not displayed in a window |hidden-buffer|
+"    -    a buffer with 'modifiable' off
+"    =    a readonly buffer
+"    R    a terminal buffer with a running job
+"    F    a terminal buffer with a finished job
+"    ?    a terminal buffer without a job: `:terminal NONE`
+"     +    a modified buffer
+"     x   a buffer with read errors
 
 " u: unlisted
 " %: current
