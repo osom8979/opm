@@ -190,6 +190,8 @@ def getCompilationInfoForFile(filename, database):
     return database.GetCompilationInfoForFile(filename)
 
 def Settings(**kwargs):
+    if not 'filename' in kwargs:
+        return dict()
     filename = kwargs['filename']
     language = kwargs['language'] # cfamily, python
     client_data = kwargs['client_data'] # client_data['v:version']
