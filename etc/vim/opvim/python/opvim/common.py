@@ -121,8 +121,29 @@ def setDebuggingFifoServerId(value):
 # VIM COMMAND
 # -----------
 
+def evaluate(expression):
+    """
+    Evaluates the expression str using the vim internal expression
+    evaluator (see |expression|).  Returns the expression result as:
+    - a string if the Vim expression evaluates to a string or number
+    - a list if the Vim expression evaluates to a Vim list
+    - a dictionary if the Vim expression evaluates to a Vim dictionary
+    Dictionaries and lists are recursively expanded.
+    """
+    return vim.eval(expression)
+
 def command(flags):
+    """
+    Executes the vim (ex-mode) command str. Returns None.
+    """
     vim.command(flags)
+
+def getCommandOutput(flags):
+    """
+    Executes the vim (ex-mode) command str. Returns None.
+    """
+    vim.command("silent exec 'redir @\" | {} | redir END'".format(flags))
+    return vim.eval('@"')
 
 def execute(cmd):
     command(':AsyncRun {}'.format(cmd))

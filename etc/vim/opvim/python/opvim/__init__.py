@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .common import *
+from .buffer import *
 from .project import *
 from .debugging import *
 
