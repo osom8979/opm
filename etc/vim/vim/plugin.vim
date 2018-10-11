@@ -138,14 +138,8 @@ NeoBundle 'skywind3000/asyncrun.vim'  " run async shell commands.
 " Menu
 NeoBundle 'skywind3000/quickmenu.vim'  " a nice customizable popup menu for vim.
 
-if $DISABLE_OPVIM != 0 || $DISABLE_OPM != 0 || $ENABLE_OPVIM == 0 || $ENABLE_OPM == 0
-    let s:disable_opvim = 1
-else
-    let s:disable_opvim = 0
-endif
-
 " OPM-VIM.
-if s:disable_opvim == 0 && has('nvim') && has('python3')
+if $DISABLE_OPVIM != 1 && has('nvim') && has('python3')
     NeoBundle g:opm_vim_script_dir . '/opvim', {
     \   'type' : 'nosync'
     \ }
