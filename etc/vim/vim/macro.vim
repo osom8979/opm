@@ -26,6 +26,10 @@ function! RemoveCr()
     silent execute '%s/$//g'
 endfunction
 
+function! RemoveBlankLines()
+    silent execute 'g/^\s*$/d'
+endfunction
+
 "" -----------------
 "" Buffer operations.
 "" -----------------
