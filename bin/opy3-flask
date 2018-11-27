@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+. opy3-env
+FLASK_PATH="$(pyenv which flask)"
+"$FLASK_PATH" $@
+
