@@ -49,8 +49,15 @@ fi
 cp $VIMRC $NEOVIMRC
 
 echo ''
-echo 'Run this code:'
-echo ''
+echo '## Install vim bundles:'
 echo ' vim +NeoBundleInstall +qall'
+echo ''
+echo '## Install default apt packages:'
+echo ' sudo apt-get install neovim exuberant-ctags cscope'
+echo ''
+echo '## Build YouCompleteMe clang completer:'
+echo ' sudo apt-get install llvm libpython-dev'
+echo ' cd "$HOME/.vim/bundle/YouCompleteMe" && git submodule update --init --recursive'
+echo ' cd "$HOME/.vim/bundle/YouCompleteMe" && ./install.sh --clang-completer'
 echo ''
 
