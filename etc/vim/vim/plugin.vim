@@ -110,6 +110,9 @@ endif
 " Rails supported.
 NeoBundle 'tpope/vim-rails'
 
+" Golang supported.
+NeoBundle 'fatih/vim-go'
+
 " Python supported.
 "if has('python')
 "NeoBundle 'klen/python-mode'
