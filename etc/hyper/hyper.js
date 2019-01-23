@@ -152,20 +152,18 @@ module.exports = {
   localPlugins: [],
 
   keymaps: {
-    // Example
-    // 'window:devtools': 'cmd+alt+o',
     "window:devtools": [
-      "command+shift+i",
-      "ctrl+shift+i"
+      "ctrl+shift+i",
+      "command+shift+i"
     ],
     "window:reload": [
-      "command+shift+r",
-      "ctrl+shift+r"
+      "ctrl+shift+r",
+      "command+shift+r"
     ],
     "window:reloadFull": "ctrl+shift+f5",
     "window:preferences": [
-      "command+,",
-      "ctrl+,"
+      "ctrl+,",
+      "command+,"
     ],
     "zoom:reset": "ctrl+0",
     "zoom:in": "ctrl+=",
@@ -176,22 +174,22 @@ module.exports = {
     "window:toggleFullScreen": "f11",
     "window:close": "ctrl+shift+q",
     "tab:new": [
-      "command+t",
-      "ctrl+shift+t"
+      "ctrl+shift+t",
+      "command+t"
     ],
     "tab:next": [
-      "command+shift+]",
       "ctrl+shift+]",
       "ctrl+shift+right",
       "ctrl+alt+right",
-      "ctrl+tab"
+      "ctrl+tab",
+      "command+shift+]"
     ],
     "tab:prev": [
-      "command+shift+[",
       "ctrl+shift+[",
       "ctrl+shift+left",
       "ctrl+alt+left",
-      "ctrl+shift+tab"
+      "ctrl+shift+tab",
+      "command+shift+["
     ],
     "tab:jump:prefix": "ctrl",
     "pane:next": [
@@ -207,28 +205,28 @@ module.exports = {
     "pane:splitVertical": "ctrl+shift+d",
     "pane:splitHorizontal": "ctrl+shift+e",
     "pane:close": [
-      "command+w",
-      "ctrl+shift+w"
+      "ctrl+shift+w",
+      "command+w"
     ],
     "editor:undo": [
-      "command+z",
-      "ctrl+shift+z"
+      "ctrl+shift+z",
+      "command+z"
     ],
     "editor:redo": [
-      "command+shift+z",
-      "ctrl+shift+y"
+      "ctrl+shift+y",
+      "command+shift+z"
     ],
     "editor:cut": [
-      "command+x",
-      "ctrl+shift+x"
+      "ctrl+shift+x",
+      "command+x"
     ],
     "editor:copy": [
-      "command+c",
-      "ctrl+shift+c"
+      "ctrl+shift+c",
+      "command+c"
     ],
     "editor:paste": [
-      "command+v",
-      "ctrl+shift+v"
+      "ctrl+shift+v",
+      "command+v"
     ],
     "editor:selectAll": "ctrl+shift+a",
     "editor:movePreviousWord": "ctrl+left",
@@ -244,4 +242,3 @@ module.exports = {
     "plugins:update": "ctrl+shift+u"
   },
 };
-
