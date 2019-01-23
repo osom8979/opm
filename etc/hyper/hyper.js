@@ -150,10 +150,19 @@ module.exports = {
   keymaps: {
     // Example
     // 'window:devtools': 'cmd+alt+o',
-    "window:devtools": "ctrl+shift+i",
-    "window:reload": "ctrl+shift+r",
+    "window:devtools": [
+      "command+shift+i",
+      "ctrl+shift+i"
+    ],
+    "window:reload": [
+      "command+shift+r",
+      "ctrl+shift+r"
+    ],
     "window:reloadFull": "ctrl+shift+f5",
-    "window:preferences": "ctrl+,",
+    "window:preferences": [
+      "command+,",
+      "ctrl+,"
+    ],
     "zoom:reset": "ctrl+0",
     "zoom:in": "ctrl+=",
     "zoom:out": "ctrl+-",
@@ -166,12 +175,14 @@ module.exports = {
       "ctrl+shift+t",
     ],
     "tab:next": [
+      "command+shift+]",
       "ctrl+shift+]",
       "ctrl+shift+right",
       "ctrl+alt+right",
       "ctrl+tab"
     ],
     "tab:prev": [
+      "command+shift+[",
       "ctrl+shift+[",
       "ctrl+shift+left",
       "ctrl+alt+left",
@@ -179,10 +190,12 @@ module.exports = {
     ],
     "tab:jump:prefix": "ctrl",
     "pane:next": [
+      "command+]",
       "ctrl+]",
       "ctrl+pageup",
     ],
     "pane:prev": [
+      "command+[",
       "ctrl+[",
       "ctrl+pagedown",
     ],
