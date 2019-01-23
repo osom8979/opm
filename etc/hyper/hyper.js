@@ -204,11 +204,26 @@ module.exports = {
     "pane:close": [
       "ctrl+shift+w"
     ],
-    "editor:undo": "ctrl+shift+z",
-    "editor:redo": "ctrl+shift+y",
-    "editor:cut": "ctrl+shift+x",
-    "editor:copy": "ctrl+shift+c",
-    "editor:paste": "ctrl+shift+v",
+    "editor:undo": [
+      "command+z",
+      "ctrl+shift+z"
+    ],
+    "editor:redo": [
+      "command+shift+z",
+      "ctrl+shift+y"
+    ],
+    "editor:cut": [
+      "command+x",
+      "ctrl+shift+x"
+    ],
+    "editor:copy": [
+      "command+c",
+      "ctrl+shift+c"
+    ],
+    "editor:paste": [
+      "command+v",
+      "ctrl+shift+v"
+    ],
     "editor:selectAll": "ctrl+shift+a",
     "editor:movePreviousWord": "ctrl+left",
     "editor:moveNextWord": "ctrl+right",
