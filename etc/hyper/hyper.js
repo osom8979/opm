@@ -1,6 +1,10 @@
 // Future versions of Hyper may add additional config options,
 // which will not automatically be merged into this file.
 // See https://hyper.is#cfg for all currently supported options.
+//
+// macOS    ~/Library/Application Support/Hyper/.hyper.js
+// Windows  $Env:AppData/Hyper/.hyper.js
+// Linux    ~/.config/Hyper/.hyper.js
 
 module.exports = {
   config: {
@@ -172,7 +176,8 @@ module.exports = {
     "window:toggleFullScreen": "f11",
     "window:close": "ctrl+shift+q",
     "tab:new": [
-      "ctrl+shift+t",
+      "command+t",
+      "ctrl+shift+t"
     ],
     "tab:next": [
       "command+shift+]",
@@ -202,6 +207,7 @@ module.exports = {
     "pane:splitVertical": "ctrl+shift+d",
     "pane:splitHorizontal": "ctrl+shift+e",
     "pane:close": [
+      "command+w",
       "ctrl+shift+w"
     ],
     "editor:undo": [
