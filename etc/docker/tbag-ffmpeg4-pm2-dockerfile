@@ -1,0 +1,37 @@
+FROM ubuntu:18.04
+MAINTAINER zer0 <osom8979@gmail.com>
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update
+RUN apt-get -y install g++ cmake git curl ccache gnupg2
+
+# jonathonf/ffmpeg-4
+RUN curl -sS "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x8CF63AD3F06FC659" \
+    | sed -n -e '/BEGIN PGP PUBLIC KEY BLOCK/,$p' \
+    | sed -n -e '1,/END PGP PUBLIC KEY BLOCK/p'   \
+    | apt-key add -
+RUN echo "deb http://ppa.launchpad.net/jonathonf/ffmpeg-4/ubuntu/ bionic main" | tee /etc/apt/sources.list.d/jonathonf-ubuntu-ffmpeg-4-bionic.list
+RUN apt-get -qq update
+RUN apt-get -y install ffmpeg libavcodec-dev libavformat-dev libswscale-dev libavdevice-dev
+
+# yarn
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN apt-get -qq update
+RUN apt-get -y install yarn
+
+RUN yarn global add pm2 hooka
+
+ENV TBAG_SOURCE_DIR /tbag
+ENV TBAG_BUILD_DIR $TBAG_SOURCE_DIR/build
+
+RUN git clone --depth 1 https://github.com/osom8979/tbag.git /tbag
+RUN mkdir -p $TBAG_BUILD_DIR
+WORKDIR $TBAG_BUILD_DIR
+RUN cmake -G 'Unix Makefiles' -DUSE_GOLD=ON -DCMAKE_BUILD_TYPE=Release /tbag
+RUN cmake --build . --target install
+RUN make install
+
+# docker build --tag=tbag-ffmpeg4-pm2 --file=tbag-ffmpeg4-pm2-dockerfile .
+
