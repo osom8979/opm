@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ -z $GREP_OPTIONS ]]; then
     # Don't use this code.

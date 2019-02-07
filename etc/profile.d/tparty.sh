@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ ! -d $TPARTY_HOME ]]; then
     # Not found TPARTY_HOME variable.

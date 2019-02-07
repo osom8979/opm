@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [[ -z $GOPATH ]]; then
     GOPATH=$HOME/Project/golang

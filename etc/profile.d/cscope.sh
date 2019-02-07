@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 VI_PATH=`which vi`
 VIM_PATH=`which vim`
