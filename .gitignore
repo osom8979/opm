@@ -177,6 +177,10 @@ target/
 ### python-rope ###
 .ropeproject/
 
+#################
+### JetBrains ###
+.idea/
+
 ###########
 ### OPM ###
 /property
