@@ -36,7 +36,7 @@ module.exports = {
     // terminal text color under BLOCK cursor
     cursorAccentColor: '#000',
 
-    // `'BEAM'` for |, `'UNDERLINE'` for _, `'BLOCK'` for ‚ñà
+    // `'BEAM'` for |, `'UNDERLINE'` for _, `'BLOCK'` for ßè
     cursorShape: 'BLOCK',
 
     // set to `true` (without backticks and without quotes) for blinking cursor
@@ -142,8 +142,12 @@ module.exports = {
   //   `@company/project`
   //   `project#1.0.1`
   plugins: [
-    "hyperpower",
-    "hyper-search"
+    "hyper-search", // Search text in your terminal.
+    "hyperline", // A status line at the bottom of your Hyper!
+    "hypercwd", // Open new tabs with the same directory as your current tab.
+    "hyperterm-tabs", // Rearrange tabs by drag&dropping them.
+    "hyperterm-safepaste", // Edit your pastes before executing them.
+    "hyper-tabs-enhanced", // Configurable enhanced tabs with tab icons and more.
   ],
 
   // in development, you can create a directory under
@@ -154,11 +158,11 @@ module.exports = {
   keymaps: {
     "window:devtools": [
       "ctrl+shift+i",
-      "command+shift+i"
+      "command+i"
     ],
     "window:reload": [
       "ctrl+shift+r",
-      "command+shift+r"
+      "command+r"
     ],
     "window:reloadFull": "ctrl+shift+f5",
     "window:preferences": [
@@ -224,3 +228,4 @@ module.exports = {
     "plugins:update": "ctrl+shift+u"
   },
 };
+

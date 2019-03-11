@@ -5,7 +5,7 @@
 // macOS    ~/Library/Application Support/Hyper/.hyper.js
 // Windows  $Env:AppData/Hyper/.hyper.js
 // Linux    ~/.config/Hyper/.hyper.js
-
+,
 module.exports = {
   config: {
     // choose either `'stable'` for receiving highly polished,
@@ -142,8 +142,12 @@ module.exports = {
   //   `@company/project`
   //   `project#1.0.1`
   plugins: [
-    "hyperpower",
-    "hyper-search"
+    "hyper-search", // Search text in your terminal.
+    "hyperline", // A status line at the bottom of your Hyper!
+    "hypercwd", // Open new tabs with the same directory as your current tab.
+    "hyperterm-tabs", // Rearrange tabs by drag&dropping them.
+    "hyperterm-safepaste", // Edit your pastes before executing them.
+    "hyper-tabs-enhanced", // Configurable enhanced tabs with tab icons and more.
   ],
 
   // in development, you can create a directory under
@@ -182,23 +186,19 @@ module.exports = {
       "ctrl+shift+right",
       "ctrl+alt+right",
       "ctrl+tab",
-      "command+shift+]"
     ],
     "tab:prev": [
       "ctrl+shift+[",
       "ctrl+shift+left",
       "ctrl+alt+left",
       "ctrl+shift+tab",
-      "command+shift+["
     ],
     "tab:jump:prefix": "ctrl",
     "pane:next": [
-      "command+]",
       "ctrl+]",
       "ctrl+pageup",
     ],
     "pane:prev": [
-      "command+[",
       "ctrl+[",
       "ctrl+pagedown",
     ],
