@@ -86,8 +86,8 @@ module.exports = {
     //   "ctrl+shift+tab"
     // ],
     // "tab:jump:prefix": "ctrl",
-    // "pane:next": "ctrl+pageup",
-    // "pane:prev": "ctrl+pagedown",
+    "pane:next": "ctrl+]",
+    "pane:prev": "ctrl+[",
     "pane:splitVertical": "ctrl+shift+d",
     "pane:splitHorizontal": "ctrl+shift+e",
     // "pane:close": "ctrl+shift+w",
