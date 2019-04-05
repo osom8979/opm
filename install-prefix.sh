@@ -5,29 +5,7 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
-function help_and_exit {
-    echo "Usage: ${BASH_SOURCE[0]} {options}"
-    echo " -y  Automatic yes to prompts."
-    echo " -h  Show this help message."
-    exit 0
-}
-
-while getopts "y:h" opt
-do
-    case $opt in
-    y)
-        USER_REPLY=1
-        ;;
-    h)
-        help_and_exit
-        ;;
-    *)
-        help_and_exit
-        ;;
-    esac
-done
-
-if [[ -z $TPARTY_HOME ]]; then
+if [[ -z $TPARTY_PREFIX ]]; then
 PREFIX=/usr/local/tparty
 else
 PREFIX=$TPARTY_PREFIX
@@ -47,24 +25,22 @@ fi
 
 echo "PREFIX directory: ${PREFIX}"
 
-if [[ USER_REPLY -eq 1 ]]; then
-    read -p "Create prefix directory (y/n)?" USER_REPLY
-    case "$USER_REPLY" in
-    y|Y)
-        DO_INSTALL=1
-        ;;
-    n|N)
-        DO_INSTALL=0
-        ;;
-    *)
-        DO_INSTALL=0;
-        echo 'Invalid answer.'
-        ;;
-    esac
-fi
+read -p "Create prefix directory? (y/n) " USER_REPLY
+case "$USER_REPLY" in
+y|Y)
+    DO_INSTALL=1
+    ;;
+n|N)
+    DO_INSTALL=0
+    ;;
+*)
+    DO_INSTALL=0;
+    echo 'Invalid answer.'
+    ;;
+esac
 
 if [[ $DO_INSTALL -eq 0 ]]; then
-    echo 'Cancel job.'
+    echo 'Job cancel.'
     exit 1
 fi
 
