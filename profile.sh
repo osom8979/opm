@@ -14,6 +14,8 @@ fi
 
 OPM_BIN=$OPM_HOME/bin
 OPM_PYTHON=$OPM_HOME/python
+OPM_PROJECT=$HOME/Project
+TPARTY_HOME=$OPM_HOME/tparty
 
 ## Bash setting.
 if [[ -z $CLICOLOR ]]; then

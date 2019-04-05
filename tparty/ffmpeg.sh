@@ -32,7 +32,12 @@ if [[ ! -x "$CURL_CMD" ]]; then
     exit 1
 fi
 
+if [[ -z $TPARTY_HOME ]]; then
 PREFIX=/usr/local/tparty
+else
+PREFIX=$TPARTY_PREFIX
+fi
+
 if [[ ! -d "$PREFIX" ]]; then
     echo "Not found PREFIX directory: $PREFIX"
     exit 1
