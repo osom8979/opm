@@ -65,6 +65,9 @@ endif
 "set background=dark
 colorscheme desert
 
+" grep
+set grepprg=grep\ -Iirn\ $*\ .
+
 " syntax highlight.
 if has('syntax')
 syntax on
