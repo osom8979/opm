@@ -20,7 +20,6 @@ noremap  <leader><leader>=  <ESC>:GundoToggle<CR>
 
 " Jump NERDTree window.
 noremap  <leader>1  <ESC>:NERDTreeFocus<CR>
-noremap  <leader>2  <ESC>:NERDTreeFocus<CR><C-w>w
 
 " Buffer settings.
 noremap  <F1>       <ESC>:call MovePrevModifiableBuffer()<CR>
@@ -89,4 +88,6 @@ command! Help      execute ':call PrintHelpMessage()'
 
 command! CMake     execute 'OpvimCMake'
 command! Build     execute 'OpvimBuild'
+
+command! RunGrep   execute ':AsyncRun! -cwd=<root> grep -Irn <cword> .'
 
