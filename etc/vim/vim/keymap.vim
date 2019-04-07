@@ -91,3 +91,5 @@ command! Build     execute 'OpvimBuild'
 
 command! RunGrep   execute ':AsyncRun! -cwd=<root> grep -Irn <cword> .'
 
+command! ShowLoadedScripts  execute ':scriptnames'
+
