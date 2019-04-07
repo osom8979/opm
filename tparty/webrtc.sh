@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 
-WORKING=$PWD
+WORKING=$PWD/build
 PLATFORM=`uname -s`
+
+if [[ ! -d $WORKING ]]; then
+    mkdir -p $WORKING
+fi
+if [[ ! -d "$WORKING" ]]; then
+    echo "Not found WORKING directory: $WORKING"
+    exit 1
+fi
+if [[ ! -w "$WORKING" ]]; then
+    echo "The writable permission is denied: $WORKING"
+    exit 1
+fi
+cd "$WORKING"
 
 case "$PLATFORM" in
 Darwin)
@@ -28,7 +41,12 @@ if [[ ! -x "$NINJA_CMD" ]]; then
     exit 1
 fi
 
+if [[ -z $TPARTY_PREFIX ]]; then
 PREFIX=/usr/local/tparty
+else
+PREFIX=$TPARTY_PREFIX
+fi
+
 if [[ ! -d "$PREFIX" ]]; then
     echo "Not found PREFIX directory: $PREFIX"
     exit 1

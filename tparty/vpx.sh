@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 
-WORKING=$PWD
+WORKING=$PWD/build
 PLATFORM=`uname -s`
+
+if [[ ! -d $WORKING ]]; then
+    mkdir -p $WORKING
+fi
+if [[ ! -d "$WORKING" ]]; then
+    echo "Not found WORKING directory: $WORKING"
+    exit 1
+fi
+if [[ ! -w "$WORKING" ]]; then
+    echo "The writable permission is denied: $WORKING"
+    exit 1
+fi
+cd "$WORKING"
 
 case "$PLATFORM" in
 Darwin)
@@ -32,7 +45,12 @@ if [[ ! -x "$CURL_CMD" ]]; then
     exit 1
 fi
 
+if [[ -z $TPARTY_PREFIX ]]; then
 PREFIX=/usr/local/tparty
+else
+PREFIX=$TPARTY_PREFIX
+fi
+
 if [[ ! -d "$PREFIX" ]]; then
     echo "Not found PREFIX directory: $PREFIX"
     exit 1
@@ -49,6 +67,7 @@ URL="https://codeload.github.com/webmproject/libvpx/tar.gz/v1.8.0"
 MD5=49cb591325f44a3459b040112e3b82e7
 NAME=$LIB-$VER$EXT
 
+cd build
 if [[ ! -f "$NAME" ]]; then
     echo "Download $NAME"
     "$CURL_CMD" -k -o "$NAME" "$URL"

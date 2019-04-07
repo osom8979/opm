@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 
-WORKING=$PWD
+WORKING=$PWD/build
 PLATFORM=`uname -s`
+
+if [[ ! -d $WORKING ]]; then
+    mkdir -p $WORKING
+fi
+if [[ ! -d "$WORKING" ]]; then
+    echo "Not found WORKING directory: $WORKING"
+    exit 1
+fi
+if [[ ! -w "$WORKING" ]]; then
+    echo "The writable permission is denied: $WORKING"
+    exit 1
+fi
+cd "$WORKING"
 
 case "$PLATFORM" in
 Darwin)
@@ -32,7 +45,7 @@ if [[ ! -x "$CURL_CMD" ]]; then
     exit 1
 fi
 
-if [[ -z $TPARTY_HOME ]]; then
+if [[ -z $TPARTY_PREFIX ]]; then
 PREFIX=/usr/local/tparty
 else
 PREFIX=$TPARTY_PREFIX
@@ -46,6 +59,16 @@ if [[ ! -w "$PREFIX" ]]; then
     echo "The writable permission is denied: $PREFIX"
     exit 1
 fi
+
+read -p "Enable debug symbol? (y/n) " USER_REPLY
+case "$USER_REPLY" in
+y|Y)
+    ENABLE_DEBUG=1
+    ;;
+*)
+    ENABLE_DEBUG=0;
+    ;;
+esac
 
 LIB=ffmpeg
 VER=4.1.1
@@ -89,8 +112,11 @@ FLAGS="$FLAGS --enable-shared"
 FLAGS="$FLAGS --enable-x86asm"
 FLAGS="$FLAGS --enable-libopenh264"
 FLAGS="$FLAGS --enable-libvpx"
-#FLAGS="$FLAGS --disable-programs"
 FLAGS="$FLAGS --disable-doc"
+#FLAGS="$FLAGS --disable-programs"
+if [[ $ENABLE_DEBUG -eq 1 ]]; then
+FLAGS="$FLAGS --enable-debug=3"
+fi
 
 PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig ./configure $FLAGS | tee $BUILD_LOG1
 CODE=$?
