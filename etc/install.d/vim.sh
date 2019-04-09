@@ -13,7 +13,9 @@ function mkdirs {
 
 VIMRC=$HOME/.vimrc
 VIM_DIR=$HOME/.vim
+IDEAVIMRC=$HOME/.ideavimrc
 SRC_VIMRC=$OPM_HOME/etc/vim/vimrc
+SRC_IDEAVIMRC=$OPM_HOME/etc/vim/ideavimrc
 
 DATE_FORMAT=`date +%Y%m%d_%H%M%S`
 BACKUP_SUFFIX=$DATE_FORMAT.backup
@@ -38,6 +40,12 @@ echo '"== BEGIN OSOM VIM SETTING ==' >> $VIMRC
 echo "scriptencoding utf-8"          >> $VIMRC
 echo "source $SRC_VIMRC"             >> $VIMRC
 echo '"== END OSOM VIM SETTING =='   >> $VIMRC
+
+## Create ideavimrc file.
+echo '"== BEGIN OSOM VIM SETTING ==' >> $IDEAVIMRC
+echo "scriptencoding utf-8"          >> $IDEAVIMRC
+echo "source $SRC_IDEAVIMRC"         >> $IDEAVIMRC
+echo '"== END OSOM VIM SETTING =='   >> $IDEAVIMRC
 
 ## NeoVim.
 NEOVIM_HOME=$HOME/.config/nvim
