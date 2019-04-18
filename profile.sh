@@ -18,7 +18,7 @@ OPM_PROJECT=$HOME/Project
 TPARTY_HOME=$OPM_HOME/tparty
 
 ## Bash setting.
-export PS1="\e[1m[\t]\e[0m \e[1m\e[32m\u@\h\e[0m:\e[1m\e[96m\w\e[0m\n\e[1m\$\e[0m "
+export PS1="\e[1m[\t]\e[0m \e[1m\e[32m\u@\h\e[0m:\e[1m\e[96m\w\e[0m\n$ "
 if [[ -z $CLICOLOR ]]; then
     export CLICOLOR=1
 fi
