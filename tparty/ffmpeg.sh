@@ -71,10 +71,10 @@ y|Y)
 esac
 
 LIB=ffmpeg
-VER=4.1.1
+VER=4.1.3
 EXT=.tar.bz2
-URL="https://www.ffmpeg.org/releases/ffmpeg-4.1.1.tar.bz2"
-MD5=4a64e3cb3915a3bf71b8b60795904800
+URL="https://ffmpeg.org/releases/ffmpeg-4.1.3.tar.bz2"
+MD5=9985185a8de3678e5b55b1c63276f8b5
 NAME=$LIB-$VER$EXT
 
 if [[ ! -f "$NAME" ]]; then
@@ -90,7 +90,7 @@ if [[ "$CHECKSUM" != "$MD5" ]]; then
     exit 1
 fi
 
-SOURCE_DIR="$WORKING/ffmpeg-4.1.1"
+SOURCE_DIR="$WORKING/${LIB}-${VER}"
 if [[ -d "$SOURCE_DIR" ]]; then
     echo "Exists source directory: $SOURCE_DIR"
 else
