@@ -35,7 +35,7 @@ fi
 
 if [[ -z $OPY_PYTHON_VERSION ]]; then
 #OPY_PYTHON_VERSION=`python --version 2>&1 | awk '{print($2);}'`
-OPY_PYTHON_VERSION=3.6.1
+OPY_PYTHON_VERSION=3.6.8
 fi
 
 PYENV_CMD=`PATH=~/.pyenv/bin/:$PATH which pyenv`
