@@ -8,7 +8,7 @@
 # The following instructions are our recommendations for a sane build environment.
 #
 # Mac OS X:
-#   brew install openssl readline xz
+#   brew install openssl readline xz zlib sqlite
 # Ubuntu/Debian/Mint:
 #   apt-get install -y make build-essential \
 #       libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev \
@@ -157,8 +157,8 @@ if [[ -z $FIND_PYTHON_ENV ]]; then
         echo "Use the homebrew's OpenSSL."
         echo " * See also: https://github.com/pyenv/pyenv/wiki/Common-build-problems"
         echo "Install python from pyenv (--enable-framework) ..."
-        CFLAGS="-I$(brew --prefix openssl)/include" \
-        LDFLAGS="-L$(brew --prefix openssl)/lib"    \
+        CFLAGS="-I$(brew --prefix openssl)/include -I$(brew --prefix zlib)/include -I$(brew --prefix sqlite)/include" \
+        LDFLAGS="-L$(brew --prefix openssl)/lib -L$(brew --prefix zlib)/lib -L$(brew --prefix sqlite)/lib" \
         PYTHON_CONFIGURE_OPTS="--enable-framework"  \
             pyenv install $OPY_PYTHON_VERSION
         INSTALL_RESULT_CODE=$?
