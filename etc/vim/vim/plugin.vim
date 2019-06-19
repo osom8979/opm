@@ -111,7 +111,7 @@ endif
 NeoBundle 'tpope/vim-rails'
 
 " Golang supported.
-NeoBundle 'fatih/vim-go'
+"NeoBundle 'fatih/vim-go'
 
 " Python supported.
 "if has('python')
