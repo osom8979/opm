@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+FIND_DIR=$1
+FIND_SYMBOL=$2
+
+if [[ -z $FIND_DIR || -z $FIND_SYMBOL ]]; then
+    echo 'find-symbol {dir} {symbol}'
+    exit 1
+fi
+
+OBJECT_FILES=`find $FIND_DIR -iname '*.o'`
+
+for i in $OBJECT_FILES; do
+    find_result=`nm $i | c++filt | grep $FIND_SYMBOL`
+    if [[ ! -z $find_result ]]; then
+        echo "File: "$i
+        echo "Result: " $find_result
+    fi
+done
+
