@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+if [[ $1 == -i ]]; then
+    IGNORE_LIST=1
+    shift
+else
+    IGNORE_LIST=0
+fi
+
+FIND_EXT=$1
+PAIR_EXT=$2
+
+if [[ -z $FIND_EXT || -z $PAIR_EXT ]]; then
+    echo 'Find pair files.'
+    echo ' Usage1: find-pair {find-ext} {pair-ext}'
+    echo ' Usage2: find-pair -i {find-ext} {pair-ext}'
+    echo ' Example) Find unpaired files:'
+    echo '  find-pair -i jpg json'
+    exit 1
+fi
+
+find_files=`find . -iname "*.$FIND_EXT" | sed s/\\.$FIND_EXT$//g`
+for i in $find_files; do
+    if   [[ $IGNORE_LIST -eq 0 &&   -f $i.$PAIR_EXT ]]; then
+        echo $i.$FIND_EXT
+    elif [[ $IGNORE_LIST -eq 1 && ! -f $i.$PAIR_EXT ]]; then
+        echo $i.$FIND_EXT
+    fi
+done
+
+
