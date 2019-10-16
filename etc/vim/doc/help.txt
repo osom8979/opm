@@ -21,3 +21,6 @@ chromatica: Clang based syntax highlighting plugin for Neovim
  * :ChromaticaStop
  * :ChromaticaToggle
 
+NERDCommenter: Auto commenting
+ * [count]<leader>cc
+
