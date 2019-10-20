@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+DOWNLOAD_DIR=$HOME/Downloads
+GUEST_DIR=/home/anon/tor-browser_en-US/Browser/Downloads/hostdir
+IP_ADDRESS=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
+DISPLAY_INDEX=0
+
+echo "Run TorBrowser"
+echo "IP: $IP_ADDRESS"
+echo "DIR: $DOWNLOAD_DIR"
+echo "DISPLAY: $DISPLAY_INDEX"
+echo 'In XQuartz preference, go to "Security" and check "Allow connections from network clients"'
+
+open -a XQuartz
+xhost + $IP_ADDRESS
+
+docker run --rm --name tor -e DISPLAY=$IP_ADDRESS:$DISPLAY_INDEX -v /tmp/.X11-unix:/tmp/.X11-unix -v $DOWNLOAD_DIR:$GUEST_DIR paulczar/torbrowser
+
+echo "Done."
+
+
