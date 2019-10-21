@@ -1,47 +1,70 @@
 #!/usr/bin/env bash
 
+echo ""
 echo "[Dmidecode BIOS]"
 dmidecode -t bios
 
+echo ""
 echo "[Dmidecode System]"
 dmidecode -t system
 
+echo ""
 echo "[Dmidecode Baseboard]"
 dmidecode -t baseboard
 
+echo ""
 echo "[Dmidecode Chassis]"
 dmidecode -t chassis
 
+echo ""
 echo "[Dmidecode Processor]"
 dmidecode -t processor
 
+echo ""
 echo "[Dmidecode Memory]"
 dmidecode -t memory
 
+echo ""
 echo "[Dmidecode Cache]"
 dmidecode -t cache
 
+echo ""
 echo "[Dmidecode Connector]"
 dmidecode -t connector
 
+echo ""
 echo "[Dmidecode Slot]"
 dmidecode -t slot
 
+echo ""
 echo "[Cat cpuinfo]"
 cat /proc/cpuinfo
 
+echo ""
 echo "[Cat MachineID]"
 cat /etc/machine-id
 
+echo ""
 echo "[NVIDIA SMI]"
 nvidia-smi
 
+echo ""
 echo "[LSPCI]"
 lspci
 
+echo ""
 echo "[LSBLK]"
 lsblk
 
+echo ""
 echo "[Disk UUID]"
 ls -la /dev/disk/by-uuid
+
+echo ""
+echo "[System Information]"
+uname -a
+
+echo ""
+echo "[Distribution-specific Information]"
+lsb_release -a
 
