@@ -42,3 +42,6 @@ lspci
 echo "[LSBLK]"
 lsblk
 
+echo "[Disk UUID]"
+ls -la /dev/disk/by-uuid
+
