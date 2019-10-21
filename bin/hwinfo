@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+echo "[Dmidecode BIOS]"
+dmidecode -t bios
+
+echo "[Dmidecode System]"
+dmidecode -t system
+
+echo "[Dmidecode Baseboard]"
+dmidecode -t baseboard
+
+echo "[Dmidecode Chassis]"
+dmidecode -t chassis
+
+echo "[Dmidecode Processor]"
+dmidecode -t processor
+
+echo "[Dmidecode Memory]"
+dmidecode -t memory
+
+echo "[Dmidecode Cache]"
+dmidecode -t cache
+
+echo "[Dmidecode Connector]"
+dmidecode -t connector
+
+echo "[Dmidecode Slot]"
+dmidecode -t slot
+
+echo "[Cat cpuinfo]"
+cat /proc/cpuinfo
+
+echo "[Cat MachineID]"
+cat /etc/machine-id
+
+echo "[NVIDIA SMI]"
+nvidia-smi
+
+echo "[LSPCI]"
+lspci
+
+echo "[LSBLK]"
+lsblk
+
