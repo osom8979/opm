@@ -37,6 +37,10 @@ echo "[Dmidecode Slot]"
 dmidecode -t slot
 
 echo ""
+echo "[LSHW]"
+lshw
+
+echo ""
 echo "[Cat cpuinfo]"
 cat /proc/cpuinfo
 
