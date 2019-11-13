@@ -37,8 +37,20 @@ echo "[Dmidecode Slot]"
 dmidecode -t slot
 
 echo ""
+echo "[LSHW - SHORT]"
+lshw -short
+
+echo ""
 echo "[LSHW]"
 lshw
+
+echo ""
+echo "[HWINFO - SHORT]"
+hwinfo --short
+
+echo ""
+echo "[HWINFO]"
+hwinfo
 
 echo ""
 echo "[Cat cpuinfo]"
@@ -51,6 +63,14 @@ cat /etc/machine-id
 echo ""
 echo "[NVIDIA SMI]"
 nvidia-smi
+
+echo ""
+echo "[NVIDIA SMI - LIST GPUS]"
+nvidia-smi --list-gpus
+
+echo ""
+echo "[NVIDIA SMI - QUERY]"
+nvidia-smi --query
 
 echo ""
 echo "[LSPCI]"
