@@ -5,16 +5,15 @@ if [[ -z $OPM_HOME ]]; then
     exit 1
 fi
 
+NERD_FONTS_NAME="Droid Sans Mono Nerd Font Complete.otf"
 NERD_FONTS_URL="https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/DroidSansMono/complete/Droid%20Sans%20Mono%20Nerd%20Font%20Complete.otf"
-NERD_FONTS_NAME="Droid Sans Mono for Powerline Nerd Font Complete.otf"
 
 case "$(uname -s)" in
 Darwin)
-    curl -fLo "~/Library/Fonts/$NERD_FONTS_NAME" "$NERD_FONTS_URL"
+    FONTS_INSTALL_DIR="$HOME/Library/Fonts"
     ;;
 Linux)
-    mkdir -p ~/.local/share/fonts
-    curl -fLo "~/.local/share/fonts/$NERD_FONTS_NAME" "$NERD_FONTS_URL"
+    FONTS_INSTALL_DIR="$HOME/.local/share/fonts"
     ;;
 CYGWIN*|MINGW*|MSYS*)
     exit 1
@@ -23,4 +22,10 @@ CYGWIN*|MINGW*|MSYS*)
     exit 1
     ;;
 esac
+
+if [[ ! -d "$FONTS_INSTALL_DIR" ]]; then
+    mkdir -p "$FONTS_INSTALL_DIR"
+fi
+
+cp "$OPM_HOME/etc/font/Droid Sans Mono Nerd Font Complete.otf" "$FONTS_INSTALL_DIR"
 
