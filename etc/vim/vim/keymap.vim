@@ -93,3 +93,5 @@ command! RunGrep   execute ':AsyncRun! -cwd=<root> grep -Irn <cword> .'
 
 command! ShowLoadedScripts  execute ':scriptnames'
 
+command! JsonFormat execute ':%!python -m json.tool'
+
