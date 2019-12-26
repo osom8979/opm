@@ -39,6 +39,7 @@
 	showf  = show --oneline --name-only
 	count  = rev-list --count HEAD
 	st     = status
+	zip    = archive --format zip --output master.zip master
 [push]
 	default = simple
 [http]
