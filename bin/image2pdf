@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [[ -z $1 || -z $2 ]]; then
+    echo "$0 {begin_index} {end_index}"
+    exit 1
+fi
+
+BEGIN_INDEX=$1
+END_INDEX=$2
+QUALITY=${3:-100}
+
+INDEX=0
+FILE_LIST=
+
+for cursor in *.jpg; do
+    if [[ $INDEX -ge $BEGIN_INDEX && $INDEX -le $END_INDEX ]]; then
+        FILE_LIST="$FILE_LIST $cursor"
+    fi
+    let "INDEX = INDEX + 1"
+done
+
+convert $FILE_LIST -resize 100% -quality $QUALITY $BEGIN_INDEX-$END_INDEX.pdf
+
