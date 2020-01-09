@@ -10,14 +10,28 @@ END_INDEX=$2
 QUALITY=${3:-100}
 
 INDEX=0
+FILES=`find . -type f -iname '*.png' -or -iname '*.jpg' -or -iname '*.jpeg' | sort`
 FILE_LIST=
 
-for cursor in *.jpg; do
+for cursor in $FILES; do
+    if [[ $INDEX -eq $BEGIN_INDEX ]]; then
+        BEGIN_NAME=${cursor:2} ## Remove prefix: "./"
+    fi
+    if [[ $INDEX -eq $END_INDEX ]]; then
+        END_NAME=${cursor:2} ## Remove prefix: "./"
+    fi
     if [[ $INDEX -ge $BEGIN_INDEX && $INDEX -le $END_INDEX ]]; then
         FILE_LIST="$FILE_LIST $cursor"
     fi
     let "INDEX = INDEX + 1"
 done
 
-convert $FILE_LIST -resize 100% -quality $QUALITY $BEGIN_INDEX-$END_INDEX.pdf
+if [[ -z $BEGIN_NAME ]]; then
+BEGIN_NAME=$BEGIN_INDEX
+fi
+if [[ -z $END_NAME ]]; then
+END_NAME=$END_INDEX
+fi
+
+convert $FILE_LIST -resize 100% -quality $QUALITY $BEGIN_NAME-$END_NAME.pdf
 
