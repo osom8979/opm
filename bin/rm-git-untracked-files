@@ -21,7 +21,7 @@ done
 read -p 'Remove all files? (y/n) ' yn
 case $yn in
     [Yy]*)
-        rm $FIND_UNTRACKED_FILES
+        rm -rf $FIND_UNTRACKED_FILES
         ;;
     *)
         echo 'Operation canceled.'

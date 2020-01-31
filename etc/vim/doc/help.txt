@@ -1,26 +1,76 @@
 [PLUGIN]
 visSum: Computes sum of selected numbers
  * :VisSum (in VisualMode)
-
 VisIncr: Increasing/Decreasing columns
  * :II
  * :II -1
-
 SnipMate: Textual snippets
  * <C-J>
-
 asyncRun: Run Async Shell Commands
  * :AsyncRun[!] {args}
-
 vim-easymotion: Vim motions on speed
  * <leader><leader>f
-
 chromatica: Clang based syntax highlighting plugin for Neovim
  * :UpdateRemotePlugins
  * :ChromaticaStart
  * :ChromaticaStop
  * :ChromaticaToggle
-
-NERDCommenter: Auto commenting
+NERDCommenter commenting:
  * [count]<leader>cc
+NERDCommenter uncommenting:
+ * [count]<leader>cu
+YouCompleteMe GoTo define:
+ * <leader>gg
+
+[SCRIPTING]
+Run python code:
+ * :py {python-code}
+
+[OPVIM]
+ * HexMode
+ * TextMode
+ * CMake
+ * Build
+ * RunGrep
+ * JsonFormat
+
+[FUNCTION]
+Prev tab:
+ * <leader><F1>
+Next tab:
+ * <leader><F2>
+Prev quick-fix:
+ * <F5>
+Next quick-fix:
+ * <F6>
+
+[KEYMAP]
+Visual Mode:
+ * <C-v> or <C-q>
+
+[COMMAND MODE]
+Insert CR(^M):
+ * <C-v><C-m>
+
+[JUMPLIST]
+List of jumps:
+ * :jumps
+Goes forward in jump list:
+ * <C-i>
+Goes back in jump list:
+ * <C-o>
+
+[REGEX]
+Remove blank lines:
+ * :g/^\s*$/d
+
+[GOTO]
+Will take you to the local declaration:
+ * gd
+Will take you to the global declaration:
+ * gD
+Will go to the file under the cursor:
+ * gf
+Jump to a tag definition:
+ * g]
 
