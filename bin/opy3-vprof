@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-. opy3-env
-VPROF_PATH="$(pyenv which vprof)"
-"$VPROF_PATH" $@
-

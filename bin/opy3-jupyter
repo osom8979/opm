@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-. opy3-env
-JUPYTER_PATH="$(pyenv which jupyter)"
-"$JUPYTER_PATH" $@
-
