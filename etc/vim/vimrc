@@ -21,8 +21,8 @@ function! s:GetOpyPythonPath2(version)
     return s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, a:version)
 endfunction
 
-let s:opy2_version = '2.7.15'
-let s:opy3_version = '3.6.1'
+let s:opy2_version = '2.7.16'
+let s:opy3_version = '3.6.8'
 
 let s:opy2_python_path = s:GetOpyPythonPath2(s:opy2_version)
 let s:opy3_python_path = s:GetOpyPythonPath2(s:opy3_version)
@@ -36,6 +36,12 @@ endif
 
 "let g:loaded_python_provider = 1
 "let g:loaded_python3_provider = 1
+
+" Vim user's setting file.
+let s:user_config_script = g:opm_vim_script_dir . '/user.vim'
+if filereadable(s:user_config_script)
+    execute 'source ' . s:user_config_script
+endif
 
 " Vim setting files.
 execute 'source ' . g:opm_vim_script_dir . '/vim/plugin.vim'

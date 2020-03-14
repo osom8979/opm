@@ -6,12 +6,10 @@ import json
 import __main__ as main
 import ycm_core
 
+
 SCRIPT_PATH = os.path.abspath(main.__file__)
 SCRIPT_DIR = os.path.dirname(SCRIPT_PATH)
 WORKING_DIR = os.getcwd()
-
-ENABLE_WRITE_LOG = True
-WRITE_INFO_FILE = 'ycm_extra_conf.log'
 
 CUDA_LOWER_EXTENSIONS = ['.cu']
 CUDA_UPPER_EXTENSIONS = ['.CU']
@@ -44,49 +42,64 @@ HEADER_LOWER_EXTENSIONS = list()
 HEADER_LOWER_EXTENSIONS.extend(CUDA_HEADER_LOWER_EXTENSIONS)
 HEADER_LOWER_EXTENSIONS.extend(CPP_HEADER_LOWER_EXTENSIONS)
 
-def getExtensionLower(filename):
+
+def get_extension_lower(filename):
     return os.path.splitext(filename)[1].lower()
 
-def isHeaderExtension(extension):
+
+def is_header_extension(extension):
     return extension in HEADER_LOWER_EXTENSIONS
 
-def isCudaExtension(extension):
+
+def is_cuda_extension(extension):
     return extension in CUDA_LOWER_EXTENSIONS or extension in CUDA_HEADER_LOWER_EXTENSIONS
 
-def isCExtension(extension):
+
+def is_c_extension(extension):
     return extension in C_LOWER_EXTENSIONS
 
-def isObjectiveCExtension(extension):
+
+def is_objective_c_extension(extension):
     return extension in OBJC_LOWER_EXTENSIONS
 
-# Check opvim project.
-OPVIM_JSON_NAME = 'opvim.json'
-SETTING_DIR_NAME = '.opvim'
-OPVIM_JSON_PATH = os.path.join(WORKING_DIR, OPVIM_JSON_NAME)
-OPVIM_CACHE_NAME = 'opvim.cache.json'
-OPVIM_CACHE_PATH = os.path.join(WORKING_DIR, SETTING_DIR_NAME, OPVIM_CACHE_NAME)
 
-def loadJsonData(json_path):
+# Check opvim project.
+OPVIM_DIR_NAME = '.opvim'
+
+OPVIM_JSON_NAME = 'config.json'
+OPVIM_JSON_PATH = os.path.join(WORKING_DIR, OPVIM_JSON_NAME)
+
+OPVIM_CACHE_NAME = 'cache.json'
+OPVIM_CACHE_PATH = os.path.join(WORKING_DIR, OPVIM_DIR_NAME, OPVIM_CACHE_NAME)
+
+LOG_FILE_NAME = '.ycm.log'
+LOG_FILE_PATH = os.path.join(WORKING_DIR, OPVIM_DIR_NAME, LOG_FILE_NAME)
+ENABLE_LOGGING = True
+
+
+def load_json_data(json_path):
     if not os.path.isfile(json_path):
         return None
     try:
         with open(json_path) as f:
             return json.load(f)
-    except:
+    except Exception:
         pass
     return None
 
-def getCurrentMode(cache_path):
+
+def get_current_mode(cache_path):
     mode_key = 'mode'
-    cache_json = loadJsonData(cache_path)
+    cache_json = load_json_data(cache_path)
     if cache_json and mode_key in cache_json:
         return cache_json[mode_key]
     return str()
 
-def getCMakeWorkingDirectory(opvim_path, mode):
+
+def get_cmake_working_directory(opvim_path, mode):
     cmake_key = 'cmake'
     dir_key = 'dir'
-    proj_json = loadJsonData(opvim_path)
+    proj_json = load_json_data(opvim_path)
     if not proj_json:
         return str()
     if not cmake_key in proj_json:
@@ -97,17 +110,20 @@ def getCMakeWorkingDirectory(opvim_path, mode):
         return str()
     return proj_json[cmake_key][mode][dir_key]
 
-def getCurrentCMakeDirectory(opvim_path, cache_path):
+
+def get_current_cmake_directory(opvim_path, cache_path):
     default_prefix = 'build-'
-    mode = getCurrentMode(cache_path)
+    mode = get_current_mode(cache_path)
     if not mode:
         return str()
-    cmake_dir = getCMakeWorkingDirectory(opvim_path, mode)
+    cmake_dir = get_cmake_working_directory(opvim_path, mode)
     if cmake_dir:
         return cmake_dir
     return default_prefix + mode
 
-CURRNET_CMAKE_BUILD_DIR = getCurrentCMakeDirectory(OPVIM_JSON_PATH, OPVIM_CACHE_PATH)
+
+CURRENT_CMAKE_BUILD_DIR = get_current_cmake_directory(OPVIM_JSON_PATH, OPVIM_CACHE_PATH)
+
 
 # Set this to the absolute path to the folder (NOT the file!) containing the
 # compile_commands.json file to use that instead of 'flags'. See here for
@@ -119,7 +135,7 @@ CURRNET_CMAKE_BUILD_DIR = getCurrentCMakeDirectory(OPVIM_JSON_PATH, OPVIM_CACHE_
 #
 # Most projects will NOT need to set this to anything; you can just change the
 # 'flags' list of compilation flags. Notice that YCM itself uses that approach.
-COMPILATION_DATABASE_DIR = CURRNET_CMAKE_BUILD_DIR
+COMPILATION_DATABASE_DIR = CURRENT_CMAKE_BUILD_DIR
 COMPILATION_DATABASE_NAME = 'compile_commands.json'
 COMPILATION_DATABASE_PATH = os.path.join(COMPILATION_DATABASE_DIR, COMPILATION_DATABASE_NAME)
 if os.path.isfile(COMPILATION_DATABASE_PATH):
@@ -127,56 +143,52 @@ if os.path.isfile(COMPILATION_DATABASE_PATH):
 else:
     COMPILATION_DATABASE = None
 
-DEFAULT_FLAGS = [
-         '-Wall',
-         '-Wextra',
-         '-Werror',
-         '-Wno-long-long',
-         '-Wno-variadic-macros',
-         '-fexceptions',
-         #'-DNDEBUG',
-         '-isystem', '/usr/include',
-         '-isystem', '/usr/local/include',
-         '-I.',
-         '-I./include',
-         '-I./src']
+DEFAULT_FLAGS = ['-w', '-I.']
 if platform.system() != 'Windows':
     DEFAULT_FLAGS.append('-std=c++14')
 
-def updateLanguageTypeFromExtension(filename):
-    extension = getExtensionLower(filename)
+
+def update_language_type_from_extension(filename):
+    extension = get_extension_lower(filename)
     DEFAULT_FLAGS.append('-x')
-    if isCudaExtension(extension):
+    if is_cuda_extension(extension):
         DEFAULT_FLAGS.append('cuda')
-    elif isCExtension(extension):
+    elif is_c_extension(extension):
         DEFAULT_FLAGS.append('c')
-    elif isObjectiveCExtension(extension):
+    elif is_objective_c_extension(extension):
         DEFAULT_FLAGS.append('objc')
     else:
         DEFAULT_FLAGS.append('c++')
 
-# a boolean indicating whether or not the result of this call (i.e. the list of flags) should be cached for this file name.
+
+# A boolean indicating whether or not the result of this call
+# (i.e. the list of flags) should be cached for this file name.
 # Defaults to True. If unsure, the default is almost always correct.
 DO_CACHE = True
 
-# a boolean indicating that the flags should be used. Defaults to True. If unsure, the default is almost always correct.
+# A boolean indicating that the flags should be used.
+# Defaults to True. If unsure, the default is almost always correct.
 FLAGS_READY = True
 
 
-def writeLog(message, enable=ENABLE_WRITE_LOG):
-    if enable and WRITE_INFO_FILE:
-        with open(WRITE_INFO_FILE, 'a') as f:
+def write_log(message, enable=ENABLE_LOGGING):
+    parent_dir = os.path.dirname(LOG_FILE_PATH)
+    if not os.path.isdir(parent_dir):
+        os.mkdir(parent_dir)
+    if enable and LOG_FILE_PATH:
+        with open(LOG_FILE_PATH, 'a') as f:
             f.write(message)
 
-def getCompilationInfoForFile(filename, database):
+
+def get_compilation_info_for_file(filename, database):
     """
     The compilation_commands.json file generated by CMake does not have entries
     for header files. So we do our best by asking the db for flags for a
     corresponding source file, if any. If one exists, the flags for that file
     should be good enough.
     """
-    extension = getExtensionLower(filename)
-    if isHeaderExtension(extension):
+    extension = get_extension_lower(filename)
+    if is_header_extension(extension):
         basename = os.path.splitext(filename)[0]
         for extension in SOURCE_EXTENSIONS:
             replacement_source_file = basename + extension
@@ -189,34 +201,37 @@ def getCompilationInfoForFile(filename, database):
         return None
     return database.GetCompilationInfoForFile(filename)
 
+
 def Settings(**kwargs):
     if not 'filename' in kwargs:
-        return dict()
-    filename = kwargs['filename']
-    language = kwargs['language'] # cfamily, python
-    client_data = kwargs['client_data'] # client_data['v:version']
+        return {}
 
-    updateLanguageTypeFromExtension(filename)
+    filename = kwargs['filename']
+    language = kwargs['language']  # cfamily, python
+    client_data = kwargs['client_data']  # client_data['v:version']
+
+    update_language_type_from_extension(filename)
 
     use_database = False
     final_flags = DEFAULT_FLAGS
     final_cwd = WORKING_DIR
 
     if COMPILATION_DATABASE:
-        compilation_info = getCompilationInfoForFile(filename, COMPILATION_DATABASE)
+        compilation_info = get_compilation_info_for_file(filename, COMPILATION_DATABASE)
         if compilation_info:
             use_database = True
             final_flags = list(compilation_info.compiler_flags_)
             final_cwd = str(compilation_info.compiler_working_dir_)
 
-    writeLog('Database: {}\nFilename: {}\nFlags: {}\nWorking: {}\n\n'.format(
-             use_database, filename, final_flags, final_cwd))
+    write_log('Database: {}\nFilename: {}\nFlags: {}\nWorking: {}\n\n'.format(
+        use_database, filename, final_flags, final_cwd))
 
     return {'flags': final_flags,
             'include_paths_relative_to_dir': final_cwd,
             'override_filename': filename,
             'do_cache': DO_CACHE,
             'flags_ready': FLAGS_READY}
+
 
 if __name__ == '__main__':
     pass
