@@ -12,12 +12,40 @@ if [[ $(id -u) -ne 0 ]]; then
     exit 1
 fi
 
-if [[ -d "$PREFIX" ]]; then
-    echo "Exists prefix directory: $PREFIX"
+if [[ -d $PREFIX ]]; then
+    if [[ -w $PREFIX ]]; then
+        echo "The PREFIX directory exists: ${PREFIX}"
+    else
+        echo "A non-writable PREFIX directory exists: ${PREFIX}"
+    fi
     exit 1
-else
-    mkdir -p "$PREFIX"
+elif [[ -e $PREFIX ]]; then
+    echo "PREFIX exists and is not a directory: ${PREFIX}"
+    exit 1
 fi
+
+echo "PREFIX directory: ${PREFIX}"
+
+read -p "Create prefix directory? (y/n) " USER_REPLY
+case "$USER_REPLY" in
+y|Y)
+    DO_INSTALL=1
+    ;;
+n|N)
+    DO_INSTALL=0
+    ;;
+*)
+    DO_INSTALL=0;
+    echo 'Invalid answer.'
+    ;;
+esac
+
+if [[ $DO_INSTALL -eq 0 ]]; then
+    echo 'Job cancel.'
+    exit 1
+fi
+
+mkdir -p "$PREFIX"
 
 ORIGINAL_USER=$SUDO_USER
 if [[ -z $ORIGINAL_USER ]]; then
