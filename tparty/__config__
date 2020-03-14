@@ -1,0 +1,475 @@
+#!/usr/bin/env bash
+
+CONFIG_DIR=`dir="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$dir"`
+if [[ -f "$CONFIG_DIR/__default__" ]]; then
+    source "$CONFIG_DIR/__default__"
+fi
+PREFIX=${PREFIX:-/usr/local/c2core}
+SYSTEM_PREFIX="$PREFIX/system"
+TEMP_PREFIX="$PREFIX/temp"
+BUILD_PREFIX="$PREFIX/build"
+LOG_PREFIX="$PREFIX/log"
+SOURCE_PREFIX="$PREFIX/source"
+EXTERNAL_PREFIX="$PREFIX/external"
+
+PLATFORM=`uname -s`
+DATETIME=`date "+%Y%m%d_%H%M%S"`
+
+ENABLE_PREFIX_CHECK=${ENABLE_PREFIX_CHECK:-1}
+ENABLE_PREFIX_SYSTEM=${ENABLE_PREFIX_SYSTEM:-1}
+
+SYMBOL_FLAG=0
+RELEASE_FLAG=0
+
+UNINSTALL_FLAG=0
+CLEAR_FLAG=0
+
+VERBOSE_FLAG=0
+SILENT_FLAG=0
+
+REMOVE_CACHE=0
+ENABLE_GPU_MODE=0
+
+PRINT_CONFIG_FLAG=0
+
+if [[ -f /etc/os-release ]]; then
+    DISTRIBUTION="$(. /etc/os-release;echo $ID)"
+    DISTRIBUTION_VERSION="$(. /etc/os-release;echo $VERSION_ID)"
+else
+    DISTRIBUTION=$PLATFORM
+    DISTRIBUTION_VERSION=
+fi
+
+function print_verbose
+{
+    if [[ $VERBOSE_FLAG -eq 1 ]]; then
+        echo "$@"
+    fi
+}
+
+function print_message
+{
+    if [[ $SILENT_FLAG -ne 1 ]]; then
+        echo "$@"
+    fi
+}
+
+function print_error
+{
+    if [[ $SILENT_FLAG -ne 1 ]]; then
+        echo -e "\033[31m$@\033[0m" 1>&2
+    fi
+}
+
+function check_variable_or_exit
+{
+    local var=$1
+    if [[ -z $(eval echo "\$$var") ]]; then
+        print_error "Empty variable: $var"
+        exit 1
+    fi
+}
+
+function check_dir_or_create
+{
+    local dir=$1
+    if [[ ! -d "$dir" ]]; then
+        print_verbose "Create directory: $dir"
+        mkdir -p "$dir"
+    fi
+}
+
+function exists_program_or_exit
+{
+    local name=$1
+    local var_name=$2
+    local _which_path=`which $name`
+
+    if [[ ! -x "$_which_path" ]]; then
+        print_error "Not found $name"
+        exit 1
+    fi
+    if [[ ! -z $var_name ]]; then
+        eval "$var_name=$_which_path"
+    fi
+}
+
+function get_core_count
+{
+    case "$PLATFORM" in
+    Darwin)
+        exists_program_or_exit sysctl
+        sysctl -n hw.ncpu
+        ;;
+    *)
+        exists_program_or_exit grep
+        grep -c ^processor /proc/cpuinfo
+        ;;
+    esac
+}
+
+function get_build_thread_count
+{
+    local _core_count=`get_core_count`
+    local _thread_count=1
+    if [[ $_core_count -ge 1 ]]; then
+        let "_thread_count = $_core_count * 2"
+    fi
+    echo $_thread_count
+}
+
+function get_datetime
+{
+    local prefix_name=$1
+    local suffix_name=$2
+    local _datetime=`date "+%Y%m%d_%H%M%S"`
+    echo "$prefix_name$_datetime$suffix_name"
+}
+
+function get_checksum
+{
+    local file=$1
+    case "$PLATFORM" in
+    Darwin)
+        exists_program_or_exit md5
+        exists_program_or_exit awk
+        md5 -r "$file" | awk '{print $1}'
+        ;;
+    *)
+        exists_program_or_exit md5sum
+        exists_program_or_exit awk
+        md5sum "$file" | awk '{print $1}'
+        ;;
+    esac
+}
+
+function checksum_or_exit
+{
+    local file_path=$1
+    local checksum=$2
+    local _result_checksum=`get_checksum "$file_path"`
+    if [[ "$_result_checksum" != "$checksum" ]]; then
+        print_error "Checksum error: actual(${_result_checksum}) vs expected(${checksum})"
+        exit 1
+    fi
+}
+
+function get_file_extension
+{
+    local file=$1
+    echo "${file#*.}"
+}
+
+function get_file_name
+{
+    local file=$1
+    echo "${file%%.*}"
+}
+
+function to_lower
+{
+    local var=$1
+    exists_program_or_exit awk
+    echo "$var" | awk '{print tolower($0)}'
+}
+
+function extract
+{
+    local file=$1
+    local output=$2
+    ## $3 ... More arguments of the command.
+    shift 2
+
+    if [[ ! -f "$file" ]]; then
+        print_error "File not found: $file"
+        exit 1
+    fi
+    if [[ -z $output ]]; then
+        output=$PWD
+    fi
+    if [[ ! -d "$output" ]]; then
+        mkdir -p "$output"
+    fi
+
+    local _ext=`get_file_extension "$file"`
+    local _ext_lower=`to_lower "$_ext"`
+
+    case $_ext_lower in
+    .zip)
+        exists_program_or_exit unzip
+        unzip $@ -qo "$file" -d "$output"
+        ;;
+    *)
+        exists_program_or_exit tar
+        tar $@ -xf "$file" -C "$output"
+        ;;
+    esac
+}
+
+function download
+{
+    local file=$1
+    local url=$2
+    ## $3 ... More arguments of the command.
+    shift 2
+
+    if [[ ! -f "$file" ]]; then
+        print_message "Download $url -> $file"
+        exists_program_or_exit curl
+        curl $@ -k -o "$file" "$url"
+    else
+        print_message "Exists file: $file"
+    fi
+}
+
+function git_sync
+{
+    local url=$1
+    local dest=$2
+    exists_program_or_exit git
+    if [[ -d "$dest" ]]; then
+        pushd "$PWD" > /dev/null
+        cd "$dest"
+        git pull
+        popd > /dev/null
+    else
+        git clone --depth 1 "$url" "$dest"
+    fi
+}
+
+function checked_download
+{
+    local file=$1
+    local url=$2
+    local md5_checksum=$3
+    shift 3
+
+    if [[ -z $file ]]; then
+        print_error "File argument is empty."
+        exit 1
+    fi
+    if [[ -z $url ]]; then
+        print_error "URL argument is empty."
+        exit 1
+    fi
+
+    download "$file" "$url" $@
+
+    if [[ ! -z $md5_checksum ]]; then
+        checksum_or_exit "$file" "$md5_checksum"
+    fi
+}
+
+function check_code_or_exit
+{
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        print_error "An error has been detected: $code"
+        exit $code
+    fi
+}
+
+function test_installed_dpkg
+{
+    exists_program_or_exit sed
+    local _test_result=`dpkg --get-selections $1 | sed -E 's/^([^\t ]+)[[:space:]]+([^\t ]+)$/\2/g'`
+    if [[ "$_test_result" == "install" ]]; then
+        echo 1
+    else
+        echo 0
+    fi
+}
+
+function run_step
+{
+    local step_name=$1
+    if [[ -z $STEP ]]; then
+        local _command=`which $1`
+        step_name=${_command##*/}
+    else
+        step_name=$STEP
+    fi
+
+    local _log_path="$LOG_PREFIX/${step_name}-${DATETIME}.log"
+    print_message "[$step_name] log file path: $_log_path"
+
+    echo "$@" > "$_log_path"
+    if [[ $SILENT_FLAG -eq 1 ]]; then
+        eval $@ &> "$_log_path"
+    else
+        eval $@ | tee -a "$_log_path"
+    fi
+
+    local _code=${PIPESTATUS[0]}
+    if [[ $_code -ne 0 ]]; then
+        print_error "An error has been detected: $_code"
+        exit $_code
+    fi
+}
+
+function print_usage
+{
+    print_message "Usage: $0 [options]"
+    print_message " "
+    print_message "Available options are:"
+    print_message "  --help             Print this message."
+    print_message "  -h                 Equals --help option."
+    print_message "  --config           Print config information."
+    print_message "  --prefix=path      Specify the installation path."
+    print_message "  -p path            Equals --prefix option."
+    print_message "  --symbol=[level]   Set the symbol level. Default is 0"
+    print_message "  -s level           Equals --symbol option."
+    print_message "  --release          Enable release flag."
+    print_message "  -r                 Equals --release option."
+    print_message "  --uninstall        Enable uninstall flag; Remove the already installed library."
+    print_message "  -u                 Equals --uninstall option."
+    print_message "  --clear            Enable clear flag; Remove the cache files."
+    print_message "  -c                 Equals --clear option."
+    print_message "  --verbose          Enable verbose flag."
+    print_message "  -v                 Equals --verbose option."
+    print_message "  --silent           Enable silent flag."
+    print_message "  --                 Stop handling options."
+    print_message " "
+    print_message "Script categories:"
+    print_message " 00  Prefix script."
+    print_message " 0x  Build essential."
+    print_message " 1x  Libraries without dependencies."
+    print_message " 2x  Cryptography & algorithm."
+    print_message " 3x  Primitive multimedia library."
+    print_message " 4x  Advanced multimedia & algorithm library."
+    print_message " 5x  VM, Script, etc ..."
+}
+
+function print_config
+{
+    print_message "PREFIX: $PREFIX"
+    print_message "SYSTEM_PREFIX: $SYSTEM_PREFIX"
+    print_message "TEMP_PREFIX: $TEMP_PREFIX"
+    print_message "BUILD_PREFIX: $BUILD_PREFIX"
+    print_message "LOG_PREFIX: $LOG_PREFIX"
+    print_message "SOURCE_PREFIX: $SOURCE_PREFIX"
+    print_message "CONFIG_DIR: $CONFIG_DIR"
+
+    print_message "PLATFORM: $PLATFORM"
+    print_message "DATETIME: $DATETIME"
+
+    print_message "DISTRIBUTION: $DISTRIBUTION"
+    print_message "DISTRIBUTION_VERSION: $DISTRIBUTION_VERSION"
+
+    print_message "ENABLE_PREFIX_CHECK: $ENABLE_PREFIX_CHECK"
+    print_message "ENABLE_PREFIX_SYSTEM: $ENABLE_PREFIX_SYSTEM"
+
+    print_message "SYMBOL_FLAG: $SYMBOL_FLAG"
+    print_message "RELEASE_FLAG: $RELEASE_FLAG"
+
+    print_message "UNINSTALL_FLAG: $UNINSTALL_FLAG"
+    print_message "CLEAR_FLAG: $CLEAR_FLAG"
+
+    print_message "VERBOSE_FLAG: $VERBOSE_FLAG"
+    print_message "SILENT_FLAG: $SILENT_FLAG"
+}
+
+while [[ ! -z $1 ]]; do
+    case $1 in
+    -h|--help)
+        print_usage
+        exit 0
+        ;;
+    --config)
+        PRINT_CONFIG_FLAG=1
+        shift
+        ;;
+    --prefix*)
+        PREFIX=${1#*=}
+        if [[ "$PREFIX" == "--prefix" ]]; then
+            print_error "The path must be specified."
+            exit 1
+        fi
+        shift
+        ;;
+    -p)
+        PREFIX=$2
+        shift 2
+        ;;
+    --symbol*)
+        SYMBOL_FLAG=${1#*=}
+        if [[ "$SYMBOL_FLAG" == "--symbol" ]]; then
+            SYMBOL_FLAG=0
+        fi
+        shift
+        ;;
+    -s)
+        SYMBOL_FLAG=$2
+        shift 2
+        ;;
+    -r|--release)
+        RELEASE_FLAG=1
+        shift
+        ;;
+    -u|--uninstall)
+        UNINSTALL_FLAG=1
+        shift
+        ;;
+    -c|--clear)
+        CLEAR_FLAG=1
+        shift
+        ;;
+    -v|--verbose)
+        VERBOSE_FLAG=1
+        shift
+        ;;
+    --silent)
+        SILENT_FLAG=1
+        shift
+        ;;
+    --no-cache)
+        REMOVE_CACHE=1
+        shift
+        ;;
+    --cpu)
+        ENABLE_GPU_MODE=0
+        shift
+        ;;
+    --gpu)
+        ENABLE_GPU_MODE=1
+        shift
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        print_error "Unknown option: $1"
+        exit 1
+        ;;
+    esac
+done
+
+if [[ $PRINT_CONFIG_FLAG -eq 1 ]]; then
+    print_config
+    exit 0
+fi
+
+if [[ $ENABLE_PREFIX_CHECK -eq 1 ]]; then
+    if [[ ! -d "$PREFIX" ]]; then
+        print_error "Not found PREFIX directory: $PREFIX"
+        exit 1
+    fi
+    if [[ ! -w "$PREFIX" ]]; then
+        print_error "The writable permission is denied: $PREFIX"
+        exit 1
+    fi
+
+    check_dir_or_create "$SYSTEM_PREFIX"
+    check_dir_or_create "$TEMP_PREFIX"
+    check_dir_or_create "$BUILD_PREFIX"
+    check_dir_or_create "$LOG_PREFIX"
+    check_dir_or_create "$SOURCE_PREFIX"
+fi
+
+#if [[ $ENABLE_PREFIX_SYSTEM -eq 1 ]]; then
+#    PATH="$SYSTEM_PREFIX/bin:$PATH"
+#    CC=$PREFIX/bin/clang
+#    CXX=$PREFIX/bin/clang++
+#fi
+

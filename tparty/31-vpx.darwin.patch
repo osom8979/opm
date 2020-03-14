@@ -1,0 +1,13 @@
+diff -urN libvpx-1.8.0-ori/build/make/Makefile libvpx-1.8.0/build/make/Makefile
+--- libvpx-1.8.0-ori/build/make/Makefile	2019-02-05 02:02:33.000000000 +0900
++++ libvpx-1.8.0/build/make/Makefile	2019-06-18 09:03:24.000000000 +0900
+@@ -303,8 +303,7 @@
+ $(1):
+ 	$(if $(quiet),@echo "    [LD] $$@")
+ 	$(qexec)$$(LD) -shared $$(LDFLAGS) \
+-            -Wl,--no-undefined -Wl,-soname,$$(SONAME) \
+-            -Wl,--version-script,$$(EXPORTS_FILE) -o $$@ \
++            -Wl,-install_name,$$(PREFIX)/lib/libvpx.so -o $$@ \
+             $$(filter %.o,$$^) $$(extralibs)
+ endef
+ 

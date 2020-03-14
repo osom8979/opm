@@ -1,0 +1,41 @@
+diff -urN Python-3.7.3-ori/configure.ac Python-3.7.3/configure.ac
+--- Python-3.7.3-ori/configure.ac	2019-03-26 05:21:05.000000000 +0900
++++ Python-3.7.3/configure.ac	2019-06-12 10:13:29.831577474 +0900
+@@ -5612,6 +5612,14 @@
+ # Check for usable OpenSSL
+ AX_CHECK_OPENSSL([have_openssl=yes],[have_openssl=no])
+ 
++have_openssl=yes
++OPENSSL_INCLUDES="/usr/local/c2core/include"
++OPENSSL_LDFLAGS="/usr/local/c2core/lib/libssl.so /usr/local/c2core/lib/libcrypto.so"
++OPENSSL_LIBS=""
++AC_SUBST([OPENSSL_INCLUDES])
++AC_SUBST([OPENSSL_LIBS])
++AC_SUBST([OPENSSL_LDFLAGS])
++
+ if test "$have_openssl" = yes; then
+     AC_MSG_CHECKING([for X509_VERIFY_PARAM_set1_host in libssl])
+ 
+diff -urN Python-3.7.3-ori/Modules/Setup.dist Python-3.7.3/Modules/Setup.dist
+--- Python-3.7.3-ori/Modules/Setup.dist	2019-03-26 05:21:05.000000000 +0900
++++ Python-3.7.3/Modules/Setup.dist	2019-06-12 10:14:53.375633702 +0900
+@@ -204,14 +204,14 @@
+ #_csv _csv.c
+ 
+ # Socket module helper for socket(2)
+-#_socket socketmodule.c
++_socket socketmodule.c
+ 
+ # Socket module helper for SSL support; you must comment out the other
+ # socket line above, and possibly edit the SSL variable:
+-#SSL=/usr/local/ssl
+-#_ssl _ssl.c \
+-#	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
+-#	-L$(SSL)/lib -lssl -lcrypto
++SSL=/usr/local/c2core
++_ssl _ssl.c \
++	-DUSE_SSL -I$(SSL)/include -I$(SSL)/include/openssl \
++	-L$(SSL)/lib $(SSL)/lib/libssl.so $(SSL)/lib/libcrypto.so
+ 
+ # The crypt module is now disabled by default because it breaks builds
+ # on many systems (where -lcrypt is needed), e.g. Linux (I believe).
