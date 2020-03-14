@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 DOXYGEN_CMD=doxygen
 DOXYGEN_FILE=Doxyfile

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 WORKING="$PWD"
 LIST_FILE="$WORKING/cscope.files"

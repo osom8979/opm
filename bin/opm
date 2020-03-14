@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 WORKING=$PWD
 SCRIPT_PATH=`getpath ${BASH_SOURCE[0]}`

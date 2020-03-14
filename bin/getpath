@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 PARAM=$1
 if [[ -z $PARAM ]]; then

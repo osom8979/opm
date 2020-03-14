@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if ! which $1 &> /dev/null; then
     echo 'False'

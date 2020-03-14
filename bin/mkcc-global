@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 CTAGS_DIR="$HOME/.vim/ctags"
 CSCOPE_DIR="$HOME/.vim/cscope"
