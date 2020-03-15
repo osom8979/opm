@@ -97,6 +97,7 @@ function! g:OpvimReloadQuickMenu()
     call quickmenu#append('# UTILITY', '')
     call quickmenu#append('Preview', 'OpvimPreview', 'Preview opvim project')
     call quickmenu#append('Reload', 'OpvimReload', 'Reload opvim project')
+    call quickmenu#append('Create', 'OpvimCreate', 'Create opvim project')
 
     call quickmenu#current(g:opvim_quickmenu_mode_id)
     call quickmenu#reset()
@@ -118,6 +119,7 @@ command! -nargs=?                     OpvimBuild    call opvim#Build(<f-args>)
 command! -nargs=?                     OpvimDebug    call opvim#Debug(<f-args>)
 command! -nargs=?                     OpvimScript   call opvim#Script(<f-args>)
 command! -nargs=0                     OpvimReload   call g:OpvimReloadQuickMenu()
+command! -nargs=0                     OpvimCreate   call opvim#CreateProject()
 
 command! -nargs=0 OpvimDebugDone call opvim#ExitDebug()
 

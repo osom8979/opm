@@ -104,11 +104,14 @@ endif
 
 " Debugging supported.
 if has('nvim')
-NeoBundle 'sakhnik/nvim-gdb' " Neovim thin wrapper for GDB, LLDB and PDB.
+    " Neovim thin wrapper for GDB, LLDB and PDB.
+    " NeoBundle 'sakhnik/nvim-gdb', { 'branch': 'legacy' }
+    " NeoBundle 'sakhnik/nvim-gdb', { 'do': './install.sh' }
+    NeoBundle 'sakhnik/nvim-gdb', { 'do': ':!./install.sh \| UpdateRemotePlugins' }
 endif
 
 " Rails supported.
-NeoBundle 'tpope/vim-rails'
+" NeoBundle 'tpope/vim-rails'
 
 " Golang supported.
 "NeoBundle 'fatih/vim-go'
