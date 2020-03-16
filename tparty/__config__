@@ -4,7 +4,7 @@ CONFIG_DIR=`dir="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd 
 if [[ -f "$CONFIG_DIR/__default__" ]]; then
     source "$CONFIG_DIR/__default__"
 fi
-PREFIX=${PREFIX:-/usr/local/c2core}
+PREFIX=${PREFIX:-/usr/local/tparty}
 SYSTEM_PREFIX="$PREFIX/system"
 TEMP_PREFIX="$PREFIX/temp"
 BUILD_PREFIX="$PREFIX/build"
