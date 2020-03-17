@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-OPY_PYTHON_VERSION=3.6.8 OPY_ECHO=${OPY_ECHO:-0} . opy-env
+OPY_PYTHON_VERSION=3.7.7 OPY_ECHO=${OPY_ECHO:-0} . opy-env

@@ -21,8 +21,8 @@ function! s:GetOpyPythonPath2(version)
     return s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, a:version)
 endfunction
 
-let s:opy2_version = '2.7.16'
-let s:opy3_version = '3.6.8'
+let s:opy2_version = '2.7.17'
+let s:opy3_version = '3.7.7'
 
 let s:opy2_python_path = s:GetOpyPythonPath2(s:opy2_version)
 let s:opy3_python_path = s:GetOpyPythonPath2(s:opy3_version)
