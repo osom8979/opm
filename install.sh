@@ -5,7 +5,11 @@ INSTALL_DIR=$SCRIPT_DIR/etc/install.d
 
 if [[ -z $BASH_PROFILE_PATH ]]; then
     ## See INVOCATION in 'man bash'
-    BASH_PROFILE_PATH="$HOME/.bashrc"
+    if [[ $(uname -s) == "Darwin" ]]; then
+        BASH_PROFILE_PATH="$HOME/.profile"
+    else
+        BASH_PROFILE_PATH="$HOME/.bashrc"
+    fi
 fi
 
 if [[ ! -z "$OPM_HOME" || ! -z $(cat "$BASH_PROFILE_PATH" | grep "OPM_HOME") ]]; then
