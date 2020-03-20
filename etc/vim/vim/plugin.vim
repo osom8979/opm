@@ -59,7 +59,7 @@ NeoBundle 'garbas/vim-snipmate'          " snipmate aims to provide support for 
 NeoBundle 'ctags.vim'   " ctags plugin (Conflict from the SrcExpl).
 NeoBundle 'cscope.vim'  " cscope plugin.
 
-NeoBundle 'matchparenpp'  " blink match brace.
+"NeoBundle 'matchparenpp' " blink match brace.
 NeoBundle 'echofunc.vim'  " print function parameter information.
 NeoBundle 'a.vim'         " source <-> header.
 
