@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
 
-FRONTEND_HOST=$1
-FRONTEND_SCHEMA=${2:-https}
-if [[ -z $FRONTEND_HOST ]]; then
-    echo "Usage: $0 {frontend_host} {schema:https}"
+PORTUS_FRONTEND_HOST=$1
+REGISTRY_FRONTEND_HOST=$2
+FRONTEND_SCHEMA=${3:-https}
+if [[ -z $PORTUS_FRONTEND_HOST ]]; then
+    echo "Usage: $0 {portus_host} {registry_host} {schema:https}"
     exit 1
 fi
 
-export FRONTEND_HOST
+export PORTUS_FRONTEND_HOST
+export REGISTRY_FRONTEND_HOST
 export FRONTEND_SCHEMA
-echo "Frontend Host: $FRONTEND_HOST"
+echo "Frontend Host: $PORTUS_FRONTEND_HOST"
 
 if [[ $(id -u) -ne 0 ]]; then
     echo 'Please run as root.'
@@ -43,29 +45,44 @@ OPT_CERTS_CRT=$OPT_CERTS/portus.crt
 if [[ -f "$OPT_CERTS_KEY" && -f "$OPT_CERTS_CRT" ]]; then
     echo "Exists crt/key files."
 else
-    openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
+    openssl req -x509 -sha256 -nodes -days 36500 -newkey rsa:2048 \
         -keyout "$OPT_CERTS_KEY" \
         -out "$OPT_CERTS_CRT"
 fi
 
-PORTUS_MINIO_ID_SECRET_NAME=portus-minio-id
-PORTUS_MINIO_ID_SECRET_VALUE=minio
-echo "Create $PORTUS_MINIO_ID_SECRET_NAME secret"
-echo "$PORTUS_MINIO_ID_SECRET_VALUE" | docker secret create "$PORTUS_MINIO_ID_SECRET_NAME" -
+#PORTUS_MINIO_ID_SECRET_NAME=portus-minio-id
+#PORTUS_MINIO_ID_SECRET_VALUE=minio
+#PORTUS_MINIO_ID_SECRET_EXISTS=`docker secret ls | grep $PORTUS_MINIO_ID_SECRET_NAME`
+#if [[ -z $PORTUS_MINIO_ID_SECRET_EXISTS ]]; then
+#    echo "$PORTUS_MINIO_ID_SECRET_VALUE" | docker secret create "$PORTUS_MINIO_ID_SECRET_NAME" -
+#else
+#    echo "Exists $PORTUS_MINIO_ID_SECRET_NAME"
+#fi
+#
+#PORTUS_MINIO_PW_SECRET_NAME=portus-minio-pw
+#PORTUS_MINIO_PW_SECRET_EXISTS=`docker secret ls | grep $PORTUS_MINIO_PW_SECRET_NAME`
+#if [[ ! -z $PORTUS_MINIO_PW_SECRET_EXISTS ]]; then
+#    echo "Exists ${PORTUS_MINIO_PW_SECRET_NAME}, remove it."
+#    echo "You must remove the key to continue."
+#    echo "Run this command:"
+#    echo " docker secret rm $PORTUS_MINIO_PW_SECRET_NAME"
+#    exit 1
+#fi
+#
+#read -sp "Enter the docker-secret ($PORTUS_MINIO_PW_SECRET_NAME) password: " PORTUS_MINIO_PW_SECRET_VALUE
+#echo -e "\nCreate $PORTUS_MINIO_PW_SECRET_NAME secret"
+#echo "$PORTUS_MINIO_PW_SECRET_VALUE" | docker secret create "$PORTUS_MINIO_PW_SECRET_NAME" -
 
-PORTUS_MINIO_PW_SECRET_NAME=portus-minio-pw
-PORTUS_MINIO_PW_SECRET_EXISTS=`docker secret ls | grep $PORTUS_MINIO_PW_SECRET_NAME`
-if [[ ! -z $PORTUS_MINIO_PW_SECRET_EXISTS ]]; then
-    echo "Exists ${PORTUS_MINIO_PW_SECRET_NAME}, remove it."
-    echo "You must remove the key to continue."
-    echo "Run this command:"
-    echo " docker secret rm $PORTUS_MINIO_PW_SECRET_NAME"
-    exit 1
+read -p "Enter the MinIO volume path: " MINIO_DATA_MOUNT_POINT
+export MINIO_DATA_MOUNT_POINT
+if [[ ! -d "$MINIO_DATA_MOUNT_POINT" ]]; then
+    mkdir -p "$MINIO_DATA_MOUNT_POINT"
 fi
 
-read -sp "Enter the docker-secret ($PORTUS_MINIO_PW_SECRET_NAME) password: " PORTUS_MINIO_PW_SECRET_VALUE
-echo -e "\nCreate $PORTUS_MINIO_PW_SECRET_NAME secret"
-echo "$PORTUS_MINIO_PW_SECRET_VALUE" | docker secret create "$PORTUS_MINIO_PW_SECRET_NAME" -
+#MINIO_BUCKET_NAME=docker-registry
+#if [[ ! -d "$MINIO_DATA_MOUNT_POINT/$MINIO_BUCKET_NAME" ]]; then
+#    mkdir -p "$MINIO_DATA_MOUNT_POINT/$MINIO_BUCKET_NAME"
+#fi
 
 REGISTRY_CONFIG_TEMPLATE=12-portus-registry-config.yml
 REGISTRY_CONFIG_PATH="$OPT_REGISTRY/config.yml"
@@ -73,12 +90,25 @@ if [[ -f "$REGISTRY_CONFIG_PATH" ]]; then
     echo "Exists $REGISTRY_CONFIG_PATH file"
 else
     echo "Create $REGISTRY_CONFIG_PATH file"
+
+    ## ==[[ MinIO setting
+    #cat "$REGISTRY_CONFIG_TEMPLATE" | sed \
+    #    -e "s/@PORTUS_FRONTEND_HOST@/$PORTUS_FRONTEND_HOST/g" \
+    #    -e "s/@REGISTRY_FRONTEND_HOST@/$REGISTRY_FRONTEND_HOST/g" \
+    #    -e "s/@FRONTEND_SCHEMA@/$FRONTEND_SCHEMA/g" \
+    #    -e "s/@PORTUS_MINIO_ID_SECRET_VALUE@/$PORTUS_MINIO_ID_SECRET_VALUE/g" \
+    #    -e "s/@PORTUS_MINIO_PW_SECRET_VALUE@/$PORTUS_MINIO_PW_SECRET_VALUE/g" \
+    #    -e "s/@MINIO_BUCKET_NAME@/$MINIO_BUCKET_NAME/g" \
+    #    > "$REGISTRY_CONFIG_PATH"
+    ## ]]==
+
+    ## ==[[ Filesystem setting
     cat "$REGISTRY_CONFIG_TEMPLATE" | sed \
+        -e "s/@PORTUS_FRONTEND_HOST@/$PORTUS_FRONTEND_HOST/g" \
+        -e "s/@REGISTRY_FRONTEND_HOST@/$REGISTRY_FRONTEND_HOST/g" \
         -e "s/@FRONTEND_SCHEMA@/$FRONTEND_SCHEMA/g" \
-        -e "s/@FRONTEND_HOST@/$FRONTEND_HOST/g" \
-        -e "s/@PORTUS_MINIO_ID_SECRET_VALUE@/$PORTUS_MINIO_ID_SECRET_VALUE/g" \
-        -e "s/@PORTUS_MINIO_PW_SECRET_VALUE@/$PORTUS_MINIO_PW_SECRET_VALUE/g" \
         > "$REGISTRY_CONFIG_PATH"
+    ## ]]==
 fi
 
 REGISTRY_INIT_SRC=12-portus-registry-init
@@ -89,9 +119,6 @@ else
     echo "Create $REGISTRY_INIT_PATH file"
     cp "$REGISTRY_INIT_SRC" "$REGISTRY_INIT_PATH"
 fi
-
-read -p "Enter the MinIO volume path: " MINIO_DATA_MOUNT_POINT
-export MINIO_DATA_MOUNT_POINT
 
 # Error compose settings:
 #  command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0
@@ -147,6 +174,7 @@ echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
 CODE=$?
 
-echo "Go to page $FRONTEND_SCHEMA://$FRONTEND_HOST and continue setting."
+echo "Portus: $FRONTEND_SCHEMA://$PORTUS_FRONTEND_HOST and continue setting."
+echo "Registry: $FRONTEND_SCHEMA://$REGISTRY_FRONTEND_HOST and continue setting."
 echo "Done ($CODE)."
 

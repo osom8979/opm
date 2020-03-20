@@ -13,7 +13,7 @@ services:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik-net"
         - "traefik.port=3000"
-        - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
+        - "traefik.frontend.rule=Host:${PORTUS_FRONTEND_HOST:?err}"
     networks:
       - traefik-net
       - net
@@ -22,7 +22,7 @@ services:
       - portus-web-pw
       - portus-db-pw
     environment:
-      PORTUS_MACHINE_FQDN_VALUE: ${FRONTEND_HOST}
+      PORTUS_MACHINE_FQDN_VALUE: ${PORTUS_FRONTEND_HOST}
 
       # DB
       PORTUS_DB_HOST: db
@@ -62,7 +62,7 @@ services:
       - portus-db-pw
     environment:
       CCONFIG_PREFIX: PORTUS
-      PORTUS_MACHINE_FQDN_VALUE: ${FRONTEND_HOST}
+      PORTUS_MACHINE_FQDN_VALUE: ${PORTUS_FRONTEND_HOST}
 
       # DB
       PORTUS_DB_HOST: db
@@ -107,38 +107,47 @@ services:
       replicas: 1
       restart_policy:
         condition: any
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.port=5000"
+        - "traefik.frontend.rule=Host:${REGISTRY_FRONTEND_HOST:?err}"
     networks:
+      - traefik-net
       - net
     #secrets:
     #  - portus-minio-id  # Write directly to the 'config.yml' file.
     #  - portus-minio-pw  # Write directly to the 'config.yml' file.
     volumes:
-      - /opt/opm/traefik/certs/traefik.crt:/certs/portus.crt:ro
-      - /opt/opm/traefik/certs/traefik.key:/certs/portus.key:ro
+      - /opt/opm/portus/certs:/certs:ro
       - /opt/opm/portus/registry/config.yml:/etc/docker/registry/config.yml:ro
       - /opt/opm/portus/registry/init:/etc/docker/registry/init:ro
+      # Enable filesystem:
+      - ${MINIO_DATA_MOUNT_POINT?err}:/var/lib/registry
     ports:
       - 5000:5000
-      - 5001:5001 # required to access debug service
+      #- 5001:5001  # required to access debug service
 
-  s3:
-    image: minio/minio
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
-    networks:
-      - net
-    secrets:
-      - portus-minio-id
-      - portus-minio-pw
-    environment:
-      MINIO_ACCESS_KEY_FILE: portus-minio-id
-      MINIO_SECRET_KEY_FILE: portus-minio-pw
-    volumes:
-      # - minio_data:/buckets
-      - ${MINIO_DATA_MOUNT_POINT?err}:/buckets
-    command: ["server", "/buckets"]
+  #s3:
+  #  image: minio/minio
+  #  deploy:
+  #    replicas: 1
+  #    restart_policy:
+  #      condition: any
+  #  networks:
+  #    - net
+  #  secrets:
+  #    - portus-minio-id
+  #    - portus-minio-pw
+  #  environment:
+  #    MINIO_ACCESS_KEY_FILE: portus-minio-id
+  #    MINIO_SECRET_KEY_FILE: portus-minio-pw
+  #  volumes:
+  #    # - minio_data:/buckets
+  #    - ${MINIO_DATA_MOUNT_POINT?err}:/buckets
+  #  #ports:
+  #  #  - 9000:9000  # Default http port.
+  #  command: ["server", "/buckets"]
 
 # "no suitable node (missing plugin on 1 node)"
 #volumes:
@@ -148,10 +157,10 @@ services:
 #      mountpoint: "${MINIO_DATA_MOUNT_POINT?err}"
 
 secrets:
-  portus-minio-id:
-    external: true
-  portus-minio-pw:
-    external: true
+  #portus-minio-id:
+  #  external: true
+  #portus-minio-pw:
+  #  external: true
   portus-web-keybase:
     external: true
   portus-web-pw:
