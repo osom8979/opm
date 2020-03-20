@@ -1,0 +1,26 @@
+version: 0.1
+
+auth:
+  token:
+    #realm: @FRONTEND_SCHEMA@://@FRONTEND_HOST@:3000/v2/token
+    realm: @FRONTEND_SCHEMA@://@FRONTEND_HOST@/v2/token
+    service: @FRONTEND_HOST@:5000
+    issuer: @FRONTEND_HOST@
+    rootcertbundle: /certs/portus.crt
+
+storage:
+  s3:
+    accesskey: portus_minio_access
+    secretkey: @PORTUS_MINIO_PW_SECRET_VALUE@
+    region: ap-northeast-2
+    bucket: docker-registry
+
+notifications:
+  endpoints:
+    - name: portus
+      #url: @FRONTEND_SCHEMA@://@FRONTEND_HOST@:3000/v2/webhooks/events
+      url: @FRONTEND_SCHEMA@://@FRONTEND_HOST@/v2/webhooks/events
+      timeout: 2s
+      threshold: 10
+      backoff: 1s
+

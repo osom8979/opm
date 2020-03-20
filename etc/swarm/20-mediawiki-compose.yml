@@ -37,14 +37,14 @@ services:
       - net
     volumes:
       - images:/var/www/html/images
-      - /opt/mediawiki/backup:/backup
-      - /opt/mediawiki/mediawiki-phpconfig.ini:/usr/local/etc/php/conf.d/mediawiki-phpconfig.ini
-      - /opt/mediawiki/SimpleMathJax:/var/www/html/extensions/SimpleMathJax
-      - /opt/mediawiki/osom-logo.png:/var/www/html/resources/assets/wiki.png
+      - /opt/opm/mediawiki/backup:/backup
+      - /opt/opm/mediawiki/mediawiki-phpconfig.ini:/usr/local/etc/php/conf.d/mediawiki-phpconfig.ini
+      - /opt/opm/mediawiki/SimpleMathJax:/var/www/html/extensions/SimpleMathJax
+      - /opt/opm/mediawiki/osom-logo.png:/var/www/html/resources/assets/wiki.png
       # After initial setup, download LocalSettings.php to the same directory as
       # this yaml and uncomment the following line and use compose to restart
       # the mediawiki service
-      #- /opt/mediawiki/LocalSettings.php:/var/www/html/LocalSettings.php
+      #- /opt/opm/mediawiki/LocalSettings.php:/var/www/html/LocalSettings.php
 
 volumes:
   images:
