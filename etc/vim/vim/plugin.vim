@@ -36,7 +36,7 @@ NeoBundle 'Shougo/vimproc.vim', {
 "NeoBundle 'wesleyche/SrcExpl'         " displaying prototype (Conflict from the ctags.vim).
 
 NeoBundle 'scrooloose/nerdtree'        " directory browser.
-NeoBundle 'kien/ctrlp.vim'             " full path fuzzy file, buffer, mru, tag, etc.
+NeoBundle 'ctrlpvim/ctrlp.vim'         " full path fuzzy file, buffer, mru, tag, etc.
 NeoBundle 'majutsushi/tagbar'          " tagbar window.
 NeoBundle 'easymotion/vim-easymotion'  " motions on speed.
 NeoBundle 'kshenoy/vim-signature'      " display marks.
