@@ -8,9 +8,17 @@ auth:
     issuer: @FRONTEND_HOST@
     rootcertbundle: /certs/portus.crt
 
+http:
+  addr: 0.0.0.0:5000
+  tls:
+    certificate: /certs/portus.crt
+    key: /certs/portus.key
+  debug:
+    addr: 0.0.0.0:5001
+
 storage:
   s3:
-    accesskey: portus_minio_access
+    accesskey: minio
     secretkey: @PORTUS_MINIO_PW_SECRET_VALUE@
     region: ap-northeast-2
     bucket: docker-registry

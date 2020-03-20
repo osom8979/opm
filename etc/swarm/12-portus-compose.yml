@@ -81,7 +81,8 @@ services:
       - /opt/opm/portus/certs:/certs:ro
 
   db:
-    image: library/mariadb:10.0.23
+    #image: library/mariadb:10.0.23
+    image: mariadb
     deploy:
       replicas: 1
       restart_policy:
@@ -93,7 +94,10 @@ services:
     environment:
       MYSQL_DATABASE: portus_production
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/portus-db-pw
-    command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0
+    #command: mysqld --character-set-server=utf8 --collation-server=utf8_unicode_ci --init-connect='SET NAMES UTF8;' --innodb-flush-log-at-trx-commit=0
+    command: mysqld
+    volumes:
+      - /opt/opm/portus/db/portus.cnf:/etc/mysql/conf.d/portus.cnf:ro
 
   registry:
     image: registry:2.6
@@ -106,13 +110,16 @@ services:
     networks:
       - net
     #secrets:
+    #  - portus-minio-id  # Write directly to the 'config.yml' file.
     #  - portus-minio-pw  # Write directly to the 'config.yml' file.
     volumes:
-      - /opt/opm/portus/certs:/certs:ro
-      - /opt/opm/portus/registry:/var/lib/registry:ro
+      - /opt/opm/traefik/certs/traefik.crt:/certs/portus.crt:ro
+      - /opt/opm/traefik/certs/traefik.key:/certs/portus.key:ro
+      - /opt/opm/portus/registry/config.yml:/etc/docker/registry/config.yml:ro
+      - /opt/opm/portus/registry/init:/etc/docker/registry/init:ro
     ports:
-    # - 5001:5001 # required to access debug service
       - 5000:5000
+      - 5001:5001 # required to access debug service
 
   s3:
     image: minio/minio
@@ -123,21 +130,26 @@ services:
     networks:
       - net
     secrets:
+      - portus-minio-id
       - portus-minio-pw
     environment:
-      MINIO_ACCESS_KEY: portus_minio_access
+      MINIO_ACCESS_KEY_FILE: portus-minio-id
       MINIO_SECRET_KEY_FILE: portus-minio-pw
     volumes:
-      - minio_data:/buckets
+      # - minio_data:/buckets
+      - ${MINIO_DATA_MOUNT_POINT?err}:/buckets
     command: ["server", "/buckets"]
 
-volumes:
-  minio_data:
-    driver: local-persist
-    driver_opts:
-      mountpoint: "${MINIO_DATA_MOUNT_POINT}"
+# "no suitable node (missing plugin on 1 node)"
+#volumes:
+#  minio_data:
+#    driver: local-persist
+#    driver_opts:
+#      mountpoint: "${MINIO_DATA_MOUNT_POINT?err}"
 
 secrets:
+  portus-minio-id:
+    external: true
   portus-minio-pw:
     external: true
   portus-web-keybase:
