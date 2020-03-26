@@ -8,7 +8,7 @@ export OPM_HOME=$PROFILE_SCRIPT_DIR
 fi
 
 ## Default shell configurations.
-export PS1="\e[1m[\t]\e[0m \e[1m\e[32m\u@\h\e[0m:\e[1m\e[96m\w\e[0m\n$ "
+export PS1="\e[1m[\t]\e[0m \e[1m\e[32m\u@\h\e[0m:\e[1m\e[96m\w\e[0m\n\\$ "
 export PATH=$OPM_HOME/bin:$PATH
 
 if [[ -z $CLICOLOR ]]; then
