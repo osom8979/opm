@@ -17,6 +17,7 @@ PACKAGE_LIST="${PACKAGE_LIST} cython numpy"  ## basic
 PACKAGE_LIST="${PACKAGE_LIST} opencv-python flask pycocotools"  ## recommand
 PACKAGE_LIST="${PACKAGE_LIST} ninja yacs matplotlib tqdm"  ## maskrcnn-benchmark requirements
 PACKAGE_LIST="${PACKAGE_LIST} cxxfilt PyYAML pytest"  ## apex requirements
+PACKAGE_LIST="${PACKAGE_LIST} aiohttp[speedups] psycopg2-binary"  ## c2central requirements
 PACKAGE_LIST="${PACKAGE_LIST} jupyterlab"
 
 # pillow pandas scipy sklearn scikit-image pynng trio tensorboardX

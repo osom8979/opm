@@ -31,6 +31,7 @@ REMOVE_CACHE=0
 ENABLE_GPU_MODE=0
 
 PRINT_CONFIG_FLAG=0
+AUTOMATIC_YES=0
 
 if [[ -f /etc/os-release ]]; then
     DISTRIBUTION="$(. /etc/os-release;echo $ID)"
@@ -216,7 +217,7 @@ function download
     if [[ ! -f "$file" ]]; then
         print_message "Download $url -> $file"
         exists_program_or_exit curl
-        curl $@ -k -o "$file" "$url"
+        curl $@ -L -k -o "$file" "$url"
     else
         print_message "Exists file: $file"
     fi
@@ -263,8 +264,13 @@ function checked_download
 function check_code_or_exit
 {
     local code=$?
+    local msg=$1
     if [[ $code -ne 0 ]]; then
-        print_error "An error has been detected: $code"
+        if [[ -z $msg ]]; then
+            print_error "An error has been detected(exit=$code,file=${BASH_SOURCE[0]})"
+        else
+            print_error "An error has been detected(exit=$code,file=${BASH_SOURCE[0]}) $msg"
+        fi
         exit $code
     fi
 }
@@ -334,10 +340,14 @@ function print_usage
     print_message " 00  Prefix script."
     print_message " 0x  Build essential."
     print_message " 1x  Libraries without dependencies."
-    print_message " 2x  Cryptography & algorithm."
-    print_message " 3x  Primitive multimedia library."
-    print_message " 4x  Advanced multimedia & algorithm library."
-    print_message " 5x  VM, Script, etc ..."
+    print_message " 2x  Cryptography & Network & IO."
+    print_message " 3x  Primitive multimedia libraries."
+    print_message " 4x  Advanced multimedia algorithm libraries."
+    print_message " 5x  Programming libraries."
+    print_message " 6x  Engines."
+    print_message " 7x  Private libraries."
+    print_message " 8x  [NOT ASSIGNED]"
+    print_message " 99  Last private targets."
 }
 
 function print_config
@@ -377,6 +387,10 @@ while [[ ! -z $1 ]]; do
         ;;
     --config)
         PRINT_CONFIG_FLAG=1
+        shift
+        ;;
+    -y|--yes)
+        AUTOMATIC_YES=0
         shift
         ;;
     --prefix*)

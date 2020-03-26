@@ -26,6 +26,7 @@ pushd "$PWD" > /dev/null
 cd "$CMAKE_BUILD_DIR"
 
 STEP=$LIB-config run_step cmake \
+    -G Ninja \
     -DCMAKE_INSTALL_PREFIX=$PREFIX  \
     -DBUILD_SHARED_LIBS=ON          \
     -DCMAKE_BUILD_TYPE=Release      \

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+ENABLE_PREFIX_CHECK=0
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
@@ -12,7 +13,7 @@ if [[ "$DISTRIBUTION" == "ubuntu" ]]; then
     # build tools.
     DEPS="$DEPS autoconf automake libtool pkg-config build-essential ninja-build"
     # assembly.
-    DEPS="$DEPS nasm yasm "
+    DEPS="$DEPS nasm yasm"
     # python script.
     DEPS="$DEPS python libffi-dev"
     # tbag

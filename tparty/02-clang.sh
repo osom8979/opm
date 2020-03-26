@@ -11,17 +11,17 @@ FILE_DARWIN="clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz"
 URL_DARWIN="http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-apple-darwin.tar.xz"
 MD5_DARWIN=56f071bf50504346ccf2de4915a50f24
 
-FILE_UBUNTU_14="clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz"
-URL_UBUNTU_14="http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz"
-MD5_UBUNTU_14=a4b8dd079239d30b47103cefc36b2eaf
+FILE_UBUNTU_1404="clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz"
+URL_UBUNTU_1404="http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz"
+MD5_UBUNTU_1404=a4b8dd079239d30b47103cefc36b2eaf
 
-FILE_UBUNTU_16="clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz"
-URL_UBUNTU_16="http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz"
-MD5_UBUNTU_16=54be66afe525a1fca539c3ef559fac80
+FILE_UBUNTU_1604="clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz"
+URL_UBUNTU_1604="http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz"
+MD5_UBUNTU_1604=54be66afe525a1fca539c3ef559fac80
 
-FILE_UBUNTU_18="clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
-URL_UBUNTU_18="http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
-MD5_UBUNTU_18=3137dad7c085b452b652143ef2a5df09
+FILE_UBUNTU_1804="clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
+URL_UBUNTU_1804="http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
+MD5_UBUNTU_1804=3137dad7c085b452b652143ef2a5df09
 
 case "$PLATFORM" in
 Darwin)
@@ -32,20 +32,20 @@ Darwin)
 Linux)
     if [[ "$DISTRIBUTION" == "ubuntu" ]]; then
         case "$DISTRIBUTION_VERSION" in
-        14)
-            FILE=${FILE_UBUNTU_14}
-            URL=${URL_UBUNTU_14}
-            MD5=${MD5_UBUNTU_14}
+        14.04)
+            FILE=${FILE_UBUNTU_1404}
+            URL=${URL_UBUNTU_1404}
+            MD5=${MD5_UBUNTU_1404}
             ;;
-        16)
-            FILE=${FILE_UBUNTU_16}
-            URL=${URL_UBUNTU_16}
-            MD5=${MD5_UBUNTU_16}
+        16.04)
+            FILE=${FILE_UBUNTU_1604}
+            URL=${URL_UBUNTU_1604}
+            MD5=${MD5_UBUNTU_1604}
             ;;
-        18)
-            FILE=${FILE_UBUNTU_18}
-            URL=${URL_UBUNTU_18}
-            MD5=${MD5_UBUNTU_18}
+        18.04)
+            FILE=${FILE_UBUNTU_1804}
+            URL=${URL_UBUNTU_1804}
+            MD5=${MD5_UBUNTU_1804}
             ;;
         *)
             print_error "Unsupported ubuntu version: $DISTRIBUTION_VERSION"
