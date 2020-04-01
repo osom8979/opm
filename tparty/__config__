@@ -345,9 +345,10 @@ function print_usage
     print_message " 4x  Advanced multimedia algorithm libraries."
     print_message " 5x  Programming libraries."
     print_message " 6x  Engines."
-    print_message " 7x  Private libraries."
+    print_message " 7x  GUI applications."
     print_message " 8x  [NOT ASSIGNED]"
-    print_message " 99  Last private targets."
+    print_message " 9x  Private libraries."
+    print_message " 99  Last private targets (ignore target)."
 }
 
 function print_config
