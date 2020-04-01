@@ -1,0 +1,94 @@
+version: '3.3'
+
+services:
+  db:
+    image: bitnami/postgresql:11
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - net
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - postgresql_data:/bitnami/postgresql
+
+  redis:
+    image: bitnami/redis:5.0
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - net
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    volumes:
+      - redis_data:/bitnami
+
+  discourse:
+    image: bitnami/discourse:2
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.port=3000"
+        - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - traefik-net
+      - net
+    environment:
+      - POSTGRESQL_HOST=db
+      - POSTGRESQL_ROOT_USER=postgres
+      - POSTGRESQL_CLIENT_CREATE_DATABASE_NAME=${DB_NAME}
+      - POSTGRESQL_CLIENT_CREATE_DATABASE_USERNAME=${DB_ID}
+      - POSTGRESQL_CLIENT_CREATE_DATABASE_PASSWORD=${DB_PW}
+      - DISCOURSE_POSTGRESQL_NAME=${DB_NAME}
+      - DISCOURSE_POSTGRESQL_USERNAME=${DB_ID}
+      - DISCOURSE_POSTGRESQL_PASSWORD=${DB_PW}
+      - DISCOURSE_HOSTNAME=${FRONTEND_HOST}
+    volumes:
+      - discourse_data:/bitnami
+    #ports:
+    #  - 3000:3000
+
+  sidekiq:
+    image: bitnami/discourse:2
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    depends_on:
+      - discourse
+    networks:
+      - net
+    environment:
+      - DISCOURSE_POSTGRESQL_NAME=${DB_NAME}
+      - DISCOURSE_POSTGRESQL_USERNAME=${DB_ID}
+      - DISCOURSE_POSTGRESQL_PASSWORD=${DB_PW}
+      - DISCOURSE_HOST=discourse
+      - DISCOURSE_PORT=3000
+      - DISCOURSE_HOSTNAME=${FRONTEND_HOST}
+    volumes:
+      - sidekiq_data:/bitnami
+    command: nami start --foreground discourse-sidekiq
+
+volumes:
+  postgresql_data:
+  redis_data:
+  discourse_data:
+  sidekiq_data:
+
+networks:
+  traefik-net:
+    external: true
+  net:
+    driver: overlay
+
