@@ -1,0 +1,53 @@
+version: '3.3'
+
+services:
+  web:
+    image: getfider/fider:stable
+    depends_on:
+      - db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.port=3000"
+        - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
+    networks:
+      - traefik-net
+      - postfix-net
+      - net
+    environment:
+      GO_ENV: production
+      DATABASE_URL: "postgres://${DB_ID}:${DB_PW}@db:5432/fider?sslmode=disable"
+      JWT_SECRET: ${JWT_SECRET:?err}
+      EMAIL_NOREPLY: ${NOREPLY_EMAIL:?err}
+      EMAIL_SMTP_HOST: postfix_api
+      EMAIL_SMTP_PORT: 25
+
+  db:
+    image: postgres:12
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - net
+    environment:
+      - POSTGRES_USER=${DB_ID:?err}
+      - POSTGRES_PASSWORD=${DB_PW:?err}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+
+networks:
+  traefik-net:
+    external: true
+  postfix-net:
+    external: true
+  net:
+    driver: overlay
+
