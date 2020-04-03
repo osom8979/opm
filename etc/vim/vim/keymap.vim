@@ -15,7 +15,7 @@ noremap  <leader><leader>1  <ESC>:NERDTreeToggle<CR>
 noremap  <leader><leader>2  <ESC>:Tagbar<CR>
 noremap  <leader><leader>3  <ESC>:call ToggleQuickfixBuffer()<CR>
 noremap  <leader><leader>4  <ESC>:call ToggleTerminalBuffer()<CR>
-noremap  <leader><leader>=  <ESC>:GundoToggle<CR>
+noremap  <leader><leader>5  <ESC>:GundoToggle<CR>
 "noremap <leader><leader>8  <ESC>:SrcExplToggle<CR>
 
 " Jump NERDTree window.
@@ -46,9 +46,9 @@ noremap <F6>  <ESC>:cnext<CR>
 "nnoremap <F9> :make<CR>:copen<CR>
 
 " Tags settings.
-"noremap  <leader>t <ESC>:tags<CR>
-"noremap  <leader>[ <ESC>:tprevious<CR>
-"noremap  <leader>] <ESC>:tnext<CR>
+noremap  <leader>t <ESC>:tags<CR>
+noremap  <leader>[ <ESC>:tprevious<CR>
+noremap  <leader>] <ESC>:tnext<CR>
 
 " Cscope settings.
 "nnoremap  <C-\>s  :cs find s <C-R>=expand("<cword>")<CR><CR>
@@ -81,17 +81,17 @@ noremap  <leader>gg  <ESC>:YcmCompleter GoTo<CR>
 " COMMAND SETTING.
 " ----------------
 
-command! Reload    execute 'source ~/.vimrc'
-command! HexMode   execute '%!xxd'
-command! TextMode  execute '%!xxd -r'
-command! Help      execute ':call PrintHelpMessage()'
+command! Reload         execute 'source ~/.vimrc'
+command! HexMode        execute '%!xxd'
+command! TextMode       execute '%!xxd -r'
+command! Help           execute ':call PrintHelpMessage()'
 
-command! CMake     execute 'OpvimCMake'
-command! Build     execute 'OpvimBuild'
+command! CMake          execute 'OpvimCMake'
+command! Build          execute 'OpvimBuild'
 
-command! RunGrep   execute ':AsyncRun! -cwd=<root> grep -Irn <cword> .'
+command! RunGrep        execute ':AsyncRun! -cwd=<root> grep -Irn <cword> .'
 
-command! ShowLoadedScripts  execute ':scriptnames'
+command! LoadedScripts  execute ':scriptnames'
 
-command! JsonFormat execute ':%!python -m json.tool'
+command! JsonFormat     execute ':%!python -m json.tool'
 
