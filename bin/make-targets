@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
 
-make -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}' | sort -u | uniq
+AWK_SCRIPT='/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}'
+
+make -qp | \
+    awk -F':' $AWK_SCRIPT | \
+    sort -u | \
+    uniq
 
