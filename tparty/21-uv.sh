@@ -3,7 +3,7 @@
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit BUILD_PREFIX
 check_variable_or_exit SOURCE_PREFIX
 check_variable_or_exit EXTERNAL_PREFIX
@@ -30,14 +30,14 @@ if [[ ! -d "$CMAKE_BUILD_DIR" ]]; then
 fi
 cd "$CMAKE_BUILD_DIR"
 
-STEP=$LIB-config run_step cmake               \
-    -DCMAKE_INSTALL_PREFIX=$PREFIX            \
-    -DBUILD_SHARED_LIBS=ON                    \
-    -DCMAKE_C_FLAGS=-I$PREFIX/include         \
-    -DCMAKE_CXX_FLAGS=-I$PREFIX/include       \
-    -DCMAKE_LINK_FLAGS=-L$PREFIX/lib          \
-    -DCMAKE_BUILD_TYPE=Release                \
-    -DBUILD_TESTING=OFF                       \
+STEP=$LIB-config run_step cmake                \
+    -DCMAKE_INSTALL_PREFIX=$TPARTY_PREFIX      \
+    -DBUILD_SHARED_LIBS=ON                     \
+    -DCMAKE_C_FLAGS=-I$TPARTY_PREFIX/include   \
+    -DCMAKE_CXX_FLAGS=-I$TPARTY_PREFIX/include \
+    -DCMAKE_LINK_FLAGS=-L$TPARTY_PREFIX/lib    \
+    -DCMAKE_BUILD_TYPE=Release                 \
+    -DBUILD_TESTING=OFF                        \
     "$BUILD_PREFIX/$SRC"
 
 STEP=$LIB-build   run_step make -j$(get_build_thread_count)

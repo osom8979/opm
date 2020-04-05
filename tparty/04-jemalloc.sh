@@ -3,7 +3,7 @@
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit BUILD_PREFIX
 check_variable_or_exit SOURCE_PREFIX
 check_variable_or_exit EXTERNAL_PREFIX
@@ -25,7 +25,7 @@ else
 fi
 cd "$BUILD_PREFIX/$SRC"
 
-STEP=$LIB-config  run_step ./autogen.sh --prefix=$PREFIX
+STEP=$LIB-config  run_step ./autogen.sh --prefix=$TPARTY_PREFIX
 STEP=$LIB-build   run_step make -j$(get_build_thread_count)
 STEP=$LIB-install run_step make install
 

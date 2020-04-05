@@ -4,13 +4,13 @@ CONFIG_DIR=`dir="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd 
 if [[ -f "$CONFIG_DIR/__default__" ]]; then
     source "$CONFIG_DIR/__default__"
 fi
-PREFIX=${PREFIX:-/usr/local/tparty}
-SYSTEM_PREFIX="$PREFIX/system"
-TEMP_PREFIX="$PREFIX/temp"
-BUILD_PREFIX="$PREFIX/build"
-LOG_PREFIX="$PREFIX/log"
-SOURCE_PREFIX="$PREFIX/source"
-EXTERNAL_PREFIX="$PREFIX/external"
+TPARTY_PREFIX=${TPARTY_PREFIX:-/usr/local/tparty}
+SYSTEM_PREFIX="$TPARTY_PREFIX/system"
+TEMP_PREFIX="$TPARTY_PREFIX/temp"
+BUILD_PREFIX="$TPARTY_PREFIX/build"
+LOG_PREFIX="$TPARTY_PREFIX/log"
+SOURCE_PREFIX="$TPARTY_PREFIX/source"
+EXTERNAL_PREFIX="$TPARTY_PREFIX/external"
 
 PLATFORM=`uname -s`
 DATETIME=`date "+%Y%m%d_%H%M%S"`
@@ -353,7 +353,7 @@ function print_usage
 
 function print_config
 {
-    print_message "PREFIX: $PREFIX"
+    print_message "TPARTY_PREFIX: $TPARTY_PREFIX"
     print_message "SYSTEM_PREFIX: $SYSTEM_PREFIX"
     print_message "TEMP_PREFIX: $TEMP_PREFIX"
     print_message "BUILD_PREFIX: $BUILD_PREFIX"
@@ -395,15 +395,15 @@ while [[ ! -z $1 ]]; do
         shift
         ;;
     --prefix*)
-        PREFIX=${1#*=}
-        if [[ "$PREFIX" == "--prefix" ]]; then
+        TPARTY_PREFIX=${1#*=}
+        if [[ "$TPARTY_PREFIX" == "--prefix" ]]; then
             print_error "The path must be specified."
             exit 1
         fi
         shift
         ;;
     -p)
-        PREFIX=$2
+        TPARTY_PREFIX=$2
         shift 2
         ;;
     --symbol*)
@@ -466,12 +466,12 @@ if [[ $PRINT_CONFIG_FLAG -eq 1 ]]; then
 fi
 
 if [[ $ENABLE_PREFIX_CHECK -eq 1 ]]; then
-    if [[ ! -d "$PREFIX" ]]; then
-        print_error "Not found PREFIX directory: $PREFIX"
+    if [[ ! -d "$TPARTY_PREFIX" ]]; then
+        print_error "Not found TPARTY_PREFIX directory: $TPARTY_PREFIX"
         exit 1
     fi
-    if [[ ! -w "$PREFIX" ]]; then
-        print_error "The writable permission is denied: $PREFIX"
+    if [[ ! -w "$TPARTY_PREFIX" ]]; then
+        print_error "The writable permission is denied: $TPARTY_PREFIX"
         exit 1
     fi
 
@@ -484,7 +484,7 @@ fi
 
 #if [[ $ENABLE_PREFIX_SYSTEM -eq 1 ]]; then
 #    PATH="$SYSTEM_PREFIX/bin:$PATH"
-#    CC=$PREFIX/bin/clang
-#    CXX=$PREFIX/bin/clang++
+#    CC=$TPARTY_PREFIX/bin/clang
+#    CXX=$TPARTY_PREFIX/bin/clang++
 #fi
 

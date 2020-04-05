@@ -3,7 +3,7 @@
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit BUILD_PREFIX
 exists_program_or_exit git
 exists_program_or_exit ninja
@@ -65,7 +65,7 @@ STEP=$LIB-config run_step gn gen out/release "'--args=$FLAGS'"
 STEP=$LIB-build  run_step ninja -C out/release
 
 print_message "Install webrtc library"
-WEBRTC_PREFIX=$PREFIX/webrtc-$VER
+WEBRTC_PREFIX=$TPARTY_PREFIX/webrtc-$VER
 mkdir -p "$WEBRTC_PREFIX/lib"
 mkdir -p "$WEBRTC_PREFIX/include"
 

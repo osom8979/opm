@@ -4,13 +4,13 @@ ENABLE_PREFIX_CHECK=0
 SCRIPT_DIR=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$SCRIPT_DIR/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit DISTRIBUTION
 check_variable_or_exit DISTRIBUTION_VERSION
 check_variable_or_exit REMOVE_CACHE
 
-if [[ ! -d "$PREFIX" ]]; then
-    mkdir -p "$PREFIX"
+if [[ ! -d "$TPARTY_PREFIX" ]]; then
+    mkdir -p "$TPARTY_PREFIX"
     check_code_or_exit
 fi
 

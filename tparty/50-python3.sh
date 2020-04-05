@@ -3,7 +3,7 @@
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit BUILD_PREFIX
 check_variable_or_exit SOURCE_PREFIX
 check_variable_or_exit EXTERNAL_PREFIX
@@ -35,12 +35,16 @@ if [[ "$PLATFORM" == "Linux" ]]; then
     STEP=$LIB-autoconf run_step autoconf
 fi
 #if [[ "$PLATFORM" == "Darwin" ]]; then
-#FLAGS="--enable-framework=$PREFIX/Frameworks"
+#FLAGS="--enable-framework=$TPARTY_PREFIX/Frameworks"
 #fi
 
-PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig \
-    CFLAGS="-I/opt/X11/include -I$PREFIX/include -fPIC" \
-    LDFLAGS="-L/opt/X11/lib -L$PREFIX/lib -Wl,-rpath,$PREFIX/lib" \
-    STEP=$LIB-config run_step ./configure --enable-shared --enable-optimizations --prefix=$PREFIX
+PKG_CONFIG_PATH=$TPARTY_PREFIX/lib/pkgconfig \
+    CFLAGS="-I/opt/X11/include -I$TPARTY_PREFIX/include -fPIC" \
+    LDFLAGS="-L/opt/X11/lib -L$TPARTY_PREFIX/lib -Wl,-rpath,$TPARTY_PREFIX/lib" \
+    STEP=$LIB-config \
+    run_step ./configure \
+             --enable-shared \
+             --enable-optimizations \
+             --prefix=$TPARTY_PREFIX
 STEP=$LIB-build-install run_step make -j$(get_build_thread_count) install
 

@@ -3,7 +3,6 @@
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
 check_variable_or_exit SYSTEM_PREFIX
 check_variable_or_exit BUILD_PREFIX
 check_variable_or_exit SOURCE_PREFIX

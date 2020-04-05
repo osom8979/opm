@@ -4,27 +4,27 @@ ENABLE_PREFIX_CHECK=0
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 
 if [[ $(id -u) -ne 0 ]]; then
     echo 'Please run as root.'
     exit 1
 fi
 
-if [[ -d $PREFIX ]]; then
-    if [[ -w $PREFIX ]]; then
-        print_verbose "The PREFIX directory exists: ${PREFIX}"
+if [[ -d $TPARTY_PREFIX ]]; then
+    if [[ -w $TPARTY_PREFIX ]]; then
+        print_verbose "The TPARTY_PREFIX directory exists: ${TPARTY_PREFIX}"
         exit 0
     else
-        print_error "A non-writable PREFIX directory exists: ${PREFIX}"
+        print_error "A non-writable TPARTY_PREFIX directory exists: ${TPARTY_PREFIX}"
         exit 1
     fi
-elif [[ -e $PREFIX ]]; then
-    print_error "PREFIX exists and is not a directory: ${PREFIX}"
+elif [[ -e $TPARTY_PREFIX ]]; then
+    print_error "TPARTY_PREFIX exists and is not a directory: ${TPARTY_PREFIX}"
     exit 1
 fi
 
-print_message "PREFIX directory: ${PREFIX}"
+print_message "TPARTY_PREFIX directory: ${TPARTY_PREFIX}"
 
 if [[ $AUTOMATIC_YES -eq 1 ]]; then
     DO_INSTALL=1
@@ -49,13 +49,13 @@ if [[ $DO_INSTALL -eq 0 ]]; then
     exit 1
 fi
 
-mkdir -p "$PREFIX"
+mkdir -p "$TPARTY_PREFIX"
 
 if [[ ! -z $SUDO_USER && ! -z $SUDO_GID ]]; then
-    chown $SUDO_USER "$PREFIX"
-    chgrp $SUDO_GID "$PREFIX"
-    print_message "Created $SUDO_USER's PREFIX directory: $PREFIX"
+    chown $SUDO_USER "$TPARTY_PREFIX"
+    chgrp $SUDO_GID "$TPARTY_PREFIX"
+    print_message "Created $SUDO_USER's TPARTY_PREFIX directory: $TPARTY_PREFIX"
 else
-    print_message "Created PREFIX directory: $PREFIX"
+    print_message "Created TPARTY_PREFIX directory: $TPARTY_PREFIX"
 fi
 

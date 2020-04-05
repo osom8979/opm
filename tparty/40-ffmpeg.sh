@@ -3,7 +3,7 @@
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit BUILD_PREFIX
 check_variable_or_exit SOURCE_PREFIX
 check_variable_or_exit EXTERNAL_PREFIX
@@ -32,8 +32,8 @@ else
 fi
 cd "$BUILD_PREFIX/$SRC"
 
-FLAGS="$FLAGS --prefix=$PREFIX"
-FLAGS="$FLAGS --extra-ldflags=-Wl,-rpath,$PREFIX/lib"
+FLAGS="$FLAGS --prefix=$TPARTY_PREFIX"
+FLAGS="$FLAGS --extra-ldflags=-Wl,-rpath,$TPARTY_PREFIX/lib"
 FLAGS="$FLAGS --enable-pic"
 FLAGS="$FLAGS --disable-static"
 FLAGS="$FLAGS --enable-shared"
@@ -51,7 +51,7 @@ if [[ ! -z $SYMBOL_FLAG && $SYMBOL_FLAG -gt 0 ]]; then
     fi
 fi
 
-PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig \
+PKG_CONFIG_PATH=$TPARTY_PREFIX/lib/pkgconfig \
     STEP=$LIB-config \
     run_step ./configure $FLAGS
 

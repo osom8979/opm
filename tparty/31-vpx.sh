@@ -3,7 +3,7 @@
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit BUILD_PREFIX
 check_variable_or_exit SOURCE_PREFIX
 check_variable_or_exit EXTERNAL_PREFIX
@@ -27,7 +27,7 @@ else
 fi
 cd "$BUILD_PREFIX/$SRC"
 
-FLAGS="--prefix=$PREFIX"
+FLAGS="--prefix=$TPARTY_PREFIX"
 FLAGS="$FLAGS --enable-pic"
 FLAGS="$FLAGS --enable-shared"
 FLAGS="$FLAGS --enable-static"
@@ -49,5 +49,5 @@ STEP=$LIB-build   run_step make -j$(get_build_thread_count)
 STEP=$LIB-install run_step make install
 
 # Only static-build required.
-# sed -i.tmp 's/^\(Libs:.*\)$/\1 -lpthread/g' $PREFIX/lib/pkgconfig/vpx.pc
+# sed -i.tmp 's/^\(Libs:.*\)$/\1 -lpthread/g' $TPARTY_PREFIX/lib/pkgconfig/vpx.pc
 

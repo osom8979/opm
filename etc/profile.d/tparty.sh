@@ -10,7 +10,7 @@ if [[ -f "$TPARTY_DIR/__default__" ]]; then
     source "$TPARTY_DIR/__default__"
 fi
 
-export TPARTY_PREFIX=${PREFIX:-/usr/local/tparty}
+export TPARTY_PREFIX=${TPARTY_PREFIX:-/usr/local/tparty}
 export TPARTY_BIN=$TPARTY_PREFIX/bin
 export TPARTY_INC=$TPARTY_PREFIX/include
 export TPARTY_LIB=$TPARTY_PREFIX/lib

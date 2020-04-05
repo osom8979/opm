@@ -3,7 +3,7 @@
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit BUILD_PREFIX
 check_variable_or_exit SOURCE_PREFIX
 check_variable_or_exit EXTERNAL_PREFIX
@@ -24,8 +24,8 @@ else
 fi
 cd "$BUILD_PREFIX/$SRC"
 
-PREFIX=$PREFIX \
-    LDFLAGS=-L$PREFIX/lib \
+PREFIX=$TPARTY_PREFIX \
+    LDFLAGS=-L$TPARTY_PREFIX/lib \
     STEP=$LIB-config \
     run_step ./configure
 

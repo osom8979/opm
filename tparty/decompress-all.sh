@@ -3,7 +3,7 @@
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit PLATFORM
 
 PROTOCOL=https
@@ -53,5 +53,5 @@ else
 fi
 
 checksum_or_exit "$DOWNLOAD_FILE" "$MD5"
-extract "$DOWNLOAD_FILE" "$PREFIX"
+extract "$DOWNLOAD_FILE" "$TPARTY_PREFIX"
 

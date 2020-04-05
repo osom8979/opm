@@ -3,9 +3,9 @@
 WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
 source "$WORKING/__config__"
 
-check_variable_or_exit PREFIX
+check_variable_or_exit TPARTY_PREFIX
 
-PIP_CMD="$PREFIX/bin/pip3"
+PIP_CMD="$TPARTY_PREFIX/bin/pip3"
 if [[ ! -x "$PIP_CMD" ]]; then
     print_error "Not found $PIP_CMD"
     exit 1
