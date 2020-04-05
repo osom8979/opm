@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 ENABLE_PREFIX_CHECK=0
-WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
-source "$WORKING/__config__"
+SCRIPT_DIR=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
+source "$SCRIPT_DIR/__config__"
 
 check_variable_or_exit TPARTY_PREFIX
 

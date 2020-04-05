@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
-source "$WORKING/__config__"
+SCRIPT_DIR=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
+source "$SCRIPT_DIR/__config__"
 
 check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit BUILD_PREFIX
@@ -31,7 +31,7 @@ fi
 cd "$BUILD_PREFIX/$SRC"
 
 if [[ "$PLATFORM" == "Linux" ]]; then
-    STEP=$LIB-patch    run_step patch -p 1 < "$WORKING/50-python3.linux.patch"
+    STEP=$LIB-patch    run_step patch -p 1 < "$SCRIPT_DIR/50-python3.linux.patch"
     STEP=$LIB-autoconf run_step autoconf
 fi
 #if [[ "$PLATFORM" == "Darwin" ]]; then

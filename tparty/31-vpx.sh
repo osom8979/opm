@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-WORKING=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
-source "$WORKING/__config__"
+SCRIPT_DIR=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
+source "$SCRIPT_DIR/__config__"
 
 check_variable_or_exit TPARTY_PREFIX
 check_variable_or_exit BUILD_PREFIX
@@ -41,7 +41,7 @@ FLAGS="$FLAGS --disable-unit-tests"
 
 if [[ "$PLATFORM" == "Darwin" ]]; then
     #FLAGS="$FLAGS --target=x86_64-darwin17-gcc"
-    STEP=$LIB-patch run_step patch -p 1 < "$WORKING/31-vpx.darwin.patch"
+    STEP=$LIB-patch run_step patch -p 1 < "$SCRIPT_DIR/31-vpx.darwin.patch"
 fi
 
 STEP=$LIB-config  run_step ./configure $FLAGS

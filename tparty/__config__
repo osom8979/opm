@@ -320,6 +320,8 @@ function print_usage
     print_message "Available options are:"
     print_message "  --help             Print this message."
     print_message "  -h                 Equals --help option."
+    print_message "  --yes              Automatic yes to prompts."
+    print_message "  -y                 Equals --yes option."
     print_message "  --config           Print config information."
     print_message "  --prefix=path      Specify the installation path."
     print_message "  -p path            Equals --prefix option."
@@ -391,7 +393,7 @@ while [[ ! -z $1 ]]; do
         shift
         ;;
     -y|--yes)
-        AUTOMATIC_YES=0
+        AUTOMATIC_YES=1
         shift
         ;;
     --prefix*)
