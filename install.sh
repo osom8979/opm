@@ -173,6 +173,16 @@ function yes_or_no_question
     fi
 }
 
+function symbolic_link
+{
+    local source_file=$1
+    local link_file=$2
+
+    rm "$link_file"
+    ln -s "$source_file" "$link_file"
+    print_information "Symbolic link: $link_file"
+}
+
 function mkdirs
 {
     if [[ ! -d "$1" ]]; then

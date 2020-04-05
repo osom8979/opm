@@ -11,11 +11,9 @@ fi
 
 AUTOMATIC_YES_FLAG=${AUTOMATIC_YES_FLAG:-0}
 
-I3_DIR=$HOME/.i3
-I3_CONFIG=$I3_DIR/config
-SRC_I3_CONFIG=$OPM_HOME/etc/i3/config
+TMUX_CONFIG=$HOME/.tmux.conf
+SRC_TMUX_CONFIG=$OPM_HOME/etc/tmux/config
 
-mkdirs "$I3_DIR"
-backup_file "$I3_CONFIG"
-symbolic_link "$SRC_I3_CONFIG" "$I3_CONFIG"
+backup_file "$TMUX_CONFIG"
+symbolic_link "$SRC_TMUX_CONFIG" "$TMUX_CONFIG"
 
