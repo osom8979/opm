@@ -20,22 +20,23 @@ if [[ -d "$TPARTY_BIN" ]]; then
 export PATH=$TPARTY_BIN:$PATH
 fi
 
-if [[ -d "$TPARTY_INC" ]]; then
-export CPATH=$TPARTY_INC:$CPATH
-fi
+#if [[ -d "$TPARTY_INC" ]]; then
+#export CPATH=$TPARTY_INC:$CPATH
+#fi
 
-if [[ -d "$TPARTY_LIB" ]]; then
-export LIBRARY_PATH=$TPARTY_LIB:$LIBRARY_PATH
+#if [[ -d "$TPARTY_LIB" ]]; then
+#export LIBRARY_PATH=$TPARTY_LIB:$LIBRARY_PATH
 #export LD_LIBRARY_PATH
 #export DYLD_LIBRARY_PATH
 #export DYLD_FALLBACK_LIBRARY_PATH
-fi
+#fi
 
-if [[ -d "$TPARTY_PKG" ]]; then
-export PKG_CONFIG_PATH=$TPARTY_PKG:$PKG_CONFIG_PATH
-fi
+#if [[ -d "$TPARTY_PKG" ]]; then
+#export PKG_CONFIG_PATH=$TPARTY_PKG:$PKG_CONFIG_PATH
+#fi
 
-# echo "[Tparty Environment]"
-# echo " CFLAGS=\"-I${TPARTY_INC}\""
-# echo " LDFLAGS=\"-L${TPARTY_LIB}\""
+echo "[Tparty Environment]"
+echo " CFLAGS=\"-I${TPARTY_INC}\""
+echo " LDFLAGS=\"-L${TPARTY_LIB}\""
+echo " PKG_CONFIG_PATH=\"-L${TPARTY_PKG}\""
 
