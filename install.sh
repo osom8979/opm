@@ -5,6 +5,7 @@ INSTALL_DIR=$SCRIPT_DIR/etc/install.d
 VIA_INSTALLATION_SCRIPT=1
 
 INSTALL_VARIABLES_PATH=$SCRIPT_DIR/variables
+LIST_OF_COMPONENTS=0
 INSTALL_VARIABLES_FLAG=0
 AUTOMATIC_YES_FLAG=0
 FORCE_FLAG=0
@@ -31,13 +32,15 @@ function print_error
 
 function print_usage
 {
-    print_message "Usage: $0 [options] [components]"
+    print_message "Usage: $0 [options] [com1] [com2] ... [comN]"
     print_message " "
     print_message "Available options are:"
     print_message "  -h|--help"
     print_message "         Print this message."
     print_message "  -c|--create-install-variables-file"
     print_message "         Generated environment variable file for installation."
+    print_message "  -l|--list"
+    print_message "         List of components."
     print_message "  -y|--yes"
     print_message "         Automatic yes to prompts."
     print_message "  -f|--force"
@@ -53,6 +56,10 @@ while [[ ! -z $1 ]]; do
         ;;
     -c|--create-install-variables-file)
         INSTALL_VARIABLES_FLAG=1
+        shift
+        ;;
+    -l|--list)
+        LIST_OF_COMPONENTS=1
         shift
         ;;
     -y|--yes)
@@ -73,6 +80,16 @@ while [[ ! -z $1 ]]; do
         ;;
     esac
 done
+
+if [[ $LIST_OF_COMPONENTS -eq 1 ]]; then
+    __component_names=
+    for cursor in $INSTALL_DIR/*.sh; do
+        __current_component_names=`echo "$cursor" | sed -E 's/.*\/([^\/]+)\.sh$/\1/g'`
+        __component_names="$__component_names $__current_component_names"
+    done
+    print_message $__component_names
+    exit 0
+fi
 
 if [[ $INSTALL_VARIABLES_FLAG -eq 1 ]]; then
     # Comment out the original content.
