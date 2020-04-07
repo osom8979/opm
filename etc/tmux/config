@@ -1,6 +1,13 @@
+# TMUX configurations.
+
+# Escape timeout.
 set -sg escape-time 0
 
+# Change prefix key: C-s
 set -g prefix C-s
 unbind C-b
 bind C-s send-prefix
+
+# Vim-style keybinding
+set-window-option -g mode-keys vi
 
