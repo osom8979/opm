@@ -1,6 +1,6 @@
 # TMUX configurations.
 
-# Escape timeout.
+# No delay for escape key press.
 set -sg escape-time 0
 
 # Change prefix key: C-s
@@ -8,6 +8,12 @@ set -g prefix C-s
 unbind C-b
 bind C-s send-prefix
 
-# Vim-style keybinding
-set-window-option -g mode-keys vi
+# Vim-style pane selection
+#bind h select-pane -L
+#bind j select-pane -D
+#bind k select-pane -U
+#bind l select-pane -R
+
+#bind-key v split-window -h
+#bind-key s split-window -v
 
