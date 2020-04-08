@@ -3,17 +3,24 @@
 # No delay for escape key press.
 set -sg escape-time 0
 
+# The starting number of the index is 1.
+set -g base-index 1
+
 # Change prefix key: C-s
 set -g prefix C-s
 unbind C-b
 bind C-s send-prefix
 
 # Vim-style pane selection
-#bind h select-pane -L
-#bind j select-pane -D
-#bind k select-pane -U
-#bind l select-pane -R
+bind h select-pane -L
+bind j select-pane -D
+bind k select-pane -U
+bind l select-pane -R
+bind C-h select-pane -L
+bind C-j select-pane -D
+bind C-k select-pane -U
+bind C-l select-pane -R
 
-#bind-key v split-window -h
-#bind-key s split-window -v
+bind C-v split-window -h
+bind C-s split-window -v
 
