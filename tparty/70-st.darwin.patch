@@ -1,0 +1,23 @@
+diff -uN st-0.8.2-ori/config.mk st-0.8.2-diff/config.mk
+--- st-0.8.2-ori/config.mk	2019-02-09 20:50:41.000000000 +0900
++++ st-0.8.2-diff/config.mk	2020-04-08 10:31:09.000000000 +0900
+@@ -7,8 +7,8 @@
+ PREFIX = /usr/local
+ MANPREFIX = $(PREFIX)/share/man
+ 
+-X11INC = /usr/X11R6/include
+-X11LIB = /usr/X11R6/lib
++X11INC = /opt/X11/include
++X11LIB = /opt/X11/lib
+ 
+ PKG_CONFIG = pkg-config
+ 
+@@ -16,7 +16,7 @@
+ INCS = -I$(X11INC) \
+        `$(PKG_CONFIG) --cflags fontconfig` \
+        `$(PKG_CONFIG) --cflags freetype2`
+-LIBS = -L$(X11LIB) -lm -lrt -lX11 -lutil -lXft \
++LIBS = -L$(X11LIB) -lm -lX11 -lutil -lXft \
+        `$(PKG_CONFIG) --libs fontconfig` \
+        `$(PKG_CONFIG) --libs freetype2`
+ 
