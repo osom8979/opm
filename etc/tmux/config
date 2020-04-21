@@ -11,11 +11,14 @@ set -g prefix C-s
 unbind C-b
 bind C-s send-prefix
 
+# Enable mouse mode.
+set -g mouse on
+
 # Vim-style pane selection
-bind h select-pane -L
-bind j select-pane -D
-bind k select-pane -U
-bind l select-pane -R
+bind   h select-pane -L
+bind   j select-pane -D
+bind   k select-pane -U
+bind   l select-pane -R
 bind C-h select-pane -L
 bind C-j select-pane -D
 bind C-k select-pane -U
@@ -23,4 +26,7 @@ bind C-l select-pane -R
 
 bind C-v split-window -h
 bind C-s split-window -v
+
+bind   t new-window
+bind C-t new-window
 
