@@ -1,5 +1,7 @@
 # TMUX configurations.
 
+#set-option -g default-command "reattach-to-user-namespace -l ${SHELL}"
+
 # No delay for escape key press.
 set -sg escape-time 0
 
@@ -11,8 +13,12 @@ set -g prefix C-s
 unbind C-b
 bind C-s send-prefix
 
-# Enable mouse mode.
+# Enable mouse support for switching panes/windows.
 set -g mouse on
+
+######################
+#### KEY BINDINGS ####
+######################
 
 # Vim-style pane selection
 bind   h select-pane -L
@@ -29,4 +35,16 @@ bind C-s split-window -v
 
 bind   t new-window
 bind C-t new-window
+
+#bind  p paste-buffer
+
+################################
+#### COPY MODE KEY BINDINGS ####
+################################
+
+# Set vi mode for copy mode.
+set-window-option -g mode-keys vi
+
+bind-key -T copy-mode-vi v send-keys -X begin-selection
+bind-key -T copy-mode-vi y send-keys -X copy-selection-and-cancel
 
