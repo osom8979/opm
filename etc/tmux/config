@@ -16,6 +16,9 @@ bind C-s send-prefix
 # Enable mouse support for switching panes/windows.
 set -g mouse on
 
+# Set the maximum number of lines held in window history.
+set -g history-limit 999999999
+
 ######################
 #### KEY BINDINGS ####
 ######################
