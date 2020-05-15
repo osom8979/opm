@@ -54,6 +54,8 @@ set noswapfile   " no swap file.
 " make that backspace key work the way it should
 set backspace=indent,eol,start
 
+set clipboard=unnamedplus
+
 " enable mouse event.
 if has('mouse')
 set mouse=a
