@@ -169,6 +169,9 @@ let g:SrcExpl_refreshTime = 100
 let g:gundo_right = 1
 let g:gundo_width = 50
 let g:gundo_preview_height = 15
+if has('python3')
+    let g:gundo_prefer_python3 = 1
+endif
 
 " QuickMenu
 " L: enable cursorline
