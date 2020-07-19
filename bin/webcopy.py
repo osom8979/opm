@@ -40,6 +40,11 @@ PREFIX_NAME = 'Title'
 #FIRST_URL = 'https://xxx.wordpress.com/yyy'
 #SELECT_FRAME = False
 
+# ncode
+url_base = 'https://ncode.syosetu.com/nxxxxyy/'
+FIRST_URL = url_base + '1'
+SELECT_FRAME = False
+
 if os.path.isfile(CHROME_DIRVER_PATH):
     driver = webdriver.Chrome(CHROME_DIRVER_PATH)
 elif os.path.isfile(PHANTOMJS_DIRVER_PATH):
@@ -107,8 +112,8 @@ To find multiple elements (these methods will return a list):
 #next_url = find_next_url_by_link_text_list(['Next Chapter', 'Next Chapterr', 'Next chapter', 'Next chapterr'])
 
 
-start = 40
-last = 41
+start = 1
+last = 265
 
 next_url = FIRST_URL
 loop_range = range(start, last)
@@ -131,8 +136,8 @@ for i in loop_range:
         #bottom_body = driver.find_element_by_id('postBottomTitleListBody')
 
         # N 02
-        post_title = driver.find_element_by_tag_name('h3').text
-        post_body = driver.find_element_by_id('viewTypeSelector').text
+        # post_title = driver.find_element_by_tag_name('h3').text
+        # post_body = driver.find_element_by_id('viewTypeSelector').text
 
         # T
         #post_title = driver.find_element_by_id('content-inner').find_element_by_class_name('head').text
@@ -143,6 +148,10 @@ for i in loop_range:
         # W
         #post_title = driver.find_element_by_class_name('link_title').text
         #post_body = driver.find_element_by_class_name('article_view').text
+
+        # ncode
+        post_title = driver.find_element_by_class_name('novel_subtitle').text
+        post_body = driver.find_element_by_id('novel_honbun').text
     except NoSuchElementException as e:
         print('Not post contents: ', e)
     except:
@@ -158,10 +167,13 @@ for i in loop_range:
     print(' - Title={}'.format(post_title))
 
     with open(save_filename, 'w') as f:
+        f.write('--------------------\n')
         f.write('TITLE: ' + post_title + '\n')
         f.write('URL: ' + next_url + '\n')
         f.write('====================\n')
         f.write(post_body)
+        f.write('\n')
+        f.write('********************\n\n\n')
 
     ## ----------------
     ## Update Next URL.
@@ -177,13 +189,16 @@ for i in loop_range:
         #next_url = next_link.get_attribute('href')
 
         # N 02
-        elem1 = driver.find_element_by_id('_relatedCategoryPostListFlickingPage_0')
-        elem2 = elem1.find_elements_by_class_name('item')[1]
-        elem3 = elem2.find_element_by_tag_name('a')
-        next_url = elem3.get_attribute('href')
+        # elem1 = driver.find_element_by_id('_relatedCategoryPostListFlickingPage_0')
+        # elem2 = elem1.find_elements_by_class_name('item')[1]
+        # elem3 = elem2.find_element_by_tag_name('a')
+        # next_url = elem3.get_attribute('href')
 
         # W
         # next_url = url_base.format(i + 1)
+
+        # ncode
+        next_url = url_base + str(i+1)
     except:
         print('Not found next url.')
         break
