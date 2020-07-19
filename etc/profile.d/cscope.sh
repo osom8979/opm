@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-VI_PATH=`which vi`
-VIM_PATH=`which vim`
+VI_PATH=`which vi 2> /dev/null`
+VIM_PATH=`which vim 2> /dev/null`
 
 if [[ -f "$VIM_PATH" ]]; then
 CSCOPE_EDITOR="$VIM_PATH"
