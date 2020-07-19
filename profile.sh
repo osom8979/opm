@@ -19,12 +19,12 @@ if [[ -z $LSCOLORS ]]; then
 export LSCOLORS=ExFxBxDxCxegedabagacad
 fi
 
-if [[ -z $LC_COLLATE ]]; then
-export LC_COLLATE=ko_KR.UTF-8
-fi
+#if [[ -z $LC_COLLATE ]]; then
+#export LC_COLLATE=ko_KR.UTF-8
+#fi
 
 if [[ -z $EDITOR ]]; then
-export EDITOR=vi
+export EDITOR=vim
 fi
 
 if [[ -z $LC_ALL ]]; then
