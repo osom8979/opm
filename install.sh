@@ -8,6 +8,7 @@ INSTALL_VARIABLES_PATH=$SCRIPT_DIR/variables
 LIST_OF_COMPONENTS=0
 INSTALL_VARIABLES_FLAG=0
 AUTOMATIC_YES_FLAG=0
+DRY_RUN=0
 FORCE_FLAG=0
 
 function print_message
@@ -33,18 +34,16 @@ function print_error
 function print_usage
 {
     print_message "Usage: $0 [options] [com1] [com2] ... [comN]"
-    print_message " "
+    print_message ""
     print_message "Available options are:"
-    print_message "  -h|--help"
-    print_message "         Print this message."
-    print_message "  -c|--create-install-variables-file"
-    print_message "         Generated environment variable file for installation."
-    print_message "  -l|--list"
-    print_message "         List of components."
-    print_message "  -y|--yes"
-    print_message "         Automatic yes to prompts."
-    print_message "  -f|--force"
-    print_message "         Skip checking the OPM_HOME variable."
+    print_message "  -h, --help     Print this message."
+    print_message "  -c, --create-install-variables-file"
+    print_message "                 Generated environment variable file for installation."
+    print_message "  -l, --list     List of components."
+    print_message "  -y, --yes      Automatic yes to prompts."
+    print_message "  -n, --dry-run  Don't actually do anything, just show what would be done."
+    print_message "  -f, --force    Skip checking the OPM_HOME variable."
+    print_message "  --             Skip handling options."
 }
 
 COMPONENTS=
@@ -66,9 +65,17 @@ while [[ ! -z $1 ]]; do
         AUTOMATIC_YES_FLAG=1
         shift
         ;;
+    -n|--dry-run)
+        DRY_RUN=1
+        shift
+        ;;
     -f|--force)
         FORCE_FLAG=1
         shift
+        ;;
+    --)
+        shift
+        break
         ;;
     -*|--*)
         print_error "Unknown option: $1"
@@ -92,14 +99,16 @@ if [[ $LIST_OF_COMPONENTS -eq 1 ]]; then
 fi
 
 if [[ $INSTALL_VARIABLES_FLAG -eq 1 ]]; then
-    # Comment out the original content.
-    if [[ -f "$INSTALL_VARIABLES_PATH" ]]; then
-        sed -e 's/^/#/g' "$INSTALL_VARIABLES_PATH" > "$INSTALL_VARIABLES_PATH"
+    if [[ $DRY_RUN -eq 0 ]]; then
+        # Comment out the original content.
+        if [[ -f "$INSTALL_VARIABLES_PATH" ]]; then
+            sed -e 's/^/#/g' "$INSTALL_VARIABLES_PATH" > "$INSTALL_VARIABLES_PATH"
+        fi
+        # Extract environment variables for installation.
+        for cursor in $INSTALL_DIR/*.sh; do
+            grep -E '^INSTALL_VARIABLE_.*' "$cursor" | sed -e 's/=.*/=/g' >> "$INSTALL_VARIABLES_PATH"
+        done
     fi
-    # Extract environment variables for installation.
-    for cursor in $INSTALL_DIR/*.sh; do
-        grep -E '^INSTALL_VARIABLE_.*' "$cursor" | sed -e 's/=.*/=/g' >> "$INSTALL_VARIABLES_PATH"
-    done
     print_information "Generated environment variable file for installation: $INSTALL_VARIABLES_PATH"
     exit 0
 fi
@@ -123,11 +132,14 @@ if [[ ! -z "$OPM_HOME" || ! -z $(cat "$BASH_PROFILE_PATH" | grep "OPM_HOME") ]];
         exit 1
     fi
 else
-    echo '## OSOM Common Script.'                   >> $BASH_PROFILE_PATH
-    echo "export OPM_HOME=$SCRIPT_DIR"              >> $BASH_PROFILE_PATH
-    echo 'if [[ -f "$OPM_HOME/profile.sh" ]]; then' >> $BASH_PROFILE_PATH
-    echo '    . "$OPM_HOME/profile.sh"'             >> $BASH_PROFILE_PATH
-    echo 'fi'                                       >> $BASH_PROFILE_PATH
+    if [[ $DRY_RUN -eq 0 ]]; then
+        echo ''                                         >> $BASH_PROFILE_PATH
+        echo '## OSOM Common Script.'                   >> $BASH_PROFILE_PATH
+        echo "export OPM_HOME=$SCRIPT_DIR"              >> $BASH_PROFILE_PATH
+        echo 'if [[ -f "$OPM_HOME/profile.sh" ]]; then' >> $BASH_PROFILE_PATH
+        echo '    . "$OPM_HOME/profile.sh"'             >> $BASH_PROFILE_PATH
+        echo 'fi'                                       >> $BASH_PROFILE_PATH
+    fi
     print_information "Update $BASH_PROFILE_PATH file."
 fi
 
@@ -212,19 +224,31 @@ if [[ -z $COMPONENTS ]]; then
 COMPONENTS=$INSTALL_DIR/*.sh
 fi
 
+com_index=1
+com_size=0
+for cursor in $COMPONENTS; do
+    ((com_size++))
+done
+
 for cursor in $COMPONENTS; do
     if [[ ! -f $cursor ]]; then
-        print_error "Not found component: $cursor"
+        print_error "[$com_index/$com_size] Not found component: $cursor"
         exit 1
     fi
 
-    print_information "Install component: $cursor"
-    source $cursor
+    print_information "[$com_index/$com_size] Install component: $cursor"
+    if [[ $DRY_RUN -eq 0 ]]; then
+        source $cursor
+    else
+        echo "source $cursor"
+    fi
 
     if [[ $? -ne 0 ]]; then
-        print_error "Install failure(code=$?): $cursor"
+        print_error "[$com_index/$com_size] Install failure(code=$?): $cursor"
         exit 1
     fi
+    echo ''
+    ((com_index++))
 done
 
 print_information 'Done.'
