@@ -1,8 +1,7 @@
+# -*- coding: utf-8 -*-
+
 import os
 from os.path import expanduser
-
-# pip install selenium
-# pip install BeautifulSoup4
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
