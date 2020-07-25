@@ -21,7 +21,7 @@ SRC_GITCONFIG=$OPM_HOME/etc/git/gitconfig
 backup_file "$GITCONFIG"
 
 ## Remove the previous gitconfig file.
-rm "$GITCONFIG"
+rm -f "$GITCONFIG"
 
 ## Install [include] section.
 echo -e "[include]"               >> $GITCONFIG
