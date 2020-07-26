@@ -3,6 +3,8 @@
 import sys
 import os
 import argparse
+import time
+import random
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -18,7 +20,7 @@ HOME_DIR = os.path.expanduser('~')
 # - https://sites.google.com/a/chromium.org/chromedriver/downloads
 CHROME_DIRVER_PATH = os.path.join(HOME_DIR, 'Downloads', 'chromedriver')
 
-DEFAULT_TITLE = 'page'
+DEFAULT_TITLE = 'post'
 DEFAULT_WIDTH = 1920
 DEFAULT_HEIGHT = 1080
 IMPLICITLY_WAIT_SECONDS = 3
@@ -161,6 +163,12 @@ class WebCrawler:
             EC.presence_of_element_located((By.ID, "postListBody"))
         )
 
+    def _set_page_load_timeout(self, timeout):
+        self.driver.set_page_load_timeout(timeout)
+
+    def _execute_script(self, script):
+        self.driver.execute_script(script)
+
     def _select_frame(self, frame_id='mainFrame'):
         frame = self.driver.find_element_by_id(frame_id)
         self.driver.switch_to.default_content()
@@ -185,10 +193,6 @@ class WebCrawler:
     def get_next_url(self, index):
         raise NotImplementedError('Not implement get_next_url() method.')
 
-    def get_content(self, url, index):
-        self._get(url)
-        return self.find_title(index), self.find_body(index)
-
     def write_content(self, path, url, title, body):
         with open(path, 'w') as f:
             f.write('====================\n')
@@ -203,7 +207,10 @@ class WebCrawler:
         prefix = self.title + '-' + str(index).zfill(3)
         filename = prefix + '.txt'
 
-        title, body = self.get_content(url, index)
+        self._get(url)
+
+        title = self.find_title(index)
+        body = self.find_body(index)
 
         if self.verbose:
             print_out(f' - Filename: {filename}')
@@ -240,6 +247,42 @@ class WebCrawler:
 
             url = self.get_next_url(index)
             index += 1
+
+
+class Downloader(WebCrawler):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def get_download_url(self, index):
+        raise NotImplementedError('Not implement get_download_url() method.')
+
+    def run_iterator(self, index, url):
+        self._get(url)
+
+        download_url = self.get_download_url(index)
+
+        if self.verbose:
+            print_out(f' - Download URL: {download_url}')
+
+
+class TistoryType1Downloader(Downloader):
+
+    def __init__(self, *args, **kwargs):
+        self.download_sleep_seconds = 2.0 + random.uniform(0, 5)
+        super().__init__(*args, **kwargs)
+
+    def get_download_url(self, index):
+        elem0 = self.driver.find_element_by_class_name('fileblock')
+        elem1 = elem0.find_element_by_tag_name('a')
+        href = elem1.get_attribute('href')
+        elem1.click()
+        time.sleep(self.download_sleep_seconds)
+        return href
+
+    def get_next_url(self, index):
+        elem = self.driver.find_element_by_class_name('prev')
+        return elem.get_attribute('href')
 
 
 class NcodeCrawler(WebCrawler):
@@ -281,9 +324,9 @@ class NaverBlogPcType1Crawler(WebCrawler):
         return self.driver.find_element_by_class_name('se_title').text
 
     def _find_title_03(self, index):
-        elem = self.driver.find_element_by_class_name('se-documentTitle')
-        elem = elem.find_element_by_class_name('pcol1')
-        return elem.text
+        elem0 = self.driver.find_element_by_class_name('se-documentTitle')
+        elem1 = elem0.find_element_by_class_name('pcol1')
+        return elem1.text
 
     def find_title(self, index):
         return self._find_title_03(index)
@@ -331,12 +374,20 @@ class NaverBlogPcType1Crawler(WebCrawler):
 #post_body = driver.find_element_by_class_name('article_view').text
 
 
-def main(args):
+def naver_blog_pc_type1_crawler(args):
     NaverBlogPcType1Crawler(first_url=args.url,
                             start_index=int(args.start),
                             last_index=int(args.last),
                             title=str(args.title),
                             verbose=bool(args.verbose)).run()
+
+
+def tistory_type1_downloader(args):
+    TistoryType1Downloader(first_url=args.url,
+                           start_index=int(args.start),
+                           last_index=int(args.last),
+                           title=str(args.title),
+                           verbose=bool(args.verbose)).run()
 
 
 if __name__ == '__main__':
@@ -346,5 +397,8 @@ if __name__ == '__main__':
     parser.add_argument('--last', '-l', type=int, default=INFINITY_LAST, help='Last index')
     parser.add_argument('--title', '-t', default=DEFAULT_TITLE, help='Title prefix')
     parser.add_argument('--verbose', '-v', action='count')
-    main(parser.parse_args())
+    args = parser.parse_args()
+
+    # naver_blog_pc_type1_crawler(args)
+    tistory_type1_downloader(args)
 
