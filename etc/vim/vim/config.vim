@@ -173,6 +173,11 @@ if has('python3')
     let g:gundo_prefer_python3 = 1
 endif
 
+" Mundo
+let g:mundo_right = 1
+let g:mundo_width = 50
+let g:mundo_preview_height = 15
+
 " QuickMenu
 " L: enable cursorline
 " H: cmdline help

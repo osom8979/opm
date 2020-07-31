@@ -23,14 +23,14 @@ NeoBundleFetch 'Shougo/neobundle.vim'
 
 " Interactive command execution in Vim.
 NeoBundle 'Shougo/vimproc.vim', {
-    \ 'build' : {
-    \   'windows' : 'tools\\update-dll-mingw',
-    \   'cygwin'  : 'make -f make_cygwin.mak',
-    \   'mac'     : 'make -f make_mac.mak',
-    \   'linux'   : 'make',
-    \   'unix'    : 'gmake',
+    \'build': {
+    \       'windows': 'tools\\update-dll-mingw',
+    \       'cygwin' : 'make -f make_cygwin.mak',
+    \       'mac'    : 'make -f make_mac.mak',
+    \       'linux'  : 'make',
+    \       'unix'   : 'gmake',
     \   },
-    \ }
+    \}
 
 NeoBundle 'scrooloose/nerdtree'             " directory browser.
 NeoBundle 'scrooloose/nerdcommenter'        " language dependent commenter.
@@ -38,15 +38,12 @@ NeoBundle 'ctrlpvim/ctrlp.vim'              " full path fuzzy file, buffer, mru,
 NeoBundle 'majutsushi/tagbar'               " tagbar window.
 NeoBundle 'easymotion/vim-easymotion'       " motions on speed.
 NeoBundle 'kshenoy/vim-signature'           " display marks.
-NeoBundle 'sjl/gundo.vim'                   " undo tree.
-NeoBundle 'scrooloose/syntastic'            " syntax checking hacks for vim.
 NeoBundle 'visSum.vim'                      " computes sum of selected numbers. Use the :VisSum in VisualMode.
+NeoBundle 'sjl/gundo.vim'                   " undo tree.
 NeoBundle 'VisIncr'                         " produce increasing/decreasing columns. Usage: :II or :II -1
 NeoBundle 'skywind3000/asyncrun.vim'        " run async shell commands.
 NeoBundle 'skywind3000/quickmenu.vim'       " a nice customizable popup menu for vim.
 NeoBundle 'ryanoasis/vim-devicons'          " Adds file type icons to Vim plugins
-NeoBundle 'ctags.vim'                       " ctags plugin (Conflict from the SrcExpl).
-NeoBundle 'cscope.vim'                      " cscope plugin.
 NeoBundle 'echofunc.vim'                    " print function parameter information.
 NeoBundle 'a.vim'                           " source <-> header.
 NeoBundle 'vim-airline/vim-airline-themes'  " [AirLine]
@@ -57,11 +54,18 @@ NeoBundle 'garbas/vim-snipmate'             " [Snip] snipmate aims to provide su
 NeoBundle 'airblade/vim-gitgutter'          " [Git] shows a git diff in the gutter.
 NeoBundle 'tpope/vim-fugitive'              " [Git] git wrapper.
 
+" intellisense engine.
+NeoBundle 'neoclide/coc.nvim', 'release', {
+    \   'build': {
+    \       'others': 'git checkout release'
+    \   }
+    \}
+
 " OPM-VIM.
 if $DISABLE_OPVIM != 1 && has('nvim') && has('python3')
     NeoBundle g:opm_vim_script_dir . '/opvim', {
-    \   'type' : 'nosync'
-    \ }
+        \   'type': 'nosync'
+        \}
 endif
 
 call neobundle#end()
