@@ -41,6 +41,7 @@ NeoBundle 'kshenoy/vim-signature'           " display marks.
 NeoBundle 'visSum.vim'                      " computes sum of selected numbers. Use the :VisSum in VisualMode.
 NeoBundle 'sjl/gundo.vim'                   " undo tree.
 NeoBundle 'VisIncr'                         " produce increasing/decreasing columns. Usage: :II or :II -1
+NeoBundle 'skywind3000/asynctasks.vim'      " modern task system.
 NeoBundle 'skywind3000/asyncrun.vim'        " run async shell commands.
 NeoBundle 'skywind3000/quickmenu.vim'       " a nice customizable popup menu for vim.
 NeoBundle 'ryanoasis/vim-devicons'          " Adds file type icons to Vim plugins
