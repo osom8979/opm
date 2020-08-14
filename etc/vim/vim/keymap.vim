@@ -42,40 +42,16 @@ noremap <leader><F2>  <ESC>:tabNext<CR>
 noremap <F5>  <ESC>:cprevious<CR>
 noremap <F6>  <ESC>:cnext<CR>
 
-" Makefile settings.
-"nnoremap <F9> :make<CR>:copen<CR>
-
 " Tags settings.
 noremap  <leader>t <ESC>:tags<CR>
 noremap  <leader>[ <ESC>:tprevious<CR>
 noremap  <leader>] <ESC>:tnext<CR>
-
-" Cscope settings.
-"nnoremap  <C-\>s  :cs find s <C-R>=expand("<cword>")<CR><CR>
-"nnoremap  <C-\>g  :cs find g <C-R>=expand("<cword>")<CR><CR>
-"nnoremap  <C-\>c  :cs find c <C-R>=expand("<cword>")<CR><CR>
-"nnoremap  <C-\>t  :cs find t <C-R>=expand("<cword>")<CR><CR>
-"nnoremap  <C-\>e  :cs find e <C-R>=expand("<cword>")<CR><CR>
-"nnoremap  <C-\>f  :cs find f <C-R>=expand("<cfile>")<CR><CR>
-"nnoremap  <C-\>i  :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
-"nnoremap  <C-\>d  :cs find d <C-R>=expand("<cword>")<CR><CR>
-"nnoremap  <leader>[ :cp<CR>
-"nnoremap  <leader>] :cn<CR>
-
-" OmniCppComplete popup menu.
-"inoremap  <leader><space>  <C-x><C-o>
 
 " SnipMate key
 " Integrate YouCompleteMe issue
 " https://github.com/Valloric/YouCompleteMe/issues/47
 imap <C-J> <ESC>a<Plug>snipMateNextOrTrigger
 smap <C-J> <Plug>snipMateNextOrTrigger
-
-" Open ctrlp window.
-"noremap <leader><leader>o :CtrlP<CR>
-
-" YouCompleteMe
-noremap  <leader>gg  <ESC>:YcmCompleter GoTo<CR>
 
 " ----------------
 " COMMAND SETTING.
@@ -85,13 +61,59 @@ command! Reload         execute 'source ~/.vimrc'
 command! HexMode        execute '%!xxd'
 command! TextMode       execute '%!xxd -r'
 command! Help           execute ':call PrintHelpMessage()'
-
-command! CMake          execute 'OpvimCMake'
-command! Build          execute 'OpvimBuild'
-
-command! RunGrep        execute ':AsyncRun! -cwd=<root> grep -Irn <cword> .'
-
 command! LoadedScripts  execute ':scriptnames'
-
 command! JsonFormat     execute ':%!python -m json.tool'
+
+" ----------
+" QuickMenu.
+" ----------
+
+let g:opm_quickmenu_id = 100
+let g:opm_quickmenu_mode_id = 101
+let g:opm_build_mode = 'debug'
+
+noremap <leader>` <ESC>:call quickmenu#toggle(g:opm_quickmenu_id)<CR>
+
+function! g:OpvimReloadQuickMenu()
+    call quickmenu#current(g:opm_quickmenu_id)
+    call quickmenu#reset()
+    call quickmenu#header('[[ OPM Quick Menu ]]')
+
+    call quickmenu#append('# Grepping', '')
+    call quickmenu#append('grep-cword', ':AsyncRun grep -R -n <cword> <cwd>', 'grep -R -n <cword>')
+
+    " call quickmenu#header('OPM {%{opvim#GetMode()}}')
+    " call quickmenu#append('# COMPILE', '')
+    " call quickmenu#append('Build', 'OpvimBuild', 'Run build')
+    " call quickmenu#append('Mode', 'OpvimModeMenu', 'Select mode')
+    " call opvim#UpdateQuickMenu()
+    " call quickmenu#append('# UTILITY', '')
+    " call quickmenu#append('Preview', 'OpvimPreview', 'Preview opvim project')
+    " call quickmenu#append('Reload', 'OpvimReload', 'Reload opvim project')
+    " call quickmenu#append('Create', 'OpvimCreate', 'Create opvim project')
+
+    " call quickmenu#current(g:opm_quickmenu_mode_id)
+    " call quickmenu#reset()
+    " call quickmenu#header('CHANGE OPVIM MODE {%{opvim#GetMode()}}')
+    " call quickmenu#append('# MODES', '')
+    " call opvim#UpdateQuickMenuMode()
+endfunction
+
+call g:OpvimReloadQuickMenu()
+
+"" -----------------
+"" Command & KeyMap.
+"" -----------------
+
+" command! -nargs=0 -bang               OpvimPreview  call opvim#Preview(<bang>0)
+" command! -nargs=? -complete=shellcmd  OpvimExec     call opvim#Exec(<f-args>)
+" command! -nargs=?                     OpvimMode     call opvim#Mode(<f-args>)
+" command! -nargs=0                     OpvimModeMenu call quickmenu#bottom(g:opm_quickmenu_mode_id)
+" command! -nargs=0                     OpvimCMake    call opvim#CMake()
+" command! -nargs=?                     OpvimBuild    call opvim#Build(<f-args>)
+" command! -nargs=?                     OpvimDebug    call opvim#Debug(<f-args>)
+" command! -nargs=?                     OpvimScript   call opvim#Script(<f-args>)
+" command! -nargs=0                     OpvimReload   call g:OpvimReloadQuickMenu()
+" command! -nargs=0                     OpvimCreate   call opvim#CreateProject()
+" command! -nargs=0 OpvimDebugDone call opvim#ExitDebug()
 

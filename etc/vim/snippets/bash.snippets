@@ -1,0 +1,17 @@
+snippet snip-platform-case
+	case "$(uname -s)" in
+	Darwin)
+	    echo 'macOS'
+	    ;;
+	Linux)
+	    echo 'Linux'
+	    ;;
+	CYGWIN*|MINGW*|MSYS*)
+	    echo 'Windows'
+	    ;;
+	*)
+	    echo 'Unknown'
+	    ;;
+	esac
+
+

@@ -1,0 +1,57 @@
+snippet snip-cv2-selectROI
+	import cv2
+	
+	EMPTY_IMAGE = np.zeros((300, 300, 3), dtype=np.uint8)
+	color = (0, 0, 255)
+	thickness = 0
+	line_type = cv2.LINE_8
+	
+	while True:
+	    img = EMPTY_IMAGE.copy()
+	    r = cv2.selectROI(EMPTY_IMAGE)
+	    if r == (0, 0, 0, 0):
+	        break
+	    cv2.rectangle(img, r, color, thickness, line_type)
+	    cv2.imshow('preview', img)
+	    if cv2.waitKey(1) & 0xFF == ord('q'):
+	        break
+
+snippet snip-av-rtsp-streaming
+	import av
+	import time
+	import numpy as np
+	import cv2
+	
+	video0 = 'small.mp4'
+	video1 = 'test.mp4'
+	video2 = 'rtsp://admin:1234@192.168.0.71/stream1'
+	
+	video_src = video2
+	video_index = 0
+	frame_format = 'bgr24'
+	options = { 'rtsp_transport': 'udp' }
+	container_options = {}
+	stream_options = []
+	
+	container = av.open(video_src, options=options,
+	                    container_options=container_options,
+	                    stream_options=stream_options)
+	container.streams.video[video_index].thread_type = 'AUTO'  # Go faster!
+	frames = container.decode(video=video_index)
+	
+	while True:
+	    begin = time.time()
+	
+	    frame = next(frames)
+	    last_frame = frame.to_ndarray(format=frame_format)
+	    last_index = frame.index
+	    last_pts = frame.pts
+	
+	    end = time.time()
+	    elapsed = int((end-begin)*1000)
+	    print(f'index={last_index}, pts={last_pts}, shape={last_frame.shape}, elapsed={elapsed}ms')
+	
+	    cv2.imshow('frame', last_frame)
+	    if cv2.waitKey(1) & 0xFF == ord('q'):
+	        break
+

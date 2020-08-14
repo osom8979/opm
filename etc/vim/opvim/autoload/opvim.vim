@@ -57,53 +57,6 @@ endfunction
 let s:opvim_current_mode = ''
 
 function! opvim#Initialize() abort
-endfunction
-
-function! opvim#Preview(show_error) abort
-    "call s:Pyeval('opvim.preview(' . (a:show_error?'1':'0') . ')')
-endfunction
-
-function! opvim#Exec(...) abort
-    "if a:0 > 0
-    "    call s:Pyeval('opvim.execute("' . a:1 . '")')
-    "else
-    "    throw 'Argument required.'
-    "endif
-endfunction
-
-function! opvim#Mode(...) abort
-    "call s:Pyeval('opvim.setMode("' . (a:0>0?a:1:'') . '")')
-endfunction
-
-function! opvim#GetMode(...) abort
-    return s:opvim_current_mode
-endfunction
-
-function! opvim#CMake() abort
-    "call s:Pyeval('opvim.cmake()')
-endfunction
-
-function! opvim#Build(...) abort
-    "call s:Pyeval('opvim.build("' . (a:0>0?a:1:'') . '")')
-endfunction
-
-function! opvim#Debug(...) abort
-    "call s:Pyeval('opvim.debug("' . (a:0>0?a:1:'') . '")')
-endfunction
-
-function! opvim#Script(...) abort
-    "call s:Pyeval('opvim.script("' . (a:0>0?a:1:'') . '")')
-endfunction
-
-function! opvim#UpdateQuickMenu() abort
-    "call s:Pyeval('opvim.updateQuickMenu()')
-endfunction
-
-function! opvim#UpdateQuickMenuMode() abort
-    "call s:Pyeval('opvim.updateQuickMenuMode()')
-endfunction
-
-function! opvim#CreateProject() abort
-    "call s:Pyeval('opvim.updateQuickMenuMode()')
+    " ...
 endfunction
 
