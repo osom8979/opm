@@ -1,3 +1,38 @@
+snippet snip-common-list-of-files
+	import os
+	import re
+	
+	def get_child_directories(path=os.curdir):
+	    result = []
+	    for parent, sub_dirs, files in os.walk(path):
+	        result.append(parent)
+	    return result
+	
+	
+	def get_children(path=os.curdir):
+	    result = []
+	    for parent, sub_dirs, files in os.walk(path):
+	        for name in files:
+	            # result.append(os.path.join(os.path.abspath(parent), name))
+	            result.append(os.path.join(parent, name))
+	    return result
+	
+	
+	def get_children_with_match(path=os.curdir, regexp='.*'):
+	    result = []
+	    for cursor in get_children(path):
+	        if not re.match(regexp, cursor) is None:
+	            result.append(cursor)
+	    return result
+	
+	
+	def get_files(path=os.curdir):
+	    return list(filter(os.path.isfile, os.listdir(path)))
+	
+	
+	def get_dirs(path=os.curdir):
+	    return list(filter(os.path.isdir, os.listdir(path)))
+
 snippet snip-cv2-VideoCapture
 	import numpy as np
 	import cv2
