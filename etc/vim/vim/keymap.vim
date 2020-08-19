@@ -65,6 +65,34 @@ command! LoadedScripts  execute ':scriptnames'
 command! JsonFormat     execute ':%!python -m json.tool'
 
 " ----------
+" Debugging.
+" ----------
+
+function! OpmDebugStepInto()
+    if exists(':TStep') == 2
+        " Enabled Termdbg
+    endif
+endfunction
+
+function! OpmDebugStepOver()
+    if exists(':TNext') == 2
+        " Enabled Termdbg
+    endif
+endfunction
+
+noremap <F7> <ESC>:call OpmDebugStepInto()<CR>
+noremap <F8> <ESC>:call OpmDebugStepOver()<CR>
+
+" Run Termdbg {debugger} {file}
+" :TNext Step over
+" :TStep Step in
+" :TFinish Return from current function
+" :TContinue Continue
+" :TLocateCursor Locate cursor to running line
+" :TToggleBreak Toggle breakpoint in current line
+" :TSendCommand Send command to debugger
+
+" ----------
 " QuickMenu.
 " ----------
 
@@ -74,7 +102,7 @@ let g:opm_build_mode = 'debug'
 
 noremap <leader>` <ESC>:call quickmenu#toggle(g:opm_quickmenu_id)<CR>
 
-function! g:OpvimReloadQuickMenu()
+function! OpmReloadQuickMenu()
     call quickmenu#current(g:opm_quickmenu_id)
     call quickmenu#reset()
     call quickmenu#header('[[ OPM Quick Menu ]]')
@@ -99,7 +127,7 @@ function! g:OpvimReloadQuickMenu()
     " call opvim#UpdateQuickMenuMode()
 endfunction
 
-call g:OpvimReloadQuickMenu()
+call OpmReloadQuickMenu()
 
 "" -----------------
 "" Command & KeyMap.
@@ -113,7 +141,7 @@ call g:OpvimReloadQuickMenu()
 " command! -nargs=?                     OpvimBuild    call opvim#Build(<f-args>)
 " command! -nargs=?                     OpvimDebug    call opvim#Debug(<f-args>)
 " command! -nargs=?                     OpvimScript   call opvim#Script(<f-args>)
-" command! -nargs=0                     OpvimReload   call g:OpvimReloadQuickMenu()
+" command! -nargs=0                     OpvimReload   call OpmReloadQuickMenu()
 " command! -nargs=0                     OpvimCreate   call opvim#CreateProject()
 " command! -nargs=0 OpvimDebugDone call opvim#ExitDebug()
 
