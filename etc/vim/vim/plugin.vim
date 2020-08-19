@@ -47,6 +47,7 @@ NeoBundle 'skywind3000/quickmenu.vim'       " a nice customizable popup menu for
 NeoBundle 'ryanoasis/vim-devicons'          " Adds file type icons to Vim plugins
 NeoBundle 'echofunc.vim'                    " print function parameter information.
 NeoBundle 'a.vim'                           " source <-> header.
+NeoBundle 'epheien/termdbg'                 " terminal debugger for vim
 NeoBundle 'vim-airline/vim-airline-themes'  " [AirLine]
 NeoBundle 'vim-airline/vim-airline'         " [AirLine]
 NeoBundle 'MarcWeber/vim-addon-mw-utils'    " [Snip] dependency of 'vim-snipmate'
