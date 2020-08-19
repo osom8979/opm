@@ -7,7 +7,7 @@ snippet snip-cv2-VideoCapture
 	while(cap.isOpened()):
 	    ret, frame = cap.read()
 	    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	    cv2.imshow('frame',gray)
+	    cv2.imshow('frame', gray)
 	    if cv2.waitKey(1) & 0xFF == ord('q'):
 	        break
 	
@@ -15,18 +15,20 @@ snippet snip-cv2-VideoCapture
 	cv2.destroyAllWindows()
 
 snippet snip-cv2-selectROI
+	import numpy as np
 	import cv2
 	
-	EMPTY_IMAGE = np.zeros((300, 300, 3), dtype=np.uint8)
+	empty_image = np.zeros((300, 300, 3), dtype=np.uint8)
 	color = (0, 0, 255)
 	thickness = 0
 	line_type = cv2.LINE_8
 	
 	while True:
-	    img = EMPTY_IMAGE.copy()
-	    r = cv2.selectROI(EMPTY_IMAGE)
+	    r = cv2.selectROI(empty_image)
 	    if r == (0, 0, 0, 0):
 	        break
+	
+	    img = empty_image.copy()
 	    cv2.rectangle(img, r, color, thickness, line_type)
 	    cv2.imshow('preview', img)
 	    if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -38,14 +40,10 @@ snippet snip-av-rtsp-streaming
 	import numpy as np
 	import cv2
 	
-	video0 = 'small.mp4'
-	video1 = 'test.mp4'
-	video2 = 'rtsp://admin:1234@192.168.0.71/stream1'
-	
-	video_src = video2
+	video_src = 'sample.mp4'
 	video_index = 0
 	frame_format = 'bgr24'
-	options = { 'rtsp_transport': 'udp' }
+	options = { 'rtsp_transport': 'tcp' }
 	container_options = {}
 	stream_options = []
 	
