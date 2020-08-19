@@ -1,3 +1,37 @@
+snippet snip-unittest-default
+	import unittest
+	
+	
+	class TestArchive(unittest.TestCase):
+	
+	    @classmethod
+	    def setUpClass(cls):
+	        pass
+	
+	    @classmethod
+	    def tearDownClass(cls):
+	        pass
+	
+	    def setUp(self):
+	        pass
+	
+	    def tearDown(self):
+	        pass
+	
+	    def test_case(self):
+	        # self.assertEqual(a, b)
+	        # self.assertNotEqual(a, b)
+	        # self.assertTrue(x)
+	        # self.assertFalse(x)
+	        # self.assertIs(a, b)
+	        # self.assertIsNot(a, b)
+	        # self.assertIsNone(x)
+	        # self.assertIsNotNone(x)
+	        # self.assertIn(a, b)
+	        # self.assertNotIn(a, b)
+	        # self.assertIsInstance(a, b)
+	        # self.assertNotIsInstance(a, b)
+
 snippet snip-common-list-of-files
 	import os
 	import re
