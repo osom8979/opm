@@ -71,26 +71,49 @@ command! JsonFormat     execute ':%!python -m json.tool'
 function! OpmDebugStepInto()
     if exists(':TStep') == 2
         " Enabled Termdbg
+    elseif exists(':Step') == 2
+        " Enabled Termdebug
     endif
 endfunction
 
 function! OpmDebugStepOver()
     if exists(':TNext') == 2
         " Enabled Termdbg
+    elseif exists(':Over') == 2
+        " Enabled Termdebug
     endif
 endfunction
 
-noremap <F7> <ESC>:call OpmDebugStepInto()<CR>
-noremap <F8> <ESC>:call OpmDebugStepOver()<CR>
+function! OpmDebugFinish()
+    if exists(':TFinish') == 2
+        " Enabled Termdbg
+    elseif exists(':Finish') == 2
+        " Enabled Termdebug
+    endif
+endfunction
+
+function! OpmDebugContinue()
+    if exists(':TContinue') == 2
+        " Enabled Termdbg
+    elseif exists(':Continue') == 2
+        " Enabled Termdebug
+    endif
+endfunction
+
+noremap         <F7>  <ESC>:call OpmDebugStepInto()<CR>
+noremap         <F8>  <ESC>:call OpmDebugStepOver()<CR>
+noremap <leader><F8>  <ESC>:call OpmDebugFinish()<CR>
 
 " Run Termdbg {debugger} {file}
-" :TNext Step over
-" :TStep Step in
-" :TFinish Return from current function
-" :TContinue Continue
 " :TLocateCursor Locate cursor to running line
 " :TToggleBreak Toggle breakpoint in current line
 " :TSendCommand Send command to debugger
+
+" `:Run` [args]	    run the program with [args] or the previous arguments
+" `:Arguments` {args}  set arguments for the next `:Run`
+" *:Break*	set a breakpoint at the current line; a sign will be displayed
+" *:Clear*	delete the breakpoint at the current line
+" *:Stop*	interrupt the program
 
 " ----------
 " QuickMenu.
@@ -144,4 +167,29 @@ call OpmReloadQuickMenu()
 " command! -nargs=0                     OpvimReload   call OpmReloadQuickMenu()
 " command! -nargs=0                     OpvimCreate   call opvim#CreateProject()
 " command! -nargs=0 OpvimDebugDone call opvim#ExitDebug()
+
+"" -------
+"" coc.vim
+"" -------
+
+" Use tab for trigger completion with characters ahead and navigate.
+" NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
+" other plugin before putting this into your config.
+inoremap <silent><expr> <TAB>
+    \ pumvisible() ? "\<C-n>" :
+    \ <SID>check_back_space() ? "\<TAB>" :
+    \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+
+function! s:check_back_space() abort
+    let col = col('.') - 1
+    return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+" Use <c-space> to trigger completion.
+if has('nvim')
+    inoremap <silent><expr> <c-space> coc#refresh()
+else
+    inoremap <silent><expr> <c-@> coc#refresh()
+endif
 

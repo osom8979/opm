@@ -47,7 +47,7 @@ NeoBundle 'skywind3000/quickmenu.vim'       " a nice customizable popup menu for
 NeoBundle 'ryanoasis/vim-devicons'          " Adds file type icons to Vim plugins
 NeoBundle 'echofunc.vim'                    " print function parameter information.
 NeoBundle 'a.vim'                           " source <-> header.
-NeoBundle 'epheien/termdbg'                 " terminal debugger for vim
+NeoBundle 'epheien/termdbg'                 " terminal debugger for vim (pdb, ipdb, lldb, dlv)
 NeoBundle 'vim-airline/vim-airline-themes'  " [AirLine]
 NeoBundle 'vim-airline/vim-airline'         " [AirLine]
 NeoBundle 'MarcWeber/vim-addon-mw-utils'    " [Snip] dependency of 'vim-snipmate'
@@ -56,7 +56,7 @@ NeoBundle 'garbas/vim-snipmate'             " [Snip] snipmate aims to provide su
 NeoBundle 'airblade/vim-gitgutter'          " [Git] shows a git diff in the gutter.
 NeoBundle 'tpope/vim-fugitive'              " [Git] git wrapper.
 
-" intellisense engine.
+" Intellisense engine.
 NeoBundle 'neoclide/coc.nvim', 'release', {
     \   'build': {
     \       'others': 'git checkout release'
@@ -74,4 +74,7 @@ call neobundle#end()
 
 filetype plugin indent on
 NeoBundleCheck
+
+" Native Package Support.
+packadd termdebug
 
