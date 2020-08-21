@@ -15,12 +15,18 @@ if [[ "$PLATFORM" == "Linux" ]]; then
 fi
 
 LIB=Python
-VER=3.7.3
+VER=3.7.9
 EXT=.tgz
-URL="https://www.python.org/ftp/python/3.7.3/Python-3.7.3.tgz"
-MD5=2ee10f25e3d1b14215d56c3882486fcf
+URL="https://www.python.org/ftp/python/${VER}/Python-${VER}.tgz"
 FILE=$LIB-$VER$EXT
 SRC=$LIB-$VER
+ENABLE_PATCH=0
+
+if [[ "$VER" == "3.7.3" ]]; then
+MD5=2ee10f25e3d1b14215d56c3882486fcf
+elif [[ "$VER" == "3.7.9" ]]; then
+MD5=bcd9f22cf531efc6f06ca6b9b2919bd4
+fi
 
 if [[ -d "$EXTERNAL_PREFIX/$SRC" ]]; then
     cp -r "$EXTERNAL_PREFIX/$SRC" "$BUILD_PREFIX/$SRC"
@@ -30,8 +36,8 @@ else
 fi
 cd "$BUILD_PREFIX/$SRC"
 
-if [[ "$PLATFORM" == "Linux" ]]; then
-    STEP=$LIB-patch    run_step patch -p 1 < "$SCRIPT_DIR/50-python3.linux.patch"
+if [[ $ENABLE_PATCH -eq 1 && "$VER" == "3.7.3" && "$PLATFORM" == "Linux" ]]; then
+    STEP=$LIB-patch    run_step patch -p 1 < "$WORKING/50-python3.7.3-linux.patch"
     STEP=$LIB-autoconf run_step autoconf
 fi
 #if [[ "$PLATFORM" == "Darwin" ]]; then
