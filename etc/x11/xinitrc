@@ -1,4 +1,101 @@
 #!/usr/bin/env bash
 
-xmonad
+if [[ -z $OPM_HOME ]]; then
+    echo 'Not defined OPM_HOME variable.'
+    exit 1
+fi
+
+WHICH_XRDB=`which xrdb 2> /dev/null`
+WHICH_XMODMAP=`which xmodmap 2> /dev/null`
+
+SYS_RESOURCES=/etc/X11/xinit/.Xresources
+OPM_RESOURCES=$OPM_HOME/etc/x11/xresources
+USR_RESOURCES=$HOME/.Xresources
+
+SYS_MODMAP=/etc/X11/xinit/.Xmodmap
+OPM_MODMAP=$OPM_HOME/etc/x11/xmodmap
+USR_MODMAP=$HOME/.Xmodmap
+
+SYS_INITRC_DIR=/etc/X11/xinit/xinitrc.d
+OPM_INITRC_DIR=$OPM_HOME/etc/x11/xinitrc.d
+
+function print_message
+{
+    echo "$@"
+}
+
+function print_information
+{
+    echo -e "\033[32m$@\033[0m"
+}
+
+function print_warning
+{
+    echo -e "\033[33m$@\033[0m"
+}
+
+function print_error
+{
+    echo -e "\033[31m$@\033[0m" 1>&2
+}
+
+function merge_xresource
+{
+    local file=$1
+    if [[ -f "$file" ]]; then
+        xrdb -merge "$file"
+    else
+        print_error "Not found xresource file: $file"
+    fi
+}
+
+function merge_xmodmap
+{
+    local file=$1
+    if [[ -f "$file" ]]; then
+        xmodmap "$file"
+    else
+        print_error "Not found xmodmap file: $file"
+    fi
+}
+
+## -----------------------------
+## Merge in defaults and keymaps
+## -----------------------------
+
+if [[ -n "$WHICH_XRDB" ]]; then
+    merge_xresource "$SYS_RESOURCES"
+    merge_xresource "$OPM_RESOURCES"
+    merge_xresource "$USR_RESOURCES"
+else
+    print_error "Not found xrdb executable."
+fi
+
+if [[ -n "$WHICH_XMODMAP" ]]; then
+    merge_xmodmap "$SYS_MODMAP"
+    merge_xmodmap "$OPM_MODMAP"
+    merge_xmodmap "$USR_MODMAP"
+else
+    print_error "Not found xmodmap executable."
+fi
+
+if [[ -d /etc/X11/xinit/xinitrc.d ]]; then
+    for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
+        if [[ -x "$f" ]]; then
+            source "$f"
+        fi
+    done
+fi
+
+# [IME] fcitx
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS=@im=fcitx
+fcitx &
+
+# ------------------
+# Run window manager
+# ------------------
+
+exec xmonad
 
