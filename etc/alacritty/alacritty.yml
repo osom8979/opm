@@ -1,0 +1,14 @@
+# Configuration for Alacritty, the GPU enhanced terminal emulator.
+# https://github.com/alacritty/alacritty/releases
+
+# Font configuration
+font:
+  normal:
+    # Font family
+    #
+    # Default:
+    #   - (macOS) Menlo
+    #   - (Linux/BSD) monospace
+    #   - (Windows) Consolas
+    family: 'DroidSansMono Nerd Font'
+

@@ -28,7 +28,7 @@ backup_file "$XMONAD_CONFIG"
 rm -f "$XMONAD_CONFIG"
 
 if [[ ! -e "$XMONAD_LIB_OPM_DIR" ]]; then
-    ln -s "$SRC_XMONAD_LIB_OPM_DIR" "$XMONAD_LIB_OPM_DIR"
+    symbolic_link "$SRC_XMONAD_LIB_OPM_DIR" "$XMONAD_LIB_OPM_DIR"
 fi
 
 ## Install config file.
