@@ -348,3 +348,39 @@ function! PrintHelpMessage()
     endfor
 endfunction
 
+"" --------------------
+"" Quickfix operations.
+"" --------------------
+
+function! GetQuickFixText(line)
+    return bufname(a:line['bufnr']) . '|' . a:line['lnum'] . '| ' . a:line['text']
+endfunction
+
+function! QuickFixGrep(pattern)
+    let result = []
+    for line in getqflist()
+        if GetQuickFixText(line) =~ a:pattern
+            let result += [line]
+        endif
+    endfor
+    call setqflist(result)
+endfunction
+
+function! QuickFixGrepIgnore(pattern)
+    let result = []
+    for line in getqflist()
+        if GetQuickFixText(line) !~ a:pattern
+            let result += [line]
+        endif
+    endfor
+    call setqflist(result)
+endfunction
+
+function! QuickFixGrepCommand(is_bang, pattern)
+    if a:is_bang
+        call QuickFixGrepIgnore(a:pattern)
+    else
+        call QuickFixGrep(a:pattern)
+    endif
+endfunction
+

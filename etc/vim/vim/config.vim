@@ -49,7 +49,7 @@ endif
 colorscheme desert
 
 " grep setting.
-set grepprg=grep\ -Iirn\ $*\ .
+set grepprg=grep\ -Hn\ $*\ '%:p'
 
 " syntax highlight.
 if has('syntax')

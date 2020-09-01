@@ -64,39 +64,49 @@ command! Help           execute ':call PrintHelpMessage()'
 command! LoadedScripts  execute ':scriptnames'
 command! JsonFormat     execute ':%!python -m json.tool'
 
-" ----------
-" Debugging.
-" ----------
+" --------------
+" GREP SETTINGS.
+" --------------
+
+command! -nargs=* -bang GrepQuickFix call QuickFixGrepCommand(<bang>0, <q-args>)
+cnoreabbrev grepq  GrepQuickFix
+
+command! -nargs=* GrepRecursive execute ':AsyncRun grep -Iirn ' . <q-args> . ' <cwd>'
+cnoreabbrev grepr GrepRecursive
+
+" -------------------
+" DEBUGGING SETTINGS.
+" -------------------
 
 function! OpmDebugStepInto()
     if exists(':TStep') == 2
-        " Enabled Termdbg
+        execute ':TStep'
     elseif exists(':Step') == 2
-        " Enabled Termdebug
+        execute ':Step'
     endif
 endfunction
 
 function! OpmDebugStepOver()
     if exists(':TNext') == 2
-        " Enabled Termdbg
+        execute ':TNext'
     elseif exists(':Over') == 2
-        " Enabled Termdebug
+        execute ':Over'
     endif
 endfunction
 
 function! OpmDebugFinish()
     if exists(':TFinish') == 2
-        " Enabled Termdbg
+        execute ':TFinish'
     elseif exists(':Finish') == 2
-        " Enabled Termdebug
+        execute ':Finish'
     endif
 endfunction
 
 function! OpmDebugContinue()
     if exists(':TContinue') == 2
-        " Enabled Termdbg
+        execute ':TContinue'
     elseif exists(':Continue') == 2
-        " Enabled Termdebug
+        execute ':Continue'
     endif
 endfunction
 
@@ -131,7 +141,7 @@ function! OpmReloadQuickMenu()
     call quickmenu#header('[[ OPM Quick Menu ]]')
 
     call quickmenu#append('# Grepping', '')
-    call quickmenu#append('grep-cword', ':AsyncRun grep -R -n <cword> <cwd>', 'grep -R -n <cword>')
+    call quickmenu#append('grep-cword', ':AsyncRun grep -Iirn <cword> <cwd>', 'grep -Iirn <cword>')
 
     " call quickmenu#header('OPM {%{opvim#GetMode()}}')
     " call quickmenu#append('# COMPILE', '')
