@@ -19,30 +19,29 @@ USR_MODMAP=$HOME/.Xmodmap
 SYS_INITRC_DIR=/etc/X11/xinit/xinitrc.d
 OPM_INITRC_DIR=$OPM_HOME/etc/x11/xinitrc.d
 
-function print_message
+LOG_DIR=$OPM_HOME/var/log
+LOG_PATH=$LOG_DIR/xinitrc.log
+
+function print_raw
 {
-    echo "$@"
+    echo "$@" >> $LOG_PATH
 }
 
-function print_information
+function print_info
 {
-    echo -e "\033[32m$@\033[0m"
-}
-
-function print_warning
-{
-    echo -e "\033[33m$@\033[0m"
+    print_raw $(date +%Y%m%d_%H%M%S) "[INFO]" "$@"
 }
 
 function print_error
 {
-    echo -e "\033[31m$@\033[0m" 1>&2
+    print_raw $(date +%Y%m%d_%H%M%S) "[ERROR]" "$@"
 }
 
 function merge_xresource
 {
     local file=$1
     if [[ -f "$file" ]]; then
+        print_info "xrdb -merge $file"
         xrdb -merge "$file"
     else
         print_error "Not found xresource file: $file"
@@ -53,11 +52,19 @@ function merge_xmodmap
 {
     local file=$1
     if [[ -f "$file" ]]; then
+        print_info "xmodmap $file"
         xmodmap "$file"
     else
         print_error "Not found xmodmap file: $file"
     fi
 }
+
+## -----------------
+## Print information
+## -----------------
+
+print_raw
+print_info "Start xinitrc in the opm project."
 
 ## -----------------------------
 ## Merge in defaults and keymaps
@@ -82,20 +89,63 @@ fi
 if [[ -d /etc/X11/xinit/xinitrc.d ]]; then
     for f in /etc/X11/xinit/xinitrc.d/?*.sh ; do
         if [[ -x "$f" ]]; then
+            print_info "source $f"
             source "$f"
+        else
+            print_error "Not executable source: $f"
         fi
     done
+else
+    print_error "Not exists directory: /etc/X11/xinit/xinitrc.d"
 fi
 
-# [IME] fcitx
-export GTK_IM_MODULE=fcitx
-export QT_IM_MODULE=fcitx
-export XMODIFIERS=@im=fcitx
-fcitx &
+## ------------
+## IME settings
+## ------------
+
+function start_ime_fcitx
+{
+    local which_fcitx=`which fcitx 2> /dev/null`
+    if [[ -n "$which_fcitx" ]]; then
+        print_info "Start IME: fcitx"
+        export GTK_IM_MODULE=fcitx
+        export QT_IM_MODULE=fcitx
+        export XMODIFIERS=@im=fcitx
+        fcitx &
+    else
+        print_error "Not found fcitx executable."
+    fi
+}
+
+function start_ime_ibus
+{
+    local which_ibus_daemon=`which ibus-daemon 2> /dev/null`
+
+    if [[ -n "$which_ibus_daemon" ]]; then
+        print_info "Start IME: ibus"
+        export GTK_IM_MODULE=ibus
+        export QT_IM_MODULE=ibus
+        export XMODIFIERS=@im=ibus
+        ibus-daemon -drx
+    else
+        print_error "Not found ibus-daemon executable."
+    fi
+}
+
+#start_ime_fcitx
+start_ime_ibus
 
 # ------------------
 # Run window manager
 # ------------------
 
-exec xmonad
+WHICH_XMONAD=`which xmonad 2> /dev/null`
+
+if [[ -n "$WHICH_XMONAD" ]]; then
+    print_info "Run $WHICH_XMONAD"
+    exec "$WHICH_XMONAD"
+else
+    print_error "Not found xmonad executable."
+    exit 1
+fi
 
