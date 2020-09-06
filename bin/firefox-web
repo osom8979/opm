@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+HOMEPAGE=${1:-https://google.com}
+HOST_PORT=${2:-5800}
+DOWNLOAD_DIR=$HOME/Downloads
+
+echo "Run Firefox Web"
+echo "Homepage: $HOMEPAGE"
+echo "Download directory: $DOWNLOAD_DIR"
+echo "Access URL: http://localhost:$HOST_PORT"
+
+if [[ ! -d "$CONFIG_DIR" ]]; then
+    mkdir -p "$CONFIG_DIR"
+fi
+
+docker run --rm -it \
+    --security-opt seccomp=unconfined \
+    --shm-size 2g \
+    -p $HOST_PORT:5800 \
+    -v "$DOWNLOAD_DIR:/config/downloads:rw" \
+    -e "FF_PREF_HOMEPAGE=browser.startup.homepage=\"$HOMEPAGE\"" \
+    -e "FF_PREF_TRR_URI=network.trr.uri=\"https://cloudflare-dns.com/dns-query\"" \
+    -e "FF_PREF_TRR_BOOTSTRAP=network.trr.bootstrapAddress=\"1.1.1.1\"" \
+    -e "FF_PREF_TRR_MODE=network.trr.mode=2" \
+    -e "FF_PREF_ESNI=network.security.esni.enabled=true" \
+    -e ENABLE_CJK_FONT=1 \
+    -e TZ=Asia/Seoul \
+    jlesage/firefox
+
