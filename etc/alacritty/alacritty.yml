@@ -12,3 +12,6 @@ font:
     #   - (Windows) Consolas
     family: 'DroidSansMono Nerd Font'
 
+  # Point size
+  size: 10.0
+
