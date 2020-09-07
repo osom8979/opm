@@ -40,7 +40,7 @@ if [[ $FONTS_INSTALLED -eq 0 ]]; then
     if [[ ! -d "$FONTS_INSTALL_DIR" ]]; then
         mkdir -p "$FONTS_INSTALL_DIR"
     fi
-    cp -f "$NERD_FONT_SOURCE_PATH" "$NERD_FONT_INSTALL_PATH"
+    copy_file "$NERD_FONT_SOURCE_PATH" "$NERD_FONT_INSTALL_PATH"
     print_information "Install font: $NERD_FONT_INSTALL_PATH"
 else
     print_warning 'Fonts are already installed.'

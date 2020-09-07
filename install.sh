@@ -219,6 +219,21 @@ function mkdirs
     fi
 }
 
+function remove_file
+{
+    if [[ -f "$1" ]]; then
+        rm "$1"
+    fi
+}
+
+function copy_file
+{
+    local src=$1
+    local dest=$2
+
+    cp "$src" "dest"
+}
+
 ## Warning: Don't use the quoting("...").
 if [[ -z $COMPONENTS ]]; then
 COMPONENTS=$INSTALL_DIR/*.sh

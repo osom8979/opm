@@ -18,7 +18,7 @@ SRC_LLDBINIT_CONFIG=$OPM_HOME/etc/lldb/lldbinit
 backup_file "$LLDBINIT_CONFIG"
 
 ## Remove the previous lldb config file.
-rm -f "$LLDBINIT_CONFIG"
+remove_file "$LLDBINIT_CONFIG"
 
 ## Install source-file config.
 echo -e "command source $SRC_LLDBINIT_CONFIG" >> $LLDBINIT_CONFIG

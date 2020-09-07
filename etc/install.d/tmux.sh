@@ -18,7 +18,7 @@ SRC_TMUX_CONFIG=$OPM_HOME/etc/tmux/config
 backup_file "$TMUX_CONFIG"
 
 ## Remove the previous tmux config file.
-rm -f "$TMUX_CONFIG"
+remove_file "$TMUX_CONFIG"
 
 ## Install source-file config.
 echo -e "source-file $SRC_TMUX_CONFIG" >> $TMUX_CONFIG

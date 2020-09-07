@@ -18,7 +18,7 @@ SRC_XINITRC_CONFIG=$OPM_HOME/etc/x11/xinitrc
 backup_file "$XINITRC_CONFIG"
 
 ## Remove the previous x11 config file.
-rm -f "$XINITRC_CONFIG"
+remove_file "$XINITRC_CONFIG"
 
 ## Install source config.
 echo -e "source $SRC_XINITRC_CONFIG" >> $XINITRC_CONFIG

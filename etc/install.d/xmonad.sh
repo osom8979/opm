@@ -25,14 +25,13 @@ mkdirs "$XMONAD_LIB_DIR"
 backup_file "$XMONAD_CONFIG"
 
 ## Remove the previous xmonad config file.
-rm -f "$XMONAD_CONFIG"
+remove_file "$XMONAD_CONFIG"
 
 if [[ ! -e "$XMONAD_LIB_OPM_DIR" ]]; then
     symbolic_link "$SRC_XMONAD_LIB_OPM_DIR" "$XMONAD_LIB_OPM_DIR"
 fi
 
 ## Install config file.
-cp "$SRC_XMONAD_CONFIG" "$XMONAD_CONFIG"
+copy_file "$SRC_XMONAD_CONFIG" "$XMONAD_CONFIG"
 print_information "Write config file."
-
 

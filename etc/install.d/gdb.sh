@@ -18,7 +18,7 @@ SRC_GDBINIT_CONFIG=$OPM_HOME/etc/gdb/gdbinit
 backup_file "$GDBINIT_CONFIG"
 
 ## Remove the previous gdb config file.
-rm -f "$GDBINIT_CONFIG"
+remove_file "$GDBINIT_CONFIG"
 
 ## Install source-file config.
 echo -e "source $SRC_GDBINIT_CONFIG" >> $GDBINIT_CONFIG

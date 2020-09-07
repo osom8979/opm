@@ -18,7 +18,7 @@ SRC_ALACRITTY_CONFIG=$OPM_HOME/etc/alacritty/alacritty.yml
 backup_file "$ALACRITTY_CONFIG"
 
 ## Remove the previous alacritty config file.
-rm -f "$ALACRITTY_CONFIG"
+remove_file "$ALACRITTY_CONFIG"
 
 ## Install config file.
 symbolic_link "$SRC_ALACRITTY_CONFIG" "$ALACRITTY_CONFIG"

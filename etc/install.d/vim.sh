@@ -17,7 +17,7 @@ function install_vimrc
     local source_file=$1
     local install_file=$2
 
-    rm "$install_file"
+    remove_file "$install_file"
     echo '"== BEGIN OSOM VIM SETTING ==' >> $install_file
     echo "scriptencoding utf-8"          >> $install_file
     echo "source $source_file"           >> $install_file
