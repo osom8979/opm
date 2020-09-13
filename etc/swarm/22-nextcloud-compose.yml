@@ -20,7 +20,7 @@ services:
       - raw_db:/var/lib/mysql
 
   web:
-    image: nextcloud
+    image: nextcloud:19.0.3
     depends_on:
       - db
     deploy:
@@ -34,7 +34,13 @@ services:
         - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
     networks:
       - traefik-net
+      - postfix-net
       - net
+    environment:
+      - "OVERWRITEHOST=${FRONTEND_HOST:?err}"
+      - "OVERWRITEPROTOCOL=https"
+      - "SMTP_HOST=postfix_api"
+      - "SMTP_PORT=25"
     volumes:
       - data:/var/www/html
 
@@ -48,6 +54,8 @@ secrets:
 
 networks:
   traefik-net:
+    external: true
+  postfix-net:
     external: true
   net:
     driver: overlay
