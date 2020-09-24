@@ -36,6 +36,7 @@ else
     echo '$wgFileExtensions[] =  "gif";' >> "$LOCALSETTINGS_PATH"
     echo '$wgFileExtensions[] =  "jpg";' >> "$LOCALSETTINGS_PATH"
     echo '$wgFileExtensions[] = "jpeg";' >> "$LOCALSETTINGS_PATH"
+    echo '$wgFileExtensions[] =  "svg";' >> "$LOCALSETTINGS_PATH"
     echo '$wgFileExtensions[] =  "pdf";' >> "$LOCALSETTINGS_PATH"
     echo '$wgFileExtensions[] =  "zip";' >> "$LOCALSETTINGS_PATH"
     echo '$wgFileExtensions[] =   "gz";' >> "$LOCALSETTINGS_PATH"
