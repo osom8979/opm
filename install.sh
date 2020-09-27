@@ -207,7 +207,10 @@ function symbolic_link
     local source_file=$1
     local link_file=$2
 
-    rm "$link_file"
+    if [[ -f "$link_file" ]]; then
+        rm "$link_file"
+    fi
+
     ln -s "$source_file" "$link_file"
     print_information "Symbolic link: $link_file"
 }
@@ -231,7 +234,7 @@ function copy_file
     local src=$1
     local dest=$2
 
-    cp "$src" "dest"
+    cp "$src" "$dest"
 }
 
 ## Warning: Don't use the quoting("...").

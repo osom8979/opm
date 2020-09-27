@@ -1,10 +1,10 @@
-module Opm.OpmMonad (getOpmDefault) where
+module Opm.OpmMonad (getDefaultOpmMonadSettings) where
 
 import XMonad
 
 opmTerminal = "alacritty"
 
-getOpmDefault = def {
+getDefaultOpmMonadSettings = def {
         -- simple stuff
         terminal              = opmTerminal
         -- focusFollowsMouse  = myFocusFollowsMouse,
