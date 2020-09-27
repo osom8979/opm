@@ -1,6 +1,10 @@
-module Opm.OpmMonad (getDefaultOpmMonadSettings) where
+module Opm.OpmMonad (getDefaultOpmMonadSettings, runOpmMonad) where
+
+import System.Environment
 
 import XMonad
+import XMonad.Util.Run(spawnPipe)
+
 
 opmTerminal = "alacritty"
 
@@ -26,3 +30,17 @@ getDefaultOpmMonadSettings = def {
         -- logHook            = myLogHook,
         -- startupHook        = myStartupHook
     }
+
+
+getOpmHomePath = do
+    env <- lookupEnv "OPM_HOME"
+    case env of
+        Nothing -> return ""
+        Just v -> return v
+
+
+runOpmMonad = do
+    opmHomePath <- getOpmHomePath
+    xproc <- spawnPipe ("xmobar " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
+    xmonad getDefaultOpmMonadSettings
+

@@ -1,5 +1,4 @@
-import XMonad
-import Opm.OpmMonad
+import Opm.OpmMonad(runOpmMonad)
 
-main = xmonad getDefaultOpmMonadSettings
+main = runOpmMonad
 
