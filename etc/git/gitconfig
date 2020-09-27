@@ -3,12 +3,14 @@
 	safecrlf = true
 	eol = lf
 	excludesfile = ~/.gitignore_global
+
 [color]
 	ui = auto
 	diff = auto
 	status = auto
 	branch = auto
 	interactive = true
+
 [alias]
 	log10  = log --graph --decorate --oneline -10
 	log20  = log --graph --decorate --oneline -20
@@ -40,8 +42,14 @@
 	count  = rev-list --count HEAD
 	st     = status
 	zip    = archive --format zip --output master.zip master
+
+[pull]
+	rebase = false  # merge (the default strategy)
+	# ff = only  # fast-forward only
+
 [push]
 	default = simple
+
 [http]
 	sslVerify = false
 
