@@ -1,7 +1,7 @@
 Config {
 
    -- appearance
-     font =         "xft:Bitstream Vera Sans Mono:size=9:bold:antialias=true"
+     font =         "xft:DroidSansMono Nerd Font:size=10:bold:antialias=true:hinting=true"
    , bgColor =      "black"
    , fgColor =      "#646464"
    , position =     Top
