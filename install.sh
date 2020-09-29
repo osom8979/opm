@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-SCRIPT_DIR=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
+SCRIPT_DIR=`cd "$(dirname "${BASH_SOURCE[0]}")"; echo "$PWD"`
 INSTALL_DIR=$SCRIPT_DIR/etc/install.d
 VIA_INSTALLATION_SCRIPT=1
 
@@ -10,6 +10,15 @@ INSTALL_VARIABLES_FLAG=0
 AUTOMATIC_YES_FLAG=0
 DRY_RUN=0
 FORCE_FLAG=0
+CURRENT_SHELL=
+
+OPM_PROFILE_LOAD_SCRIPT="
+## OSOM Common Script.
+export OPM_HOME=$SCRIPT_DIR
+if [[ -f \"\$OPM_HOME/profile.sh\" ]]; then
+    . \"\$OPM_HOME/profile.sh\"
+fi
+"
 
 function print_message
 {
@@ -43,6 +52,8 @@ function print_usage
     print_message "  -y, --yes      Automatic yes to prompts."
     print_message "  -n, --dry-run  Don't actually do anything, just show what would be done."
     print_message "  -f, --force    Skip checking the OPM_HOME variable."
+    print_message "  --bash         Choose the default shell as bash."
+    print_message "  --zsh          Choose the default shell as zsh."
     print_message "  --             Skip handling options."
 }
 
@@ -54,7 +65,7 @@ while [[ ! -z $1 ]]; do
         exit 0
         ;;
     -c|--create-install-variables-file)
-        INSTALL_VARIABLES_FLAG=1
+        INSTALL_VARIABLES_FLAG=0
         shift
         ;;
     -l|--list)
@@ -73,6 +84,14 @@ while [[ ! -z $1 ]]; do
         FORCE_FLAG=1
         shift
         ;;
+    --bash)
+        CURRENT_SHELL=bash
+        shift
+        ;;
+    --zsh)
+        CURRENT_SHELL=zsh
+        shift
+        ;;
     --)
         shift
         break
@@ -87,6 +106,14 @@ while [[ ! -z $1 ]]; do
         ;;
     esac
 done
+
+if [[ -z "$CURRENT_SHELL" ]]; then
+    if [[ -n "$SHELL" ]]; then
+        CURRENT_SHELL=${SHELL##*/}
+    else
+        CURRENT_SHELL=bash
+    fi
+fi
 
 if [[ $LIST_OF_COMPONENTS -eq 1 ]]; then
     __component_names=
@@ -117,31 +144,49 @@ if [[ -f "$INSTALL_VARIABLES_PATH" ]]; then
     source "$INSTALL_VARIABLES_PATH"
 fi
 
-if [[ -z $BASH_PROFILE_PATH ]]; then
+function install_opm_profile
+{
+    local profile_path=$1
+    if [[ -n "$OPM_HOME" || ! -z $(cat "$profile_path" | grep "OPM_HOME") ]]; then
+        print_warning "The OPM_HOME variable is already declared in the '$profile_path' file."
+        if [[ $FORCE_FLAG -ne 1 ]]; then
+            exit 1
+        fi
+    else
+        if [[ $DRY_RUN -eq 0 ]]; then
+            echo "$OPM_PROFILE_LOAD_SCRIPT" >> "$profile_path"
+        fi
+        print_information "Update '$profile_path' file."
+    fi
+}
+
+function install_opm_profile_in_bash
+{
     ## See INVOCATION in 'man bash'
     if [[ $(uname -s) == "Darwin" ]]; then
-        BASH_PROFILE_PATH="$HOME/.profile"
+        install_opm_profile "$HOME/.profile"
     else
-        BASH_PROFILE_PATH="$HOME/.bashrc"
+        install_opm_profile "$HOME/.bashrc"
     fi
-fi
+}
 
-if [[ ! -z "$OPM_HOME" || ! -z $(cat "$BASH_PROFILE_PATH" | grep "OPM_HOME") ]]; then
-    print_warning 'OPM_HOME variable is already the declared.'
-    if [[ $FORCE_FLAG -ne 1 ]]; then
+function install_opm_profile_in_zsh
+{
+    install_opm_profile "$HOME/.zshrc"
+}
+
+case $CURRENT_SHELL in
+    bash)
+        install_opm_profile_in_bash
+        ;;
+    zsh)
+        install_opm_profile_in_zsh
+        ;;
+    *)
+        print_error "Unsupported shell: $CURRENT_SHELL"
         exit 1
-    fi
-else
-    if [[ $DRY_RUN -eq 0 ]]; then
-        echo ''                                         >> $BASH_PROFILE_PATH
-        echo '## OSOM Common Script.'                   >> $BASH_PROFILE_PATH
-        echo "export OPM_HOME=$SCRIPT_DIR"              >> $BASH_PROFILE_PATH
-        echo 'if [[ -f "$OPM_HOME/profile.sh" ]]; then' >> $BASH_PROFILE_PATH
-        echo '    . "$OPM_HOME/profile.sh"'             >> $BASH_PROFILE_PATH
-        echo 'fi'                                       >> $BASH_PROFILE_PATH
-    fi
-    print_information "Update $BASH_PROFILE_PATH file."
-fi
+        ;;
+esac
 
 if [[ -z "$OPM_HOME" ]]; then
 OPM_HOME=$SCRIPT_DIR

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PROFILE_SCRIPT_DIR=`_cur="$PWD" ; cd "$(dirname "${BASH_SOURCE[0]}")" ; echo "$PWD" ; cd "$_cur"`
+PROFILE_SCRIPT_DIR=`cd "$(dirname "${BASH_SOURCE[0]}")"; echo "$PWD"`
 
 if [[ -z $OPM_HOME ]]; then
 # Not found OPM_HOME variable.
@@ -8,8 +8,13 @@ export OPM_HOME=$PROFILE_SCRIPT_DIR
 fi
 
 ## Default shell configurations.
-export PS1="\e[1m[\t]\e[0m \e[1m\e[32m\u@\h\e[0m:\e[1m\e[96m\w\e[0m\n\\$ "
+
 export PATH=$OPM_HOME/bin:$PATH
+
+CURRENT_SHELL=${SHELL##*/}
+if [[ "$CURRENT_SHELL" == "bash" ]]; then
+export PS1="\e[1m[\t]\e[0m \e[1m\e[32m\u@\h\e[0m:\e[1m\e[96m\w\e[0m\n\\$ "
+fi
 
 if [[ -z $CLICOLOR ]]; then
 export CLICOLOR=1
@@ -23,8 +28,18 @@ fi
 #export LC_COLLATE=ko_KR.UTF-8
 #fi
 
-if [[ -z $EDITOR ]]; then
-export EDITOR=vim
+WHICH_NVIM=`which nvim 2> /dev/null`
+WHICH_VIM=`which vim 2> /dev/null`
+WHICH_VI=`which vi 2> /dev/null`
+
+if [[ -z "$EDITOR" ]]; then
+    if [[ -n "$WHICH_NVIM" ]]; then
+        export EDITOR=$WHICH_NVIM
+    elif [[ -n "$WHICH_VIM" ]]; then
+        export EDITOR=$WHICH_VIM
+    elif [[ -n "$WHICH_VI" ]]; then
+        export EDITOR=$WHICH_VI
+    fi
 fi
 
 if [[ -z $LC_ALL ]]; then
