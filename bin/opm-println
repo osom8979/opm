@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+USAGE_MESSAGE="
+Print arguments to the console.
+
+  Usage: opm-println [options] ...
+
+Available options are:
+  -h, --help        Print this message.
+  -r, --raw         Raw message. [default]
+  -d, --debug       Debug (blue) severity.
+  -i, --info        Information (green) severity.
+  -w, --warning     Warning (yellow) severity.
+  -e, --error       Error (red) severity.
+  -1, --stdout      Write to the standard output. [default]
+  -2, --stderr      Write to the standard error.
+  -v, --verbose     The 'VERBOSE' environment variable must be 'true' to output.
+  --                Skip handling options.
+"
+
+function println_raw
+{
+    local verbose_flag=${1:-0}
+    local stderr_flag=${2:-0}
+    local log_level=${3:-r}
+    shift 3
+
+    if [[ $verbose_flag -ne 0 && $VERBOSE -eq 0 ]]; then
+        return 0
+    fi
+
+    local args
+    case $log_level in
+    r)
+        args="$@"
+        ;;
+    d)
+        args="\033[34m$@\033[0m"
+        ;;
+    i)
+        args="\033[32m$@\033[0m"
+        ;;
+    w)
+        args="\033[33m$@\033[0m"
+        ;;
+    e)
+        args="\033[31m$@\033[0m"
+        ;;
+    esac
+
+    if [[ $stderr_flag -ne 0 ]]; then
+        echo -e "$args" 1>&2
+    else
+        echo -e "$args"
+    fi
+}
+
+function println_main
+{
+    local verbose_flag=0
+    local stderr_flag=0
+    local log_level=r
+
+    while [[ ! -z $1 ]]; do
+        case $1 in
+        -h|--help)
+            println_raw 0 0 r "$USAGE_MESSAGE"
+            exit 0
+            ;;
+        -r|--raw)
+            log_level=r
+            shift
+            ;;
+        -d|--debug)
+            log_level=d
+            shift
+            ;;
+        -i|--info)
+            log_level=i
+            shift
+            ;;
+        -w|--warning)
+            log_level=w
+            shift
+            ;;
+        -e|--error)
+            log_level=e
+            shift
+            ;;
+        -1|--stdout)
+            stderr_flag=0
+            shift
+            ;;
+        -2|--stderr)
+            stderr_flag=1
+            shift
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    println_raw $verbose_flag $stderr_flag $log_level "$@"
+}
+
+println_main "$@"
+
