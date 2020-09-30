@@ -3,6 +3,7 @@
 	safecrlf = true
 	eol = lf
 	excludesfile = ~/.gitignore_global
+	#pager = less -FRSX
 
 [color]
 	ui = auto
