@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# [WARNING]
+# This script should not refer to other OPM scripts.
+
 USAGE_MESSAGE="
 Print arguments to the console.
 
