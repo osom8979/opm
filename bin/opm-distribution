@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+OPM_BIN_PATH=`cd "$(dirname "${BASH_SOURCE[0]}")"; echo "$PWD"`
+PATH="$OPM_BIN_PATH:$PATH"
+fi
+
+USAGE_MESSAGE="
+Print distribution information.
+
+  Usage: opm-distribution [option]
+
+Available options are:
+  -h, --help     Print this message.
+  -k, --kernel   Print Kernal name.
+  -m, --machine  print the machine hardware name
+  -i, --id       Print distribution ID. [default]
+  -v, --version  Print distribution VERSION.
+"
+
+function get_variable
+{
+    # ref: https://gist.github.com/natefoo/814c5bf936922dad97ff
+    local file=$1
+    local key=$2
+
+    if [[ ! -f "$file" ]]; then
+        return 1
+    fi
+
+    local val=`cat "$file" | grep "^$key=" | sed "s/^$key=//g" | tr '[:upper:]' '[:lower:]'`
+    if [[ -z "$val" ]]; then
+        return 1
+    fi
+
+    echo $val
+    return 0
+}
+
+function get_os_release_id
+{
+    get_variable "/etc/os-release" "ID"
+}
+
+function get_os_release_version
+{
+    get_variable "/etc/os-release" "VERSION_ID"
+}
+
+function get_lsb_release_distrib_id
+{
+    get_variable "/etc/lsb-release" "DISTRIB_ID"
+}
+
+function get_lsb_release_distrib_version
+{
+    get_variable "/etc/lsb-release" "DISTRIB_RELEASE"
+}
+
+function get_uname
+{
+    if [[ -z $(which uname 2> /dev/null) ]]; then
+        return 1
+    fi
+
+    local val=`uname $1 | tr '[:upper:]' '[:lower:]'`
+    if [[ -z "$val" ]]; then
+        return 1
+    fi
+
+    echo $val
+    return 0
+}
+
+function exit_on_success
+{
+    local code=$?
+    if [[ $code -eq 0 ]]; then
+        exit $code
+    fi
+}
+
+function print_kernel
+{
+    get_uname -s
+}
+
+function print_machine
+{
+    get_uname -m
+}
+
+function print_distribution_id
+{
+    get_os_release_id ; exit_on_success
+    get_lsb_release_distrib_id ; exit_on_success
+}
+
+function print_distribution_version
+{
+    get_os_release_version ; exit_on_success
+    get_lsb_release_distrib_version ; exit_on_success
+}
+
+function distribution_main
+{
+    if [[ $# -ge 2 ]]; then
+        opm-println-error "Too many arguments were passed."
+        return 0
+    fi
+
+    local arg=${1:--i}
+    case $arg in
+    -h|--help)
+        opm-println "$USAGE_MESSAGE"
+        return 0
+        ;;
+    -k|--kernel)
+        print_kernel
+        ;;
+    -m|--machine)
+        print_machine
+        ;;
+    -i|--id)
+        print_distribution_id
+        ;;
+    -v|--version)
+        print_distribution_version
+        ;;
+    *)
+        opm-println-error "Unknown option: $1"
+        return 1
+        ;;
+    esac
+}
+
+distribution_main "$@"
+
