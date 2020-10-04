@@ -1,0 +1,396 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+OPM_BIN_PATH=`cd "$(dirname "${BASH_SOURCE[0]}")"; echo "$PWD"`
+PATH="$OPM_BIN_PATH:$PATH"
+fi
+
+USAGE_MESSAGE="
+Package manager.
+
+  Usage: opm-package [options] [command] packages ...
+
+Available options are:
+  -h, --help        Print this message.
+  -m {name}, --manager={name}
+                    Select a package manager.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  --                Skip handling options.
+
+Available command are:
+  get-manager Install the package-manager.
+  which       Shows the full path of package-manager commands.
+  sync        Synchronize the database.
+  test        Query for package existence.
+  list        List all files owned by a given package.
+  install     Install the package.
+  remove      Remove the package.
+"
+
+function exit_on_error
+{
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        return $code
+    fi
+}
+
+# ---------------
+# Linux/ArchLinux
+# ---------------
+
+function get_manager_linux_arch
+{
+    opm-println-error "Unsupported operation."
+    return 1
+}
+
+function which_linux_arch
+{
+    which pacman 2> /dev/null
+}
+
+function sync_linux_arch
+{
+    if [[ -z $(which_linux_arch) ]]; then
+        opm-println-error "Not found pacman command."
+        return 1
+    fi
+
+    sudo pacman -Sy
+}
+
+function test_linux_arch
+{
+    if [[ -z $(which_linux_arch) ]]; then
+        opm-println-error "Not found pacman command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    local packages=`pacman -Q | awk '{ print $1 }'`
+    for i in $@; do
+        echo "$packages" | grep "^$i\$"
+    done
+}
+
+function list_linux_arch
+{
+    if [[ -z $(which_linux_arch) ]]; then
+        opm-println-error "Not found pacman command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    pacman -Ql "$@"
+}
+
+function install_linux_arch
+{
+    if [[ -z $(which_linux_arch) ]]; then
+        opm-println-error "Not found pacman command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    # [WARNING]
+    #   --noconfirm
+    #     Bypass any and all "Are you sure?" messages.
+    #     It’s not a good idea to do this unless you want to run pacman from a script.
+    sudo pacman -S "$@"
+}
+
+function remove_linux_arch
+{
+    if [[ -z $(which_linux_arch) ]]; then
+        opm-println-error "Not found pacman command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    sudo pacman -Rs "$@"
+}
+
+# ------------
+# Linux/Ubuntu
+# ------------
+
+function get_manager_linux_ubuntu
+{
+    opm-println-error "Unsupported operation."
+    return 1
+}
+
+function which_linux_ubuntu
+{
+    which apt-get 2> /dev/null
+}
+
+function sync_linux_ubuntu
+{
+    if [[ -z $(which_linux_ubuntu) ]]; then
+        opm-println-error "Not found apt-get command."
+        return 1
+    fi
+
+    sudo apt-get update
+}
+
+function test_linux_ubuntu
+{
+    if [[ -z $(which_linux_ubuntu) ]]; then
+        opm-println-error "Not found apt-get command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    local packages=`dpkg -l | sed -n '/+++/,$p' | sed -n '2,$p' | awk '{print $2}'`
+    for i in $@; do
+        echo "$packages" | grep "^$i\$"
+    done
+}
+
+function list_linux_ubuntu
+{
+    if [[ -z $(which_linux_ubuntu) ]]; then
+        opm-println-error "Not found apt-get command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    for i in $@; do
+        dpkg -L $i | sed "s/^/$i /g"
+    done
+}
+
+function install_linux_ubuntu
+{
+    if [[ -z $(which_linux_ubuntu) ]]; then
+        opm-println-error "Not found apt-get command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    sudo apt-get -y install "$@"
+}
+
+function remove_linux_ubuntu
+{
+    if [[ -z $(which_linux_ubuntu) ]]; then
+        opm-println-error "Not found apt-get command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    sudo apt-get -y purge "$@"
+}
+
+# --------------
+# Darwin (macOS)
+# --------------
+
+function get_manager_darwin_brew
+{
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+}
+
+function which_darwin_brew
+{
+    which brew 2> /dev/null
+}
+
+function sync_darwin_brew
+{
+    if [[ -z $(which_darwin_brew) ]]; then
+        opm-println-error "Not found brew command."
+        return 1
+    fi
+
+    brew update
+}
+
+function test_darwin_brew
+{
+    if [[ -z $(which_darwin_brew) ]]; then
+        opm-println-error "Not found brew command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    local packages=`brew list -1`
+    for i in $@; do
+        echo "$packages" | grep "^$i\$"
+    done
+}
+
+function list_darwin_brew
+{
+    if [[ -z $(which_darwin_brew) ]]; then
+        opm-println-error "Not found brew command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    # TODO
+}
+
+function install_darwin_brew
+{
+    if [[ -z $(which_darwin_brew) ]]; then
+        opm-println-error "Not found brew command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    brew install "$@"
+}
+
+function remove_darwin_brew
+{
+    if [[ -z $(which_darwin_brew) ]]; then
+        opm-println-error "Not found brew command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    brew uninstall "$@"
+}
+
+# -----------
+# Entry-point
+# -----------
+
+function find_target
+{
+    local kernel_name=$(opm-distribution -k)
+    if [[ $kernel_name == darwin ]]; then
+        echo "darwin_brew"
+    elif [[ $kernel_name == linux ]]; then
+        echo "${kernel_name}_$(opm-distribution -i)"
+    else
+        echo $kernel_name
+    fi
+}
+
+function package_main
+{
+    local manager
+    local verbose_flag=0
+
+    while [[ ! -z $1 ]]; do
+        case $1 in
+        -h|--help)
+            opm-println "$USAGE_MESSAGE"
+            return 0
+            ;;
+        --manager=*)
+            manager=${1:3}
+            shift
+            ;;
+        -m)
+            manager=${2}
+            shift 2
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local target
+    if [[ -n $manager ]]; then
+        case $manager in
+        pacman)
+            target=linux_arch
+            ;;
+        apt|apt-get)
+            target=linux_ubuntu
+            ;;
+        brew)
+            target=darwin_brew
+            ;;
+        *)
+            opm-println-error "Unsupported manager: $manager"
+            return 1
+            ;;
+        esac
+    else
+        target=$(find_target)
+    fi
+
+    VERBOSE=$verbose_flag opm-println -v -i "Selected target name: $target"
+
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the command."
+        return 1
+    fi
+
+    local command=$1
+    shift
+
+    case $command in
+    get-manager)
+        get_manager_${target}
+        ;;
+    which)
+        which_${target}
+        ;;
+    sync)
+        sync_${target}
+        ;;
+    test|list|install|remove)
+        ${command}_${target} "$@"
+        ;;
+    *)
+        opm-println-error "Invalid command: $command"
+        return 0
+        ;;
+    esac
+}
+
+package_main "$@"
+
