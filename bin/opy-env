@@ -2,8 +2,8 @@
 # - ref: https://github.com/pyenv/pyenv/wiki
 
 if [[ -z $(which opm-version 2> /dev/null) ]]; then
-OPM_BIN_PATH=`cd "$(dirname "${BASH_SOURCE[0]}")"; echo "$PWD"`
-PATH="$OPM_BIN_PATH:$PATH"
+    OPM_BIN_PATH=`cd "$(dirname "${BASH_SOURCE[0]}")"; echo "$PWD"`
+    PATH="$OPM_BIN_PATH:$PATH"
 fi
 
 CURRENT_USER_NAME=$(id -u -n)

@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
 
-OPY_PYTHON_VERSION=2.7.17 OPY_ECHO=${OPY_ECHO:-0} . opy-env
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+    OPM_BIN_PATH=`cd "$(dirname "${BASH_SOURCE[0]}")"; echo "$PWD"`
+    PATH="$OPM_BIN_PATH:$PATH"
+fi
+
+OPY_VERSION=2.7.17 OPY_VERBOSE=${OPY_VERBOSE:-0} source opy-env
 
