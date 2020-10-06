@@ -1,19 +1,86 @@
 #!/usr/bin/env bash
+# - ref: https://github.com/pyenv/pyenv/wiki
 
 if [[ -z $(which opm-version 2> /dev/null) ]]; then
 OPM_BIN_PATH=`cd "$(dirname "${BASH_SOURCE[0]}")"; echo "$PWD"`
 PATH="$OPM_BIN_PATH:$PATH"
 fi
 
-# ref: https://github.com/pyenv/pyenv/wiki
-
+CURRENT_USER_NAME=$(id -u -n)
 OPY_PREFIX=${OPY_PREFIX:-opy}
-OPY_VERSION=${OPY_PREFIX:-3.7.7}
+OPY_VERSION=${OPY_VERSION:-3.7.7}
+OPY_USER=${OPY_USER:-$CURRENT_USER_NAME}
+DEFAULT_ENV=$OPY_PREFIX-$OPY_USER-$OPY_VERSION
+OPY_ENV=${OPY_ENV:-$DEFAULT_ENV}
+OPY_VERBOSE=${OPY_VERBOSE:-0}
 
-PLATFORM=`platform`
-INSTALL_RESULT_CODE=0
+# Mac OS X
+BREW_DEPS="openssl readline sqlite3 xz zlib"
 
-function find_not_installed_packages
+# Ubuntu/Debian/Mint
+APT_DEPS="make build-essential libssl-dev zlib1g-dev libbz2-dev"
+APT_DEPS="$DEBIAN_DEPS libreadline-dev libsqlite3-dev wget curl llvm"
+APT_DEPS="$DEBIAN_DEPS libncurses5-dev xz-utils tk-dev"
+APT_DEPS="$DEBIAN_DEPS libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev"
+
+# CentOS/Fedora 21 and below
+YUM_DEPS="gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
+YUM_DEPS="$YUM_DEPS sqlite-devel openssl-devel tk-devel libffi-devel"
+YUM_DEPS="$YUM_DEPS xz"
+
+# Fedora 22 and above
+DNF_DEPS="make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
+DNF_DEPS="$DNF_DEPS sqlite-devel openssl-devel tk-devel libffi-devel"
+DNF_DEPS="$DNF_DEPS xz"
+
+# openSUSE
+ZYPPER_DEPS="gcc automake bzip2 libbz2-devel xz xz-devel openssl-devel"
+ZYPPER_DEPS="$ZYPPER_DEPS ncurses-devel readline-devel zlib-devel tk-devel"
+ZYPPER_DEPS="$ZYPPER_DEPS libffi-devel sqlite3-devel"
+ZYPPER_DEPS="$ZYPPER_DEPS xz"
+
+# Arch Linux
+PACMAN_DEPS="base-devel openssl zlib"
+PACMAN_DEPS="$PACMAN_DEPS xz"
+
+# Solus
+# sudo eopkg it -c system.devel
+EOPKG_DEPS="git gcc make zlib-devel bzip2-devel readline-devel sqlite3-devel"
+EOPKG_DEPS="$EOPKG_DEPS openssl-devel tk-devel"
+
+# Linuxbrew
+LINUX_BREW_DEPS="bzip2 libffi libxml2 libxmlsec1 openssl readline sqlite xz zlib"
+
+# Alpine Linux
+APK_DEPS="git bash build-base libffi-dev openssl-dev bzip2-dev zlib-dev"
+APK_DEPS="$APK_DEPS readline-dev sqlite-dev"
+# Installation of Python 3.7 may fail due to Python 3.7.0 issue #34555.
+# Work around is to install the linux system headers package:
+# apk add linux-headers
+
+function get_pyenv_path
+{
+    PATH=~/.pyenv/bin/:$PATH which pyenv 2> /dev/null
+}
+
+function must_pyenv_path
+{
+    local pyenv_cmd=$(get_pyenv_path)
+    if [[ -z $pyenv_cmd ]]; then
+        opm-println-error "Not found pyenv command."
+        exit 1  # The assertion error ends immediately.
+    fi
+    echo "$pyenv_cmd"
+}
+
+function find_pyenv_version
+{
+    local version=$1
+    local pyenv_cmd=$(must_pyenv_path)
+    "$pyenv_cmd" versions | sed 's/*//g' | awk '{print($1);}' | grep -Fx "$version"
+}
+
+function find_not_found_cmds
 {
     if [[ $# -eq 1 ]]; then
         if [[ -z $(which $1 2> /dev/null) ]]; then
@@ -28,22 +95,26 @@ function find_not_installed_packages
     fi
 }
 
+# -------------
+# Install pyenv
+# -------------
+
 function install_pyenv_on_auto_detect
 {
-    local not_installed_packages=$(find_not_installed_packages git curl)
-    if [[ -n $not_installed_packages ]]; then
-        opm-println "Not found commands: $not_installed_packages"
-        opm-package sync
-        opm-package install $not_installed_packages
+    local not_found_cmds=$(find_not_found_cmds git curl)
+    if [[ -n $not_found_cmds ]]; then
+        opm-println "Not found commands: $not_found_cmds"
+        opm-package update
+        opm-package install $not_found_cmds
 
-        not_installed_packages=$(find_not_installed_packages git curl)
-        if [[ -n $not_installed_packages ]]; then
-            opm-println-error "installation failed: $not_installed_packages"
+        not_found_cmds=$(find_not_found_cmds git curl)
+        if [[ -n $not_found_cmds ]]; then
+            opm-println-error "installation failed: $not_found_cmds"
             return 1
         fi
     fi
 
-    opm-println "Install pyenv from pyenv-installer"
+    opm-println "Install pyenv from pyenv-installer ..."
     opm-println " - ref: https://github.com/pyenv/pyenv-installer"
 
     curl -L "https://raw.githubusercontent.com/pyenv/pyenv-installer/master/bin/pyenv-installer" | /bin/bash
@@ -61,8 +132,8 @@ function install_pyenv_on_darwin
         fi
     fi
 
-    opm-println "Install pyenv from brew ..."
-    opm-package -m brew sync
+    opm-println "Install pyenv from homebrew ..."
+    opm-package -m brew update
     opm-package -m brew install pyenv pyenv-virtualenv
 }
 
@@ -78,12 +149,11 @@ function install_pyenv
 
 function install_pyenv_if_not_exist
 {
-    local which_pyenv=`PATH=~/.pyenv/bin/:$PATH which pyenv 2> /dev/null`
-    if [[ -n $which_pyenv ]]; then
+    if [[ -n $(get_pyenv_path) ]]; then
         return 0
     fi
 
-    opm-println "Not found pyenv command."
+    opm-println "Not found 'pyenv' command."
     install_pyenv
 
     local code=$?
@@ -93,120 +163,189 @@ function install_pyenv_if_not_exist
     fi
 }
 
-USER_NAME=$(id -u -n)
-OPY_VERSION_REGEX=`echo $OPY_VERSION | sed 's/\./\\\\./g'`
-OPY_ENV_NAME="${OPY_PREFIX}-${USER_NAME}-${OPY_VERSION}"
-OPY_ENV_NAME_REGEX=`echo $OPY_ENV_NAME | sed 's/\./\\\\./g'`
+# -------------------------
+# Install python with pyenv
+# -------------------------
 
-export PATH="~/.pyenv/bin:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+function install_dependencies_if_not_installed
+{
+    local kernel=$(opm-distribution -k)
+    local distribution=$(opm-distribution)
+    local dependencies
 
-function getPackageListOfNotExists {
-    if [[ "$PLATFORM" == "MacOSX" ]]; then
-        # Mac - Homebrew
-        local package_list=`brew list -1`
-    else
-        # Ubuntu - dpkg
-        local package_list=`dpkg -l | sed -n '/+++/,$p' | sed -n '2,$p' | awk '{print $2}'`
-    fi
-    local check_list=$1
-    local result_list=' '
-    for cursor in $check_list; do
-        if [[ -z $(echo ${package_list} | grep ${cursor}) ]]; then
-            result_list="$result_list $cursor"
-        fi
-    done
-    echo $result_list
-}
-
-function installDependencies {
-    if [[ "$PLATFORM" == "MacOSX" ]]; then
-        local list="openssl readline xz"
-    else
-        local list="make build-essential libssl-dev zlib1g-dev libbz2-dev"
-        list="$list libreadline-dev libsqlite3-dev wget curl llvm "
-        list="$list libncurses5-dev xz-utils tk-dev"
-    fi
-    INSTALL_LIST=`getPackageListOfNotExists "$list"`
-    if [[ ! -z $INSTALL_LIST ]]; then
-        if [[ "$PLATFORM" == "MacOSX" ]]; then
-            brew update
-            # brew upgrade pyenv pyenv-virtualenv
-            brew install $INSTALL_LIST
-            return $?
+    if [[ $kernel == darwin ]]; then
+        dependencies="$BREW_DEPS"
+    elif [[ $kernel == linux ]]; then
+        if [[ $distribution == arch ]]; then
+            dependencies="$PACMAN_DEPS"
+        elif [[ $distribution == ubuntu ]]; then
+            dependencies="$APT_DEPS"
         else
-            sudo apt-get update
-            sudo apt-get install -y $INSTALL_LIST
-            return $?
+            opm-println-error "Unsupported distribution: $distribution"
+            return 1
         fi
+    else
+        opm-println-error "Unsupported kernel: $kernel"
+        return 1
     fi
-    return 0
+
+    local not_exist_packages=$(opm-package list "$dependencies" 2>&1 | grep '^-' | sed 's/^- //g')
+    if [[ -n $not_exist_packages ]]; then
+        opm-package install $not_exist_packages
+    fi
 }
 
-FIND_PYTHON_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^${OPY_VERSION_REGEX}$"`
-if [[ -z $FIND_PYTHON_ENV ]]; then
-    echo "Not found $OPY_VERSION pyenv."
-    echo "Check & Install dependencies ..."
+function install_python_on_darwin
+{
+    local python_version=$1
+    local pyenv_cmd=$(must_pyenv_path)
 
-    installDependencies
-    INSTALL_RESULT_CODE=$?
-    if [[ $INSTALL_RESULT_CODE -ne 0 ]]; then
-        echo "Install dependencies failure: $INSTALL_RESULT_CODE"
-        exit 1
-    fi
+    opm-println "Use the homebrew's OpenSSL."
+    opm-println " - ref: https://github.com/pyenv/pyenv/wiki/Common-build-problems"
+    opm-println "Install python $python_version from pyenv (--enable-framework) ..."
 
-    if [[ "$PLATFORM" == "MacOSX" ]]; then
-        echo "Use the homebrew's OpenSSL."
-        echo " * See also: https://github.com/pyenv/pyenv/wiki/Common-build-problems"
-        echo "Install python from pyenv (--enable-framework) ..."
-        CFLAGS="-I$(brew --prefix openssl)/include -I$(brew --prefix zlib)/include -I$(brew --prefix sqlite)/include" \
+    CFLAGS="-I$(brew --prefix openssl)/include -I$(brew --prefix zlib)/include -I$(brew --prefix sqlite)/include" \
         LDFLAGS="-L$(brew --prefix openssl)/lib -L$(brew --prefix zlib)/lib -L$(brew --prefix sqlite)/lib" \
-        PYTHON_CONFIGURE_OPTS="--enable-framework"  \
-            pyenv install $OPY_VERSION
-        INSTALL_RESULT_CODE=$?
+        PYTHON_CONFIGURE_OPTS="--enable-framework" \
+        "$pyenv_cmd" install "$python_version"
+}
+
+function install_python_on_auto_detect
+{
+    local python_version=$1
+    local pyenv_cmd=$(must_pyenv_path)
+
+    opm-println "Install python $python_version from pyenv (--enable-shared) ..."
+
+    PYTHON_CONFIGURE_OPTS="--enable-shared" \
+        "$pyenv_cmd" install "$python_version"
+}
+
+function install_python
+{
+    local python_version=$1
+    local kernel=$(opm-distribution -k)
+    if [[ $kernel == darwin ]]; then
+        install_python_on_darwin "$python_version"
     else
-        echo "Install python from pyenv (--enable-shared) ..."
-        PYTHON_CONFIGURE_OPTS="--enable-shared" \
-            pyenv install $OPY_VERSION
-        INSTALL_RESULT_CODE=$?
+        install_python_on_auto_detect "$python_version"
+    fi
+}
+
+function install_python_if_not_exist
+{
+    local python_version=$1
+    if [[ -n $(find_pyenv_version $python_version) ]]; then
+        return 0
     fi
 
-    if [[ $INSTALL_RESULT_CODE -ne 0 ]]; then
-        echo "Install failure: $INSTALL_RESULT_CODE"
-        exit 1
+    opm-println "Not found '$python_version' in pyenv."
+    opm-println "Check & Install dependencies ..."
+
+    install_dependencies_if_not_installed
+    local install_deps_result=$?
+    if [[ $install_deps_result -ne 0 ]]; then
+        opm-println-error "dependencies installation failed: $install_deps_result"
+        return $install_deps_result
     fi
-fi
 
-FIND_OPY_ENV=`pyenv versions | sed 's/*//g' | awk '{print($1);}' | egrep "^$OPY_ENV_NAME_REGEX$"`
-#echo "FIND_OPY_ENV: $FIND_OPY_ENV"
-if [[ -z $FIND_OPY_ENV ]]; then
-    echo "Not found $OPY_ENV_NAME pyenv."
-    pyenv virtualenv "$OPY_VERSION" "$OPY_ENV_NAME"
-fi
+    install_python "$python_version"
+    local install_python_result=$?
+    if [[ $install_python_result -ne 0 ]]; then
+        opm-println-error "python installation failed: $install_python_result"
+        return $install_python_result
+    fi
+}
 
-CURRENT_PYENV_VERSION=`pyenv version | awk '{ print($1); }'`
-#echo "CURRENT_PYENV_VERSION: $CURRENT_PYENV_VERSION"
-if [[ "$CURRENT_PYENV_VERSION" != "$OPY_ENV_NAME" ]]; then
-    pyenv shell $OPY_ENV_NAME
-else
-    pyenv activate $OPY_ENV_NAME
-    #pyenv deactivate
-fi
+# ------------------
+# Install virtualenv
+# ------------------
 
-if [[ -z $OPY_ECHO ]]; then
-    if [[ -z $OPY_QUIET || $OPY_QUIET -eq 0 ]]; then
-        OPY_ECHO=1
+function install_virtualenv_if_not_exist
+{
+    local base_python_version=$1
+    local pyenv_name=$2
+
+    if [[ -n $(find_pyenv_version $pyenv_name) ]]; then
+        return 0
+    fi
+
+    opm-println "Not found '$pyenv_name' in pyenv."
+    local pyenv_cmd=$(must_pyenv_path)
+    "$pyenv_cmd" virtualenv "$base_python_version" "$pyenv_name"
+}
+
+# --------------
+# Activate pyenv
+# --------------
+
+function enable_pyenv
+{
+    export PATH="~/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
+}
+
+function active_virtualenv
+{
+    local pyenv_name=$1
+    local current_pyenv_version=`pyenv version | awk '{print($1);}'`
+
+    if [[ "$current_pyenv_version" != "$pyenv_name" ]]; then
+        pyenv shell "$pyenv_name"
     else
-        OPY_ECHO=0
+        pyenv activate "$pyenv_name"
     fi
-fi
+}
 
-if [[ $OPY_ECHO -ne 0 ]]; then
-    echo "[OSOM Python Environment]"
-    echo "* Python version: $(python --version 2>&1)"
-    echo "* Python executable: $(which python)"
-    echo "* Pyenv which python: $(pyenv which python)"
-    echo "* Pyenv version: $(pyenv version | awk '{print($1);}')"
-fi
+function print_virtualenv_infos
+{
+    opm-println-info "[OSOM Python Environment]"
+    opm-println-info "- Python version: $(python --version 2>&1)"
+    opm-println-info "- Python executable: $(which python)"
+    opm-println-info "- Pyenv which python: $(pyenv which python)"
+    opm-println-info "- Pyenv version: $(pyenv version | awk '{print($1);}')"
+}
+
+function exit_on_error
+{
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        exit $code
+    fi
+}
+
+function opy_main
+{
+    local python_version=$1
+    local pyenv_name=$2
+    local pyenv_verbose=$3
+
+    # Installation ...
+
+    install_pyenv_if_not_exist
+    exit_on_error
+
+    install_python_if_not_exist "$python_version"
+    exit_on_error
+
+    install_virtualenv_if_not_exist "$python_version" "$pyenv_name"
+    exit_on_error
+
+    # Activation ...
+
+    enable_pyenv
+    exit_on_error
+
+    active_virtualenv "$pyenv_name"
+    exit_on_error
+
+    # Information ...
+
+    if [[ $pyenv_verbose -ne 0 ]]; then
+        print_virtualenv_infos
+    fi
+}
+
+opy_main "$OPY_VERSION" "$OPY_ENV" "$OPY_VERBOSE"
 
