@@ -15,44 +15,18 @@ function which_darwin_brew
     which brew 2> /dev/null
 }
 
-function sync_darwin_brew
+function update_darwin_brew
 {
-    if [[ -z $(which_darwin_brew) ]]; then
-        opm-println-error "Not found brew command."
-        return 1
-    fi
-
     brew update
-}
-
-function exist_darwin_brew
-{
-    if [[ -z $(which_darwin_brew) ]]; then
-        opm-println-error "Not found brew command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
-
-    local packages=`brew list -1`
-    for i in $@; do
-        echo "$packages" | grep "^$i\$"
-    done
 }
 
 function list_darwin_brew
 {
-    if [[ -z $(which_darwin_brew) ]]; then
-        opm-println-error "Not found brew command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
+    brew list -1
+}
 
+function files_darwin_brew
+{
     for i in $@; do
         brew ls --verbose $i | sed "s/^/$i /g"
     done
@@ -60,29 +34,11 @@ function list_darwin_brew
 
 function install_darwin_brew
 {
-    if [[ -z $(which_darwin_brew) ]]; then
-        opm-println-error "Not found brew command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
-
     brew install "$@"
 }
 
 function remove_darwin_brew
 {
-    if [[ -z $(which_darwin_brew) ]]; then
-        opm-println-error "Not found brew command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
-
     brew uninstall "$@"
 }
 

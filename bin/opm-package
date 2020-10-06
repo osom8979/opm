@@ -20,12 +20,13 @@ Available options are:
 Available command are:
   get-manager   Install the package-manager.
   which         Shows the full path of package-manager commands.
-  sync|update   Synchronize the database.
-  exist|exists|test
-                Query for package existence.
-  list          List all files owned by a given package.
+  update        Synchronize the database.
+  list          Print the installed list.
+                If arguments are included, the package is queried for existence.
+  files         List all files owned by a given package.
+                The output format is as follows: '{package} {file}'
   install       Install the package.
-  erase|remove  Remove the package.
+  remove        Remove the package.
 "
 
 function find_target
@@ -67,7 +68,7 @@ function get_target_with_manager
     dpkg|apt|apt-get)
         echo "linux_ubuntu_apt"
         ;;
-    brew)
+    homebrew|brew)
         echo "darwin_brew"
         ;;
     *)
@@ -75,6 +76,136 @@ function get_target_with_manager
         return 1
         ;;
     esac
+}
+
+function do_getmanager
+{
+    local target=$1
+    local verbose_flag=$2
+    shift 2
+
+    getmanager_$target
+}
+
+function do_which
+{
+    local target=$1
+    local verbose_flag=$2
+    shift 2
+
+    which_$target
+}
+
+function do_update
+{
+    local target=$1
+    local verbose_flag=$2
+    shift 2
+
+    if [[ -z $(which_$target) ]]; then
+        opm-println-error "Not found package-manager command."
+        return 1
+    fi
+
+    update_$target
+}
+
+function do_list
+{
+    local target=$1
+    local verbose_flag=$2
+    shift 2
+
+    if [[ -z $(which_$target) ]]; then
+        opm-println-error "Not found package-manager command."
+        return 1
+    fi
+
+    local packages=$(list_$target "$@")
+    if [[ $# -eq 0 ]]; then
+        echo "$packages"
+        return 0
+    fi
+
+    local found_prefix
+    local error_prefix
+    if [[ $verbose_flag -ne 0 ]]; then
+        found_prefix="Found package:"
+        error_prefix="Not found package:"
+    else
+        found_prefix="+"
+        error_prefix="-"
+    fi
+
+    local count=0
+    for i in $@; do
+        if [[ -n $(echo "$packages" | grep -Fx "$i") ]]; then
+            opm-println-info "$found_prefix $i"
+            (( count += 1 ))
+        else
+            opm-println-error "$error_prefix $i"
+        fi
+    done
+
+    if [[ $count -eq $# ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function do_files
+{
+    local target=$1
+    local verbose_flag=$2
+    shift 2
+
+    if [[ -z $(which_$target) ]]; then
+        opm-println-error "Not found package-manager command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    files_$target "$@"
+}
+
+function do_install
+{
+    local target=$1
+    local verbose_flag=$2
+    shift 2
+
+    if [[ -z $(which_$target) ]]; then
+        opm-println-error "Not found package-manager command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    install_$target "$@"
+}
+
+function do_remove
+{
+    local target=$1
+    local verbose_flag=$2
+    shift 2
+
+    if [[ -z $(which_$target) ]]; then
+        opm-println-error "Not found package-manager command."
+        return 1
+    fi
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "You must enter the package."
+        return 1
+    fi
+
+    remove_$target "$@"
 }
 
 function package_main
@@ -142,25 +273,25 @@ function package_main
 
     case $command in
     get-manager)
-        getmanager_${target}
+        do_getmanager $target $verbose_flag
         ;;
     which)
-        which_${target}
+        do_which $target $verbose_flag
         ;;
-    sync|update)
-        sync_${target}
-        ;;
-    exist|exists|test)
-        exist_${target} "$@"
+    update)
+        do_update $target $verbose_flag
         ;;
     list)
-        list_${target} "$@"
+        do_list $target $verbose_flag "$@"
+        ;;
+    files)
+        do_files $target $verbose_flag "$@"
         ;;
     install)
-        install_${target} "$@"
+        do_install $target $verbose_flag "$@"
         ;;
-    erase|remove)
-        ${command}_${target} "$@"
+    remove)
+        do_remove $target $verbose_flag "$@"
         ;;
     *)
         opm-println-error "Invalid command: $command"

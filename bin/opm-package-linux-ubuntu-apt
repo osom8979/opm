@@ -16,44 +16,18 @@ function which_linux_ubuntu_apt
     which apt-get 2> /dev/null
 }
 
-function sync_linux_ubuntu_apt
+function update_linux_ubuntu_apt
 {
-    if [[ -z $(which_linux_ubuntu) ]]; then
-        opm-println-error "Not found apt-get command."
-        return 1
-    fi
-
     sudo apt-get update
-}
-
-function exist_linux_ubuntu_apt
-{
-    if [[ -z $(which_linux_ubuntu) ]]; then
-        opm-println-error "Not found apt-get command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
-
-    local packages=`dpkg -l | sed -n '/+++/,$p' | sed -n '2,$p' | awk '{print $2}'`
-    for i in $@; do
-        echo "$packages" | grep "^$i\$"
-    done
 }
 
 function list_linux_ubuntu_apt
 {
-    if [[ -z $(which_linux_ubuntu) ]]; then
-        opm-println-error "Not found apt-get command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
+    dpkg -l | sed -n '/+++/,$p' | sed -n '2,$p' | awk '{print $2}'
+}
 
+function files_linux_ubuntu_apt
+{
     for i in $@; do
         dpkg -L $i | sed "s/^/$i /g"
     done
@@ -61,29 +35,11 @@ function list_linux_ubuntu_apt
 
 function install_linux_ubuntu_apt
 {
-    if [[ -z $(which_linux_ubuntu) ]]; then
-        opm-println-error "Not found apt-get command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
-
     sudo apt-get -y install "$@"
 }
 
 function remove_linux_ubuntu_apt
 {
-    if [[ -z $(which_linux_ubuntu) ]]; then
-        opm-println-error "Not found apt-get command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
-
     sudo apt-get -y purge "$@"
 }
 

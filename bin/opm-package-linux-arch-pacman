@@ -16,58 +16,23 @@ function which_linux_arch_pacman
     which pacman 2> /dev/null
 }
 
-function sync_linux_arch_pacman
+function update_linux_arch_pacman
 {
-    if [[ -z $(which_linux_arch) ]]; then
-        opm-println-error "Not found pacman command."
-        return 1
-    fi
-
     sudo pacman -Sy
-}
-
-function exist_linux_arch_pacman
-{
-    if [[ -z $(which_linux_arch) ]]; then
-        opm-println-error "Not found pacman command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
-
-    local packages=`pacman -Q | awk '{ print $1 }'`
-    for i in $@; do
-        echo "$packages" | grep "^$i\$"
-    done
 }
 
 function list_linux_arch_pacman
 {
-    if [[ -z $(which_linux_arch) ]]; then
-        opm-println-error "Not found pacman command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
+    pacman -Q | awk '{ print $1 }'
+}
 
+function files_linux_arch_pacman
+{
     pacman -Ql "$@"
 }
 
 function install_linux_arch_pacman
 {
-    if [[ -z $(which_linux_arch) ]]; then
-        opm-println-error "Not found pacman command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
-
     # [WARNING]
     #   --noconfirm
     #     Bypass any and all "Are you sure?" messages.
@@ -77,15 +42,6 @@ function install_linux_arch_pacman
 
 function remove_linux_arch_pacman
 {
-    if [[ -z $(which_linux_arch) ]]; then
-        opm-println-error "Not found pacman command."
-        return 1
-    fi
-    if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
-        return 1
-    fi
-
     sudo pacman -Rs "$@"
 }
 
