@@ -2,61 +2,8 @@
 # - ref: https://github.com/pyenv/pyenv/wiki
 
 if [[ -z $(which opm-version 2> /dev/null) ]]; then
-    OPM_BIN_PATH=`cd "$(dirname "${BASH_SOURCE[0]}")"; echo "$PWD"`
-    PATH="$OPM_BIN_PATH:$PATH"
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
 fi
-
-CURRENT_USER_NAME=$(id -u -n)
-OPY_PREFIX=${OPY_PREFIX:-opy}
-OPY_VERSION=${OPY_VERSION:-3.7.7}
-OPY_USER=${OPY_USER:-$CURRENT_USER_NAME}
-DEFAULT_ENV=$OPY_PREFIX-$OPY_USER-$OPY_VERSION
-OPY_ENV=${OPY_ENV:-$DEFAULT_ENV}
-OPY_VERBOSE=${OPY_VERBOSE:-0}
-
-# Mac OS X
-BREW_DEPS="openssl readline sqlite3 xz zlib"
-
-# Ubuntu/Debian/Mint
-APT_DEPS="make build-essential libssl-dev zlib1g-dev libbz2-dev"
-APT_DEPS="$DEBIAN_DEPS libreadline-dev libsqlite3-dev wget curl llvm"
-APT_DEPS="$DEBIAN_DEPS libncurses5-dev xz-utils tk-dev"
-APT_DEPS="$DEBIAN_DEPS libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev"
-
-# CentOS/Fedora 21 and below
-YUM_DEPS="gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
-YUM_DEPS="$YUM_DEPS sqlite-devel openssl-devel tk-devel libffi-devel"
-YUM_DEPS="$YUM_DEPS xz"
-
-# Fedora 22 and above
-DNF_DEPS="make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
-DNF_DEPS="$DNF_DEPS sqlite-devel openssl-devel tk-devel libffi-devel"
-DNF_DEPS="$DNF_DEPS xz"
-
-# openSUSE
-ZYPPER_DEPS="gcc automake bzip2 libbz2-devel xz xz-devel openssl-devel"
-ZYPPER_DEPS="$ZYPPER_DEPS ncurses-devel readline-devel zlib-devel tk-devel"
-ZYPPER_DEPS="$ZYPPER_DEPS libffi-devel sqlite3-devel"
-ZYPPER_DEPS="$ZYPPER_DEPS xz"
-
-# Arch Linux
-PACMAN_DEPS="base-devel openssl zlib"
-PACMAN_DEPS="$PACMAN_DEPS xz"
-
-# Solus
-# sudo eopkg it -c system.devel
-EOPKG_DEPS="git gcc make zlib-devel bzip2-devel readline-devel sqlite3-devel"
-EOPKG_DEPS="$EOPKG_DEPS openssl-devel tk-devel"
-
-# Linuxbrew
-LINUX_BREW_DEPS="bzip2 libffi libxml2 libxmlsec1 openssl readline sqlite xz zlib"
-
-# Alpine Linux
-APK_DEPS="git bash build-base libffi-dev openssl-dev bzip2-dev zlib-dev"
-APK_DEPS="$APK_DEPS readline-dev sqlite-dev"
-# Installation of Python 3.7 may fail due to Python 3.7.0 issue #34555.
-# Work around is to install the linux system headers package:
-# apk add linux-headers
 
 function get_pyenv_path
 {
@@ -172,6 +119,59 @@ function install_dependencies_if_not_installed
     local kernel=$(opm-distribution -k)
     local distribution=$(opm-distribution)
     local dependencies
+
+    # Mac OS X
+    local BREW_DEPS
+    BREW_DEPS="openssl readline sqlite3 xz zlib"
+
+    # Ubuntu/Debian/Mint
+    local APT_DEPS
+    APT_DEPS="make build-essential libssl-dev zlib1g-dev libbz2-dev"
+    APT_DEPS="$DEBIAN_DEPS libreadline-dev libsqlite3-dev wget curl llvm"
+    APT_DEPS="$DEBIAN_DEPS libncurses5-dev xz-utils tk-dev"
+    APT_DEPS="$DEBIAN_DEPS libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev"
+
+    # CentOS/Fedora 21 and below
+    local YUM_DEPS
+    YUM_DEPS="gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
+    YUM_DEPS="$YUM_DEPS sqlite-devel openssl-devel tk-devel libffi-devel"
+    YUM_DEPS="$YUM_DEPS xz"
+
+    # Fedora 22 and above
+    local DNF_DEPS
+    DNF_DEPS="make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
+    DNF_DEPS="$DNF_DEPS sqlite-devel openssl-devel tk-devel libffi-devel"
+    DNF_DEPS="$DNF_DEPS xz"
+
+    # openSUSE
+    local ZYPPER_DEPS
+    ZYPPER_DEPS="gcc automake bzip2 libbz2-devel xz xz-devel openssl-devel"
+    ZYPPER_DEPS="$ZYPPER_DEPS ncurses-devel readline-devel zlib-devel tk-devel"
+    ZYPPER_DEPS="$ZYPPER_DEPS libffi-devel sqlite3-devel"
+    ZYPPER_DEPS="$ZYPPER_DEPS xz"
+
+    # Arch Linux
+    local PACMAN_DEPS
+    PACMAN_DEPS="base-devel openssl zlib"
+    PACMAN_DEPS="$PACMAN_DEPS xz"
+
+    # Solus
+    # sudo eopkg it -c system.devel
+    local EOPKG_DEPS
+    EOPKG_DEPS="git gcc make zlib-devel bzip2-devel readline-devel sqlite3-devel"
+    EOPKG_DEPS="$EOPKG_DEPS openssl-devel tk-devel"
+
+    # Linuxbrew
+    local LINUX_BREW_DEPS
+    LINUX_BREW_DEPS="bzip2 libffi libxml2 libxmlsec1 openssl readline sqlite xz zlib"
+
+    # Alpine Linux
+    local APK_DEPS
+    APK_DEPS="git bash build-base libffi-dev openssl-dev bzip2-dev zlib-dev"
+    APK_DEPS="$APK_DEPS readline-dev sqlite-dev"
+    # Installation of Python 3.7 may fail due to Python 3.7.0 issue #34555.
+    # Work around is to install the linux system headers package:
+    # apk add linux-headers
 
     if [[ $kernel == darwin ]]; then
         dependencies="$BREW_DEPS"
@@ -346,6 +346,14 @@ function opy_main
         print_virtualenv_infos
     fi
 }
+
+CURRENT_USER_NAME=$(id -u -n)
+OPY_PREFIX=${OPY_PREFIX:-opy}
+OPY_VERSION=${OPY_VERSION:-3.7.7}
+OPY_USER=${OPY_USER:-$CURRENT_USER_NAME}
+OPY_DEFAULT_ENV=$OPY_PREFIX-$OPY_USER-$OPY_VERSION
+OPY_ENV=${OPY_ENV:-$OPY_DEFAULT_ENV}
+OPY_VERBOSE=${OPY_VERBOSE:-0}
 
 opy_main "$OPY_VERSION" "$OPY_ENV" "$OPY_VERBOSE"
 
