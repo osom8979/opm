@@ -36,10 +36,6 @@ else
 fi
 cd "$BUILD_PREFIX/$SRC"
 
-if [[ $ENABLE_PATCH -eq 1 && "$VER" == "3.7.3" && "$PLATFORM" == "Linux" ]]; then
-    STEP=$LIB-patch    run_step patch -p 1 < "$WORKING/50-python3.7.3-linux.patch"
-    STEP=$LIB-autoconf run_step autoconf
-fi
 #if [[ "$PLATFORM" == "Darwin" ]]; then
 #FLAGS="--enable-framework=$TPARTY_PREFIX/Frameworks"
 #fi
@@ -49,6 +45,7 @@ PKG_CONFIG_PATH=$TPARTY_PREFIX/lib/pkgconfig \
     LDFLAGS="-L/opt/X11/lib -L$TPARTY_PREFIX/lib -Wl,-rpath,$TPARTY_PREFIX/lib" \
     STEP=$LIB-config \
     run_step ./configure \
+             --with-openssl=$PREFIX \
              --enable-shared \
              --enable-optimizations \
              --prefix=$TPARTY_PREFIX
