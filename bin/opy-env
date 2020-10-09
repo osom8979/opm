@@ -29,15 +29,17 @@ function find_pyenv_version
 
 function find_not_found_cmds
 {
-    if [[ $# -eq 1 ]]; then
-        if [[ -z $(which $1 2> /dev/null) ]]; then
-            echo $1
+    if [[ $# -ge 1 ]]; then
+        if [[ -z $(which "$1" 2> /dev/null) ]]; then
+            echo -n "$1"
         fi
         shift
     fi
     if [[ $# -ge 1 ]]; then
         for i in $@; do
-            echo " $i"
+            if [[ -z $(which "$1" 2> /dev/null) ]]; then
+                echo -n " $i"
+            fi
         done
     fi
 }

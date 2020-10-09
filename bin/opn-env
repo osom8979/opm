@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+# - ref: https://github.com/nodenv/nodenv
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+fi
+
+function get_nodenv_path
+{
+    PATH=$HOME/.nodenv/bin:$PATH which nodenv 2> /dev/null
+}
+
+function must_nodenv_path
+{
+    local nodenv_cmd=$(get_nodenv_path)
+    if [[ -z $nodenv_cmd ]]; then
+        opm-println-error "Not found nodenv command."
+        exit 1  # The assertion error ends immediately.
+    fi
+    echo "$nodenv_cmd"
+}
+
+function find_nodenv_version
+{
+    local version=$1
+    local nodenv_cmd=$(must_nodenv_path)
+    "$nodenv_cmd" versions | sed 's/*//g' | awk '{print($1);}' | grep -Fx "$version"
+}
+
+function find_not_found_cmds
+{
+    if [[ $# -ge 1 ]]; then
+        if [[ -z $(which "$1" 2> /dev/null) ]]; then
+            echo -n "$1"
+        fi
+        shift
+    fi
+    if [[ $# -ge 1 ]]; then
+        for i in $@; do
+            if [[ -z $(which "$1" 2> /dev/null) ]]; then
+                echo -n " $i"
+            fi
+        done
+    fi
+}
+
+# --------------
+# Install nodenv
+# --------------
+
+function build_nodenv
+{
+    pushd "$PWD"
+    cd "$HOME/.nodenv" && ./src/configure && make -C src
+    popd
+}
+
+function install_nodenv
+{
+    local not_found_cmds=$(find_not_found_cmds git gcc make)
+    if [[ -n $not_found_cmds ]]; then
+        opm-println "Not found commands: $not_found_cmds"
+        opm-package update
+        opm-package install $not_found_cmds
+
+        not_found_cmds=$(find_not_found_cmds git gcc make)
+        if [[ -n $not_found_cmds ]]; then
+            opm-println-error "installation failed: $not_found_cmds"
+            return 1
+        fi
+    fi
+
+    opm-println "Install nodenv ..."
+    if [[ -d "$HOME/.nodenv" ]]; then
+        opm-println-error "Exists '$HOME/.nodenv' directory"
+        return 1
+    fi
+    git clone --depth=1 "https://github.com/nodenv/nodenv.git" "$HOME/.nodenv"
+
+    opm-println "Build nodenv ..."
+    build_nodenv
+
+    opm-println "Install node-build ..."
+    if [[ ! -d "$HOME/.nodenv/plugins" ]]; then
+        mkdir -p "$HOME/.nodenv/plugins"
+    fi
+    git clone --depth=1 "https://github.com/nodenv/node-build.git" "$HOME/.nodenv/plugins/node-build"
+}
+
+function install_nodenv_if_not_exist
+{
+    if [[ -n $(get_nodenv_path) ]]; then
+        return 0
+    fi
+
+    opm-println "Not found 'nodenv' command."
+    install_nodenv
+
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        opm-println-error "nodenv installation failed: $code"
+        return $code
+    fi
+}
+
+# ------------------------
+# Install node with nodenv
+# ------------------------
+
+function install_node
+{
+    local node_version=$1
+    local nodenv_cmd=$(must_nodenv_path)
+
+    "$nodenv_cmd" install "$node_version"
+}
+
+function install_node_if_not_exist
+{
+    local node_version=$1
+    if [[ -n $(find_nodenv_version $node_version) ]]; then
+        return 0
+    fi
+
+    opm-println "Not found '$node_version' in nodenv."
+    opm-println "Install node $node_version ..."
+
+    install_node "$node_version"
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        opm-println-error "node installation failed: $code"
+        return $code
+    fi
+}
+
+# ---------------
+# Activate nodenv
+# ---------------
+
+function enable_nodenv
+{
+    export PATH="$HOME/.nodenv/bin:$PATH"
+    eval "$(nodenv init -)"
+}
+
+function active_nodenv
+{
+    local nodenv_version=$1
+    nodenv shell "$nodenv_version"
+}
+
+function print_nodenv_infos
+{
+    opm-println-info "[OSOM Node Environment]"
+    opm-println-info "- Node version: $(node --version 2>&1)"
+    opm-println-info "- Node executable: $(which node)"
+    opm-println-info "- Nodenv which node: $(nodenv which node)"
+    opm-println-info "- Nodenv version: $(nodenv version | awk '{print($1);}')"
+}
+
+function exit_on_error
+{
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        exit $code
+    fi
+}
+
+function opn_main
+{
+    local node_version=$1
+    local nodenv_verbose=$2
+
+    # Installation ...
+
+    install_nodenv_if_not_exist
+    exit_on_error
+
+    install_node_if_not_exist "$node_version"
+    exit_on_error
+
+    # Activation ...
+
+    enable_nodenv
+    exit_on_error
+
+    active_nodenv "$node_version"
+    exit_on_error
+
+    # Information ...
+
+    if [[ $nodenv_verbose -ne 0 ]]; then
+        print_nodenv_infos
+    fi
+}
+
+OPN_VERSION=${OPN_VERSION:-14.13.1}
+OPN_VERBOSE=${OPN_VERBOSE:-0}
+
+opn_main "$OPN_VERSION" "$OPN_VERBOSE"
+
