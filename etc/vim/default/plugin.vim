@@ -17,24 +17,12 @@ call neobundle#begin(expand('~/.vim/bundle/'))
 " Let NeoBundle manage NeoBundle
 NeoBundleFetch 'Shougo/neobundle.vim'
 
-"" ------------
-"" Plugin list.
-"" ------------
-
-" Interactive command execution in Vim.
-NeoBundle 'Shougo/vimproc.vim', {
-    \'build': {
-    \       'windows': 'tools\\update-dll-mingw',
-    \       'cygwin' : 'make -f make_cygwin.mak',
-    \       'mac'    : 'make -f make_mac.mak',
-    \       'linux'  : 'make',
-    \       'unix'   : 'gmake',
-    \   },
-    \}
+" -------
+" Plugins
+" -------
 
 NeoBundle 'scrooloose/nerdtree'             " directory browser.
 NeoBundle 'scrooloose/nerdcommenter'        " language dependent commenter.
-NeoBundle 'ctrlpvim/ctrlp.vim'              " full path fuzzy file, buffer, mru, tag, etc.
 NeoBundle 'majutsushi/tagbar'               " tagbar window.
 NeoBundle 'easymotion/vim-easymotion'       " motions on speed.
 NeoBundle 'kshenoy/vim-signature'           " display marks.
@@ -44,7 +32,8 @@ NeoBundle 'VisIncr'                         " produce increasing/decreasing colu
 NeoBundle 'skywind3000/asynctasks.vim'      " modern task system.
 NeoBundle 'skywind3000/asyncrun.vim'        " run async shell commands.
 NeoBundle 'skywind3000/quickmenu.vim'       " a nice customizable popup menu for vim.
-NeoBundle 'ryanoasis/vim-devicons'          " Adds file type icons to Vim plugins
+NeoBundle 'skywind3000/vim-quickui'         " ui extensions for vim.
+NeoBundle 'ryanoasis/vim-devicons'          " adds file type icons to vim plugins
 NeoBundle 'echofunc.vim'                    " print function parameter information.
 NeoBundle 'a.vim'                           " source <-> header.
 NeoBundle 'epheien/termdbg'                 " terminal debugger for vim (pdb, ipdb, lldb, dlv)
@@ -56,6 +45,24 @@ NeoBundle 'garbas/vim-snipmate'             " [Snip] snipmate aims to provide su
 NeoBundle 'airblade/vim-gitgutter'          " [Git] shows a git diff in the gutter.
 NeoBundle 'tpope/vim-fugitive'              " [Git] git wrapper.
 
+" A command-line fuzzy finder.
+NeoBundle 'junegunn/fzf', {
+    \   'do': {
+    \       -> fzf#install()
+    \   }
+    \}
+
+" Interactive command execution in Vim.
+NeoBundle 'Shougo/vimproc.vim', {
+    \   'build': {
+    \       'windows': 'tools\\update-dll-mingw',
+    \       'cygwin' : 'make -f make_cygwin.mak',
+    \       'mac'    : 'make -f make_mac.mak',
+    \       'linux'  : 'make',
+    \       'unix'   : 'gmake',
+    \   },
+    \}
+
 " Intellisense engine.
 NeoBundle 'neoclide/coc.nvim', 'release', {
     \   'build': {
@@ -63,12 +70,10 @@ NeoBundle 'neoclide/coc.nvim', 'release', {
     \   }
     \}
 
-" OPM-VIM.
-if $DISABLE_OPVIM != 1 && has('nvim') && has('python3')
-    NeoBundle g:opm_vim_script_dir . '/opvim', {
-        \   'type': 'nosync'
-        \}
-endif
+" opm-vim
+NeoBundle g:opm_vim_script_dir.'/opvim', {
+    \   'type': 'nosync'
+    \}
 
 call neobundle#end()
 

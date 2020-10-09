@@ -35,13 +35,13 @@ set  noswapfile                 " no swap file.
 "set nobackup                   " no backup.
 "set winminheight=10            " The minimal height of a window
 "set winminwidth=10             " The minimal width of a window
-set backspace=indent,eol,start  " make that backspace key work the way it should
+set  backspace=indent,eol,start " make that backspace key work the way it should
 "set clipboard=unnamedplus
 "set paste                      " don't use this: (for the SnipMate plugin)
 
 " enable mouse event.
 if has('mouse')
-set mouse=a
+    set mouse=a
 endif
 
 " theme setting.
@@ -53,12 +53,12 @@ set grepprg=grep\ -Hn\ $*\ '%:p'
 
 " syntax highlight.
 if has('syntax')
-syntax on
+    syntax on
 endif
 
 " win32 shell setting.
 if has('win32')
-set shell=$ComSpec
+    set shell=$ComSpec
 endif
 
 " whitespace setting.

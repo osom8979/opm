@@ -1,42 +1,61 @@
-"" Macro setting.
+" Buffer helper.
+
+" ----------------
+" Global variables
+" ----------------
+
+if !exists('g:opm_quickfix_height')
+    let g:opm_quickfix_height = 12
+endif
+if !exists('g:opm_terminal_height')
+    let g:opm_terminal_height = 12
+endif
+
+if !exists('g:opm_move_next_buffer_key')
+    let g:opm_move_next_buffer_key = '<F1>'
+endif
+if !exists('g:opm_move_prev_buffer_key')
+    let g:opm_move_prev_buffer_key = '<F2>'
+endif
+if !exists('g:opm_close_buffer_key')
+    let g:opm_close_buffer_key = '<leader>w'
+endif
+if !exists('g:opm_close_all_buffer_key')
+    let g:opm_close_all_buffer_key = '<leader>W'
+endif
+
+if !exists('g:opm_toggle_quickfix_key')
+    let g:opm_toggle_quickfix_key = '<leader><leader>3'
+endif
+if !exists('g:opm_toggle_terminal_key')
+    let g:opm_toggle_terminal_key = '<leader><leader>4'
+endif
+
+" ---------
+" Utilities
+" ---------
+
+function! s:TrimLeft(text)
+    return substitute(a:text, '^[ \t]*', '', '')
+endfunction
+
+function! s:TrimRight(text)
+    return substitute(a:text, '[ \t]*$', '', '')
+endfunction
+
+function! s:Trim(text)
+    return s:TrimLeft(s:TrimRight(a:text))
+endfunction
+
+" -----------------
+" Buffer operations
+" -----------------
 
 let s:False = 0
 let s:True  = 1
 
-let g:default_quickfix_height = 10
-let g:default_terminal_height = 10
-
-function! TrimLeft(text)
-    return substitute(a:text, '^[ \t]*', '', '')
-endfunction
-
-function! TrimRight(text)
-    return substitute(a:text, '[ \t]*$', '', '')
-endfunction
-
-function! Trim(text)
-    return TrimLeft(TrimRight(a:text))
-endfunction
-
-"" ------------------
-"" String operations.
-"" ------------------
-
-function! RemoveCr()
-    silent execute '%s/$//g'
-endfunction
-
-function! RemoveTrailingSpace()
-    silent execute '%s/\s*$//g'
-endfunction
-
-function! RemoveBlankLines()
-    silent execute 'g/^\s*$/d'
-endfunction
-
-"" -----------------
-"" Buffer operations.
-"" -----------------
+let s:QUICKFIX_NAME = '[Quickfix List]'
+let s:TERMINAL_REGEX = 'term://.*'
 
 let s:BUFFER_NUM  = 'B_NUM'  " [0:2]
 let s:BUFFER_F1   = 'B_F1'   " [3] u
@@ -70,10 +89,7 @@ let s:BUFFER_LINE = 'B_LINE'
 " +: modified
 " x: errors
 
-let s:QUICKFIX_NAME = '[Quickfix List]'
-let s:TERMINAL_REGEX = 'term://.*'
-
-function! GetBufferInfoDictionary(num, f1, f2, f3, f4, f5, name, line)
+function! s:GetBufferInfoDictionary(num, f1, f2, f3, f4, f5, name, line)
     return {
         \   s:BUFFER_NUM  : a:num,
         \   s:BUFFER_F1   : a:f1,
@@ -86,14 +102,14 @@ function! GetBufferInfoDictionary(num, f1, f2, f3, f4, f5, name, line)
         \}
 endfunction
 
-function! IsListedBuffer(info)
+function! s:IsListedBuffer(info)
     if a:info[s:BUFFER_F1] == 'u'
         return s:False
     endif
     return s:True
 endfunction
 
-function! IsCurrentBuffer(info)
+function! s:IsCurrentBuffer(info)
     if a:info[s:BUFFER_F2] == '%'
         return s:True
     endif
@@ -104,7 +120,7 @@ endfunction
 " buffer, it has been read into the buffer.  The buffer may have been
 " modified since then and thus be different from the file.
 " See also: *active-buffer*
-function! IsActiveBuffer(info)
+function! s:IsActiveBuffer(info)
     if a:info[s:BUFFER_F3] == 'a'
         return s:True
     endif
@@ -115,28 +131,36 @@ endfunction
 " has been read into the buffer.  Otherwise it's the same as an active
 " buffer, you just can't see it.
 " See also: *hidden-buffer*
-function! IsHiddenBuffer(info)
+function! s:IsHiddenBuffer(info)
     if a:info[s:BUFFER_F3] == 'h'
         return s:True
     endif
     return s:False
 endfunction
 
-function! IsModifiableBuffer(info)
+function! s:IsModifiableBuffer(info)
     if a:info[s:BUFFER_F4] == '-'
         return s:False
     endif
     return s:True
 endfunction
 
-function! IsReadonlyBuffer(info)
+function! s:IsReadonlyBuffer(info)
     if a:info[s:BUFFER_F4] == '='
         return s:True
     endif
     return s:False
 endfunction
 
-function! FindIndexWithBufferNumber(buffers, number)
+function! s:IsTerminalBuffer(info)
+    let f4 = a:info[s:BUFFER_F4]
+    if f4 == 'R' || f4 == 'F' || f4 == '?'
+        return s:True
+    endif
+    return s:False
+endfunction
+
+function! s:FindIndexWithBufferNumber(buffers, number)
     let index = 0
     for cursor in a:buffers
         if cursor[s:BUFFER_NUM] == a:number
@@ -147,8 +171,8 @@ function! FindIndexWithBufferNumber(buffers, number)
     return -1
 endfunction
 
-function! GetBufferInfoDictionaryWithString(text)
-    let trim = Trim(a:text)
+function! s:GetBufferInfoDictionaryWithString(text)
+    let trim = s:Trim(a:text)
     let num  = matchstr(trim, '^[0-9]*')
     let f1   = trim[strlen(num)+0]
     let f2   = trim[strlen(num)+1]
@@ -160,7 +184,7 @@ function! GetBufferInfoDictionaryWithString(text)
     let name = strpart(name, 0, stridx(name, '"'))
 
     let line = matchstr(trim, '[0-9]*$')
-    return GetBufferInfoDictionary(
+    return s:GetBufferInfoDictionary(
         \   str2nr(num),
         \   f1, f2, f3, f4, f5,
         \   name,
@@ -168,24 +192,24 @@ function! GetBufferInfoDictionaryWithString(text)
         \)
 endfunction
 
-function! GetCurrentBuffersOutput()
+function! s:GetCurrentBuffersOutput()
     redir => output
     silent execute 'buffers!'
     redir END
     return output
 endfunction
 
-function! GetCurrentBufferInfoList()
+function! s:GetCurrentBufferInfoList()
     let result = []
-    for cursor in split(GetCurrentBuffersOutput(), '\n')
-        let result += [GetBufferInfoDictionaryWithString(cursor)]
+    for cursor in split(s:GetCurrentBuffersOutput(), '\n')
+        let result += [s:GetBufferInfoDictionaryWithString(cursor)]
     endfor
     return result
 endfunction
 
-function! FindBufferWithName(name)
-    for cursor in split(GetCurrentBuffersOutput(), '\n')
-        let dic = GetBufferInfoDictionaryWithString(cursor)
+function! s:FindBufferWithName(name)
+    for cursor in split(s:GetCurrentBuffersOutput(), '\n')
+        let dic = s:GetBufferInfoDictionaryWithString(cursor)
         if dic[s:BUFFER_NAME] == a:name
             return dic
         endif
@@ -193,9 +217,9 @@ function! FindBufferWithName(name)
     return {}
 endfunction
 
-function! FindBufferWithRegexName(regex)
-    for cursor in split(GetCurrentBuffersOutput(), '\n')
-        let dic = GetBufferInfoDictionaryWithString(cursor)
+function! s:FindBufferWithRegexName(regex)
+    for cursor in split(s:GetCurrentBuffersOutput(), '\n')
+        let dic = s:GetBufferInfoDictionaryWithString(cursor)
         if !empty(matchstr(dic[s:BUFFER_NAME], a:regex))
             return dic
         endif
@@ -203,80 +227,72 @@ function! FindBufferWithRegexName(regex)
     return {}
 endfunction
 
-function! GetCurrentModifiableListedBufferInfoList()
+function! s:GetCurrentModifiableListedBufferInfoList()
     let result = []
-    for cursor in split(GetCurrentBuffersOutput(), '\n')
-        let info = GetBufferInfoDictionaryWithString(cursor)
-        if IsListedBuffer(info) && IsModifiableBuffer(info)
+    for cursor in split(s:GetCurrentBuffersOutput(), '\n')
+        let info = s:GetBufferInfoDictionaryWithString(cursor)
+        if s:IsListedBuffer(info) && s:IsModifiableBuffer(info) && !s:IsTerminalBuffer(info)
             let result += [info]
         endif
     endfor
     return result
 endfunction
 
-"" ---------------------
-"" Quick-fix operations.
-"" ---------------------
+" --------------------
+" Quick-fix operations
+" --------------------
 
-function! FindQuickfixBuffer()
-    return FindBufferWithName(s:QUICKFIX_NAME)
+function! s:FindQuickfixBuffer()
+    return s:FindBufferWithName(s:QUICKFIX_NAME)
 endfunction
 
-function! ExistsQuickfixBuffer()
-    let dic = FindQuickfixBuffer()
+function! s:ExistsQuickfixBuffer()
+    let dic = s:FindQuickfixBuffer()
     if empty(dic)
         return s:False
     endif
-    return IsActiveBuffer(dic)
+    return s:IsActiveBuffer(dic)
 endfunction
 
-function! ToggleQuickfixBuffer(...)
-    if ExistsQuickfixBuffer()
+function! s:ToggleQuickfixBuffer(...)
+    if s:ExistsQuickfixBuffer()
         let force_enable_show = a:0 > 0 ? a:1 : 0
         if force_enable_show == 0
             silent execute 'cclose'
         endif
     else
-        let height = 10
-        if exists('g:default_quickfix_height')
-            let height = g:default_quickfix_height
-        endif
-        silent execute 'belowright ' . height . 'copen | wincmd p'
+        silent execute 'belowright ' . g:opm_quickfix_height . 'copen | wincmd p'
     endif
 endfunction
 
-"" --------------------
-"" Terminal operations.
-"" --------------------
+" -------------------
+" Terminal operations
+" -------------------
 
-function! FindTerminalBuffer()
-    return FindBufferWithRegexName(s:TERMINAL_REGEX)
+function! s:FindTerminalBuffer()
+    return s:FindBufferWithRegexName(s:TERMINAL_REGEX)
 endfunction
 
-function! ToggleTerminalBuffer(...)
-    let dic = FindTerminalBuffer()
-    if !empty(dic) && IsActiveBuffer(dic)
+function! s:ToggleTerminalBuffer(...)
+    let dic = s:FindTerminalBuffer()
+    if !empty(dic) && s:IsActiveBuffer(dic)
         let force_enable_show = a:0 > 0 ? a:1 : 0
         if force_enable_show == 0
             silent execute 'bdelete! ' . dic[s:BUFFER_NUM]
         endif
     else
-        let height = 10
-        if exists('g:default_terminal_height')
-            let height = g:default_terminal_height
-        endif
-        silent execute 'belowright ' . height . 'split term://bash -l | startinsert'
+        silent execute 'belowright ' . g:opm_terminal_height . 'split term://bash -l | startinsert'
     endif
 endfunction
 
-"" -----------------------
-"" Main Buffer operations.
-"" -----------------------
+" ----------------------
+" Main Buffer operations
+" ----------------------
 
-function! MoveModifiableBuffer(offset)
-    let buffers = GetCurrentModifiableListedBufferInfoList()
+function! s:MoveModifiableBuffer(offset)
+    let buffers = s:GetCurrentModifiableListedBufferInfoList()
     let size    = len(buffers)
-    let index   = FindIndexWithBufferNumber(buffers, bufnr('%'))
+    let index   = s:FindIndexWithBufferNumber(buffers, bufnr('%'))
     let next    = index + a:offset
 
     if size == 0 || index == -1
@@ -289,18 +305,18 @@ function! MoveModifiableBuffer(offset)
     endif
 endfunction
 
-function! MovePrevModifiableBuffer()
-    call MoveModifiableBuffer(-1)
+function! s:MovePrevModifiableBuffer()
+    call s:MoveModifiableBuffer(-1)
 endfunction
 
-function! MoveNextModifiableBuffer()
-    call MoveModifiableBuffer(1)
+function! s:MoveNextModifiableBuffer()
+    call s:MoveModifiableBuffer(1)
 endfunction
 
-function! CloseAndMoveNextBuffer()
-    let buffers = GetCurrentModifiableListedBufferInfoList()
+function! s:CloseAndMoveNextBuffer()
+    let buffers = s:GetCurrentModifiableListedBufferInfoList()
     let size    = len(buffers)
-    let index   = FindIndexWithBufferNumber(buffers, bufnr('%'))
+    let index   = s:FindIndexWithBufferNumber(buffers, bufnr('%'))
 
     if size == 0 || index == -1
         return
@@ -320,11 +336,11 @@ function! CloseAndMoveNextBuffer()
     silent execute 'bdelete! ' . buffers[index][s:BUFFER_NUM]
 endfunction
 
-function! CloseAnotherBuffer()
-    let buffers = GetCurrentModifiableListedBufferInfoList()
+function! s:CloseAnotherBuffer()
+    let buffers = s:GetCurrentModifiableListedBufferInfoList()
     let size    = len(buffers)
     let current = bufnr('%')
-    let index   = FindIndexWithBufferNumber(buffers, current)
+    let index   = s:FindIndexWithBufferNumber(buffers, current)
 
     if size == 0 || index == -1
         return
@@ -337,50 +353,39 @@ function! CloseAnotherBuffer()
     endfor
 endfunction
 
-"" -----------------------
-"" Miscellaneous utilities
-"" -----------------------
+" -----------
+" Key mapping
+" -----------
 
-function! PrintHelpMessage()
-    let lines = readfile(g:opm_vim_script_dir . '/doc/help.txt')
-    for line in lines
-        echo line
-    endfor
+function! OpmMoveNextBuffer()
+    call s:MovePrevModifiableBuffer()
 endfunction
 
-"" --------------------
-"" Quickfix operations.
-"" --------------------
-
-function! GetQuickFixText(line)
-    return bufname(a:line['bufnr']) . '|' . a:line['lnum'] . '| ' . a:line['text']
+function! OpmMovePrevBuffer()
+    call s:MoveNextModifiableBuffer()
 endfunction
 
-function! QuickFixGrep(pattern)
-    let result = []
-    for line in getqflist()
-        if GetQuickFixText(line) =~ a:pattern
-            let result += [line]
-        endif
-    endfor
-    call setqflist(result)
+function! OpmCloseBuffer()
+    call s:CloseAndMoveNextBuffer()
 endfunction
 
-function! QuickFixGrepIgnore(pattern)
-    let result = []
-    for line in getqflist()
-        if GetQuickFixText(line) !~ a:pattern
-            let result += [line]
-        endif
-    endfor
-    call setqflist(result)
+function! OpmCloseAllBuffer()
+    call s:CloseAnotherBuffer()
 endfunction
 
-function! QuickFixGrepCommand(is_bang, pattern)
-    if a:is_bang
-        call QuickFixGrepIgnore(a:pattern)
-    else
-        call QuickFixGrep(a:pattern)
-    endif
+silent execute 'noremap '.g:opm_move_next_buffer_key.' <ESC>:call OpmMoveNextBuffer()<CR>'
+silent execute 'noremap '.g:opm_move_prev_buffer_key.' <ESC>:call OpmMovePrevBuffer()<CR>'
+silent execute 'noremap '.g:opm_close_buffer_key    .' <ESC>:call OpmCloseBuffer()<CR>'
+silent execute 'noremap '.g:opm_close_all_buffer_key.' <ESC>:call OpmCloseAllBuffer()<CR>'
+
+function! OpmToggleQuickfixBuffer()
+    call s:ToggleQuickfixBuffer()
 endfunction
+
+function! OpmToggleTerminalBuffer()
+    call s:ToggleTerminalBuffer()
+endfunction
+
+silent execute 'noremap '.g:opm_toggle_quickfix_key.' <ESC>:call OpmToggleQuickfixBuffer()<CR>'
+silent execute 'noremap '.g:opm_toggle_terminal_key.' <ESC>:call OpmToggleTerminalBuffer()<CR>'
 

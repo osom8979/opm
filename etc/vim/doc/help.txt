@@ -1,27 +1,29 @@
-+---------------+-------------------------+-------------------------------------+
-| VisSum        | :VisSum                 | Computes sum of selected numbers    |
-| VisIncr       | :II & :II -1            | Increasing/Decreasing columns       |
-| SnipMate      | <C-J>                   | Textual snippets                    |
-| AsyncRun      | :AsyncRun[!] {args}     | Run Async Shell Commands            |
-| Easymotion    | <leader><leader>f       | Vim motions on speed                |
-| NERDCommenter | <leader>cc & <leader>cu | commenting/uncommenting             |
-+---------------+-------------------------+-------------------------------------+
-| Tabs          | <leader><F1>            | Prev tab                            |
-| Tabs          | <leader><F2>            | Next tab                            |
-| Quick Fix     | :cc                     | Current quick-fix                   |
-| Quick Fix     | <F5>                    | Prev quick-fix                      |
-| Quick Fix     | <F6>                    | Next quick-fix                      |
-| Visual Mode   | <C-v> or <C-q>          | Change Visual Mode                  |
-| Insert Char   | <C-v><C-m>              | Insert CR(^M)                       |
-| JumpList      | :jumps                  | List of jumps                       |
-| JumpList      | <C-i>                   | Goes forward in jump list           |
-| JumpList      | <C-o>                   | Goes back in jump list              |
-+---------------+-------------------------+-------------------------------------+
-| GoTo          | gd                      | Local declaration                   |
-| GoTo          | gD                      | Global declaration                  |
-| GoTo          | gf                      | File under the cursor               |
-| GoTo          | g]                      | Jump to a tag definition            |
-+---------------+-------------------------+-------------------------------------+
-| Regex         | :g/^\s*$/d              | Remove blank lines                  |
-+---------------+-------------------------+-------------------------------------+
++-------------------+-------------------------+-------------------------------------+
+| VisSum            | :VisSum                 | Computes sum of selected numbers    |
+| VisIncr           | :II & :II -1            | Increasing/Decreasing columns       |
+| SnipMate          | <C-J>                   | Textual snippets                    |
+| AsyncRun          | :AsyncRun[!] {args}     | Run Async Shell Commands            |
+| Easymotion        | <leader><leader>f       | Vim motions on speed                |
+| NERDCommenter     | <leader>cc & <leader>cu | commenting/uncommenting             |
++-------------------+-------------------------+-------------------------------------+
+| Tabs              | <leader><F1>            | Prev tab                            |
+| Tabs              | <leader><F2>            | Next tab                            |
+| Quick Fix         | :cc                     | Current quick-fix                   |
+| Quick Fix         | <F5>                    | Prev quick-fix                      |
+| Quick Fix         | <F6>                    | Next quick-fix                      |
+| Visual Mode       | <C-v> or <C-q>          | Change Visual Mode                  |
+| Insert Char       | <C-v><C-m>              | Insert CR(^M)                       |
+| JumpList          | :jumps                  | List of jumps                       |
+| JumpList          | <C-i>                   | Goes forward in jump list           |
+| JumpList          | <C-o>                   | Goes back in jump list              |
++-------------------+-------------------------+-------------------------------------+
+| GoTo              | gd                      | Local declaration                   |
+| GoTo              | gD                      | Global declaration                  |
+| GoTo              | gf                      | File under the cursor               |
+| GoTo              | g]                      | Jump to a tag definition            |
++-------------------+-------------------------+-------------------------------------+
+| Regex             | :g/^\s*$/d              | Remove blank lines                  |
++-------------------+-------------------------+-------------------------------------+
+| Paste in cmd mode | <C-r>"                  | Yanked text to vi command prompt    |
++-------------------+-------------------------+-------------------------------------+
 

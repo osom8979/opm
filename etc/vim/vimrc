@@ -1,10 +1,28 @@
 " Vim setting.
+"
+" Run all healthchecks.
+" :checkhealth
 
 scriptencoding utf-8
 
-" Global directory.
-let g:opm_vim_script_dir = expand('<sfile>:p:h')
-let &runtimepath .= ',' . g:opm_vim_script_dir
+function! s:GetOpmHomeDir() abort
+    if isdirectory($OPM_HOME)
+        return $OPM_HOME
+    else
+        " vimrc -> vim -> etc -> opm
+        return expand('<sfile>:p:h:h:h')
+    endif
+endfunction
+
+function! s:GetOpmVariable(file, key)
+    for line in readfile(a:file)
+        let l:value = matchstr(line, '^'.a:key.'=.*')
+        if strlen(l:value) >= 1
+            return split(l:value, '=')[1]
+        endif
+    endfor
+    return ''
+endfunction
 
 function! s:GetOpyPythonPath(home, prefix, name, version)
     return a:home    . '/.pyenv/versions/' .
@@ -13,40 +31,48 @@ function! s:GetOpyPythonPath(home, prefix, name, version)
          \ a:version . '/bin/python'
 endfunction
 
+function! s:GetOpnNodePath(home, version)
+    return a:home . '/.nodenv/versions/' .
+         \ a:version . '/bin/node'
+endfunction
+
+function! s:ExecuteVimSourceFiles(dir)
+    for path in globpath(a:dir, '*.vim', 1, 1)
+        execute 'source '.path
+    endfor
+endfunction
+
 let s:home_dir = $HOME
 let s:user_name = $USER
 let s:opy_prefix = 'opy'
 
-function! s:GetOpyPythonPath2(version)
-    return s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, a:version)
-endfunction
-
-let s:opy2_version = '2.7.17'
-let s:opy3_version = '3.7.7'
-
-let s:opy2_python_path = s:GetOpyPythonPath2(s:opy2_version)
-let s:opy3_python_path = s:GetOpyPythonPath2(s:opy3_version)
-
-if executable(s:opy2_python_path)
-    let g:python_host_prog = s:opy2_python_path
-endif
-if executable(s:opy3_python_path)
-    let g:python3_host_prog = s:opy3_python_path
-endif
+let g:opm_vim_script_dir = expand('<sfile>:p:h')
+let g:opm_home = s:GetOpmHomeDir()
+let g:opm_information_path = g:opm_home . '/INFORMATION'
+let g:opm_version = s:GetOpmVariable(g:opm_information_path, 'VERSION')
+let g:opy2_version = s:GetOpmVariable(g:opm_information_path, 'OPY2_VERSION')
+let g:opy3_version = s:GetOpmVariable(g:opm_information_path, 'OPY3_VERSION')
+let g:opn14_version = s:GetOpmVariable(g:opm_information_path, 'OPN14_VERSION')
+let g:opy2_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, g:opy2_version)
+let g:opy3_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, g:opy3_version)
+let g:opn14_node_path = s:GetOpnNodePath(s:home_dir, g:opn14_version)
+let &runtimepath .= ',' . g:opm_vim_script_dir
 
 "let g:loaded_python_provider = 1
 "let g:loaded_python3_provider = 1
 
-" Vim user's setting file.
-let s:user_config_script = g:opm_vim_script_dir . '/user.vim'
-if filereadable(s:user_config_script)
-    execute 'source ' . s:user_config_script
+if executable(g:opy2_python_path)
+    let g:python_host_prog = g:opy2_python_path
+endif
+if executable(g:opy3_python_path)
+    let g:python3_host_prog = g:opy3_python_path
 endif
 
-" Vim setting files.
-execute 'source ' . g:opm_vim_script_dir . '/vim/plugin.vim'
-execute 'source ' . g:opm_vim_script_dir . '/vim/config.vim'
-execute 'source ' . g:opm_vim_script_dir . '/vim/keymap.vim'
-execute 'source ' . g:opm_vim_script_dir . '/vim/macro.vim'
-execute 'source ' . g:opm_vim_script_dir . '/vim/syntax.vim'
+" default setting.
+execute 'source '.g:opm_vim_script_dir.'/default/plugin.vim'
+execute 'source '.g:opm_vim_script_dir.'/default/config.vim'
+execute 'source '.g:opm_vim_script_dir.'/default/keymap.vim'
+
+" extra setting.
+call s:ExecuteVimSourceFiles(g:opm_vim_script_dir.'/extra')
 
