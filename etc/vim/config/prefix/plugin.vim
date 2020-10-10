@@ -1,5 +1,5 @@
-"" Plugins setting.
-"" Use the NeoBundle.vim plugin manager.
+" plugins settings.
+" Use the NeoBundle.vim plugin manager.
 
 " Note: Skip initialization for vim-tiny or vim-small.
 if !1 | finish | endif

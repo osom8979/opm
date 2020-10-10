@@ -1,4 +1,4 @@
-"" Common setting.
+" general configurations.
 
 set fileencodings=utf-8,cp949
 set encoding=utf-8
@@ -113,11 +113,6 @@ if has('python3')
     let g:gundo_prefer_python3 = 1
 endif
 
-" QuickMenu
-" L: enable cursorline
-" H: cmdline help
-let g:quickmenu_options = "LH"
-
 " python-mode
 let g:pymode_folding = 0
 let g:pymode_lint_ignore = 'E203,E221,E266,E272,E301,E302'
@@ -130,7 +125,7 @@ let g:snips_author = $USER
 if has('autocmd')
     " Show NERDTree window.
     autocmd VimEnter * NERDTree | wincmd p
-    "autocmd TabEnter * NERDTree | wincmd p
+    autocmd TabEnter * NERDTree | wincmd p
 
     " Remove tailing whitespace.
     autocmd FileType vim,c,cpp,java,php,ruby,python autocmd BufWritePre <buffer> :%s/\s\+$//e

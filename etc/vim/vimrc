@@ -68,11 +68,16 @@ if executable(g:opy3_python_path)
     let g:python3_host_prog = g:opy3_python_path
 endif
 
-" default setting.
-execute 'source '.g:opm_vim_script_dir.'/default/plugin.vim'
-execute 'source '.g:opm_vim_script_dir.'/default/config.vim'
-execute 'source '.g:opm_vim_script_dir.'/default/keymap.vim'
+" prefix settings.
+execute 'source '.g:opm_vim_script_dir.'/config/prefix/plugin.vim'
+execute 'source '.g:opm_vim_script_dir.'/config/prefix/config.vim'
+execute 'source '.g:opm_vim_script_dir.'/config/prefix/macro.vim'
+execute 'source '.g:opm_vim_script_dir.'/config/prefix/keymap.vim'
 
-" extra setting.
-call s:ExecuteVimSourceFiles(g:opm_vim_script_dir.'/extra')
+" auto-load setting.
+call s:ExecuteVimSourceFiles(g:opm_vim_script_dir.'/config/plugin')
+call s:ExecuteVimSourceFiles(g:opm_vim_script_dir.'/config/user')
+
+" suffix settings.
+execute 'source '.g:opm_vim_script_dir.'/config/suffix/qmenu.vim'
 

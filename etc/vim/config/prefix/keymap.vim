@@ -1,4 +1,4 @@
-"" Key-map & command setting.
+" command and key mapping.
 
 let mapleader="\\"
 
