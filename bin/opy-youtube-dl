@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+fi
+
+function install_pyenv_if_not_exist
+{
+    opy3-pip show youtube_dl &> /dev/null
+    local code=$?
+    if [[ $code -eq 0 ]]; then
+        return 0
+    fi
+
+    opy3-pip install youtube_dl
+}
+
+function exit_on_error
+{
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        exit $code
+    fi
+}
+
+function opy_youtube_dl_main
+{
+    install_pyenv_if_not_exist
+    exit_on_error
+
+    opy3 -m youtube_dl "$@"
+}
+
+opy_youtube_dl_main "$@"
+
