@@ -56,6 +56,7 @@ getOpmHomePath = do
 
 runOpmMonad = do
     opmHomePath <- getOpmHomePath
-    xproc <- spawnPipe ("xmobar " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
+    xproc <- spawnPipe ("xmobar --screen=0 " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
+    xproc <- spawnPipe ("xmobar --screen=1 " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
     xmonad getDefaultOpmMonadSettings
 
