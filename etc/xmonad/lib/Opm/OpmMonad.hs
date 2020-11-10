@@ -195,8 +195,9 @@ getOpmHomePath = do
 
 runOpmMonad = do
     opmHomePath <- getOpmHomePath
-    xproc <- spawnPipe ("xmobar --screen=0 " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
-    xproc <- spawnPipe ("xmobar --screen=1 " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
+    xmobarProc1 <- spawnPipe ("xmobar --screen=0 " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
+    xmobarProc2 <- spawnPipe ("xmobar --screen=1 " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
+    picomProc <- spawnPipe ("picom --config " ++ opmHomePath ++ "/etc/picom/picom.conf")
     xmonad getDefaultOpmMonadSettings
 
 -- Finally, a copy of the default bindings in simple textual tabular format.
