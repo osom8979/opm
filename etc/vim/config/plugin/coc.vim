@@ -18,6 +18,7 @@ let g:coc_global_extensions = [
     \]
 
 "let g:coc_node_path = g:opn14_node_path
+let g:coc_disable_startup_warning = 1
 
 " TextEdit might fail if hidden is not set.
 set hidden
