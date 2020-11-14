@@ -5,6 +5,7 @@ import System.Exit
 
 import XMonad
 import XMonad.Hooks.ManageDocks(docks, avoidStruts)
+import XMonad.Hooks.EwmhDesktops(ewmh, fullscreenEventHook)
 import XMonad.Util.Run(spawnPipe)
 
 import qualified Data.Map        as M
@@ -30,7 +31,7 @@ opmBorderWidth = 1
 opmModMask = mod1Mask
 
 -- The default number of workspaces (virtual screens) and their names.
-opmWorkspaces = ["1","2","3","4","5","6","7","8","9"]
+opmWorkspaces = ["1","2","3","4","5","6","7","8","9","0"]
 
 -- Border colors for unfocused and focused windows, respectively.
 opmNormalBorderColor  = "#dddddd"
@@ -115,7 +116,7 @@ opmKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- mod-[1..9], Switch to workspace N
     -- mod-shift-[1..9], Move client to workspace N
     [((m .|. modm, k), windows $ f i)
-        | (i, k) <- zip (XMonad.workspaces conf) [xK_1 .. xK_9]
+        | (i, k) <- zip (XMonad.workspaces conf) [xK_0 .. xK_9]
         , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)]]
     ++
 
@@ -157,7 +158,7 @@ opmManageHook = composeAll
     [ className =? "Org.gnome.Nautilus" --> doFloat ]
 
 -- Defines a custom handler function for X Events.
-opmEventHook = mempty
+opmEventHook = handleEventHook def <+> fullscreenEventHook
 
 -- Perform an arbitrary action on each internal state change or X event.
 opmLogHook = return ()
@@ -167,7 +168,7 @@ opmStartupHook = return ()
 
 -- A structure containing your configuration settings,
 -- overriding fields in the default config.
-getDefaultOpmMonadSettings = docks def {
+getDefaultOpmMonadSettings = docks $ ewmh def {
         terminal           = opmTerminal,
         focusFollowsMouse  = opmFocusFollowsMouse,
         clickJustFocuses   = opmClickJustFocuses,
@@ -195,9 +196,10 @@ getOpmHomePath = do
 
 runOpmMonad = do
     opmHomePath <- getOpmHomePath
-    xmobarProc1 <- spawnPipe ("xmobar --screen=0 " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
-    xmobarProc2 <- spawnPipe ("xmobar --screen=1 " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
+    xmobarScreen0Proc <- spawnPipe ("xmobar --screen=0 " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
+    xmobarScreen1Proc <- spawnPipe ("xmobar --screen=1 " ++ opmHomePath ++ "/etc/xmobar/xmobarrc")
     picomProc <- spawnPipe ("picom --config " ++ opmHomePath ++ "/etc/picom/picom.conf")
+    fehProc <- spawnPipe ("feh --bg-scale /usr/share/backgrounds/archlinux/small.png")
     xmonad getDefaultOpmMonadSettings
 
 -- Finally, a copy of the default bindings in simple textual tabular format.
