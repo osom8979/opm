@@ -5,12 +5,17 @@
 
 scriptencoding utf-8
 
+let s:home_dir = $HOME
+let s:user_name = $USER
+let s:opy_prefix = 'opy'
+let s:opm_home_by_env = $OPM_HOME
+let s:opm_home_by_sfile = expand('<sfile>:p:h:h:h')
+
 function! s:GetOpmHomeDir() abort
-    if isdirectory($OPM_HOME)
-        return $OPM_HOME
+    if strlen(s:opm_home_by_env) >= 1 && isdirectory(s:opm_home_by_env)
+        return s:opm_home_by_env
     else
-        " vimrc -> vim -> etc -> opm
-        return expand('<sfile>:p:h:h:h')
+        return s:opm_home_by_sfile
     endif
 endfunction
 
@@ -42,13 +47,9 @@ function! s:ExecuteVimSourceFiles(dir)
     endfor
 endfunction
 
-let s:home_dir = $HOME
-let s:user_name = $USER
-let s:opy_prefix = 'opy'
-
 let g:opm_vim_script_dir = expand('<sfile>:p:h')
 let g:opm_home = s:GetOpmHomeDir()
-let g:opm_information_path = g:opm_home . '/INFORMATION'
+let g:opm_information_path = g:opm_home.'/INFORMATION'
 let g:opm_version = s:GetOpmVariable(g:opm_information_path, 'VERSION')
 let g:opy2_version = s:GetOpmVariable(g:opm_information_path, 'OPY2_VERSION')
 let g:opy3_version = s:GetOpmVariable(g:opm_information_path, 'OPY3_VERSION')
