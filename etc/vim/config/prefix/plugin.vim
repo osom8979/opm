@@ -44,6 +44,7 @@ NeoBundle 'tomtom/tlib_vim'                 " [Snip] dependency of 'vim-snipmate
 NeoBundle 'garbas/vim-snipmate'             " [Snip] snipmate aims to provide support for textual snippets.
 NeoBundle 'airblade/vim-gitgutter'          " [Git] shows a git diff in the gutter.
 NeoBundle 'tpope/vim-fugitive'              " [Git] git wrapper.
+NeoBundle 'neoclide/coc.nvim'               " Intellisense engine.
 
 " A command-line fuzzy finder.
 NeoBundle 'junegunn/fzf', {
@@ -61,13 +62,6 @@ NeoBundle 'Shougo/vimproc.vim', {
     \       'linux'  : 'make',
     \       'unix'   : 'gmake',
     \   },
-    \}
-
-" Intellisense engine.
-NeoBundle 'neoclide/coc.nvim', 'release', {
-    \   'build': {
-    \       'others': 'git checkout release'
-    \   }
     \}
 
 " opm-vim
