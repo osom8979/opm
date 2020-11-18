@@ -126,23 +126,21 @@ function do_list
         return 0
     fi
 
-    local found_prefix
-    local error_prefix
-    if [[ $verbose_flag -ne 0 ]]; then
-        found_prefix="Found package:"
-        error_prefix="Not found package:"
-    else
-        found_prefix="+"
-        error_prefix="-"
-    fi
-
     local count=0
     for i in $@; do
         if [[ -n $(echo "$packages" | grep --color=never -Fx "$i") ]]; then
-            opm-println-info "$found_prefix $i"
+            if [[ $verbose_flag -ne 0 ]]; then
+                opm-println-info "+ $i"
+            else
+                echo "+ $i"
+            fi
             (( count += 1 ))
         else
-            opm-println-error "$error_prefix $i"
+            if [[ $verbose_flag -ne 0 ]]; then
+                opm-println-error "- $i"
+            else
+                echo "- $i"
+            fi
         fi
     done
 

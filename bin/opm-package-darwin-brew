@@ -21,7 +21,7 @@ function update_darwin_brew
 
 function list_darwin_brew
 {
-    brew list -1
+    brew list --formula -1
 }
 
 function files_darwin_brew
