@@ -82,7 +82,7 @@ fi
 function replaceDoxygenParam {
     local param=$1
     local text=$2
-    local line=`egrep -n "^$param[ \\t]*=.*" $DOXYGEN_FILE | awk -F ':' '{print $1}'`
+    local line=`egrep --color=never -n "^$param[ \\t]*=.*" $DOXYGEN_FILE | awk -F ':' '{print $1}'`
 
     # Insert comment:
     sed $IN_PLACE_FLAG "${line}s/\\(.*\\)/#\\1/g" $DOXYGEN_FILE

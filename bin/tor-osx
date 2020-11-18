@@ -2,7 +2,7 @@
 
 DOWNLOAD_DIR=$HOME/Downloads
 GUEST_DIR=/home/anon/tor-browser_en-US/Browser/Downloads/hostdir
-IP_ADDRESS=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
+IP_ADDRESS=$(ifconfig en0 | grep --color=never inet | awk '$1=="inet" {print $2}')
 DISPLAY_INDEX=0
 
 echo "Run TorBrowser"

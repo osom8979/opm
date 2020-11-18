@@ -6,7 +6,7 @@ if [[ ! -x $TEST_GIT ]]; then
     exit 1
 fi
 
-FIND_UNTRACKED_FILES=`git status -s | grep -e '^?? .*' | sed -e 's/^?? //g'`
+FIND_UNTRACKED_FILES=`git status -s | grep --color=never -e '^?? .*' | sed -e 's/^?? //g'`
 
 if [[ -z $FIND_UNTRACKED_FILES ]]; then
     echo 'Not found untracked files'

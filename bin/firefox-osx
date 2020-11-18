@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 DOWNLOAD_DIR=$HOME/Downloads
-IP_ADDRESS=$(ifconfig en0 | grep inet | awk '$1=="inet" {print $2}')
+IP_ADDRESS=$(ifconfig en0 | grep --color=never inet | awk '$1=="inet" {print $2}')
 DISPLAY_INDEX=0
 
 echo "Run Firefox"

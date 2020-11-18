@@ -27,7 +27,7 @@ function get_variable
         return 1
     fi
 
-    local val=`cat "$file" | grep "^$key=" | sed "s/^$key=//g" | tr '[:upper:]' '[:lower:]'`
+    local val=`cat "$file" | grep --color=never "^$key=" | sed "s/^$key=//g" | tr '[:upper:]' '[:lower:]'`
     if [[ -z "$val" ]]; then
         return 1
     fi

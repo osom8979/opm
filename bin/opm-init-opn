@@ -24,7 +24,7 @@ function find_nodenv_version
 {
     local version=$1
     local nodenv_cmd=$(must_nodenv_path)
-    "$nodenv_cmd" versions | sed 's/*//g' | awk '{print($1);}' | grep -Fx "$version"
+    "$nodenv_cmd" versions | sed 's/*//g' | awk '{print($1);}' | grep --color=never -Fx "$version"
 }
 
 function find_not_found_cmds

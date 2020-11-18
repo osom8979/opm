@@ -6,7 +6,7 @@ Darwin)
     let "THREAD_COUNT = $CORE_COUNT * 2"
     ;;
 Linux)
-    CORE_COUNT=`grep -c ^processor /proc/cpuinfo`
+    CORE_COUNT=`grep --color=never -c ^processor /proc/cpuinfo`
     let "THREAD_COUNT = $CORE_COUNT * 2"
     ;;
 CYGWIN*|MINGW*|MSYS*)

@@ -15,7 +15,7 @@ if  [[ -f "$CTAGS_DB"  ]]; then rm -f "$CTAGS_DB";  fi
 if [[ ! -f "$LIST_FILE" ]]; then
     # create find script.
     # WARNING: Don't use the boost library.
-    find-cpp "$WORKING" | grep -v '/boost/' > "$LIST_FILE"
+    find-cpp "$WORKING" | grep --color=never -v '/boost/' > "$LIST_FILE"
 fi
 
 FLAGS=""

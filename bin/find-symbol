@@ -11,7 +11,7 @@ fi
 OBJECT_FILES=`find $FIND_DIR -iname '*.o'`
 
 for i in $OBJECT_FILES; do
-    find_result=`nm $i | c++filt | grep $FIND_SYMBOL`
+    find_result=`nm $i | c++filt | grep --color=never $FIND_SYMBOL`
     if [[ ! -z $find_result ]]; then
         echo "File: "$i
         echo "Result: " $find_result

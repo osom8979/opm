@@ -5,7 +5,7 @@ Darwin)
     sysctl -n hw.ncpu
     ;;
 Linux)
-    grep -c ^processor /proc/cpuinfo
+    grep --color=never -c ^processor /proc/cpuinfo
     ;;
 CYGWIN*|MINGW*|MSYS*)
     #echo $NUMBER_OF_PROCESSORS
