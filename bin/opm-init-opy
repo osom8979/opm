@@ -129,9 +129,9 @@ function install_dependencies_if_not_installed
     # Ubuntu/Debian/Mint
     local APT_DEPS
     APT_DEPS="make build-essential libssl-dev zlib1g-dev libbz2-dev"
-    APT_DEPS="$DEBIAN_DEPS libreadline-dev libsqlite3-dev wget curl llvm"
-    APT_DEPS="$DEBIAN_DEPS libncurses5-dev xz-utils tk-dev"
-    APT_DEPS="$DEBIAN_DEPS libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev"
+    APT_DEPS="$APT_DEPS libreadline-dev libsqlite3-dev wget curl llvm"
+    APT_DEPS="$APT_DEPS libncurses5-dev xz-utils tk-dev"
+    APT_DEPS="$APT_DEPS libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev"
 
     # CentOS/Fedora 21 and below
     local YUM_DEPS
