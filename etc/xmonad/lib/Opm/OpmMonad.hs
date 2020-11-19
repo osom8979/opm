@@ -31,7 +31,7 @@ opmBorderWidth = 1
 opmModMask = mod1Mask
 
 -- The default number of workspaces (virtual screens) and their names.
-opmWorkspaces = ["1","2","3","4","5","6","7","8","9","0"]
+opmWorkspaces = ["0","1","2","3","4","5","6","7","8","9"]
 
 -- Border colors for unfocused and focused windows, respectively.
 opmNormalBorderColor  = "#dddddd"
