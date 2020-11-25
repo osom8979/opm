@@ -65,7 +65,7 @@ while [[ ! -z $1 ]]; do
         exit 0
         ;;
     -c|--create-install-variables-file)
-        INSTALL_VARIABLES_FLAG=0
+        INSTALL_VARIABLES_FLAG=1
         shift
         ;;
     -l|--list)
