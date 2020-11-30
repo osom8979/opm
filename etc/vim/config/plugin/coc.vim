@@ -19,6 +19,8 @@ let g:coc_global_extensions = [
 
 "let g:coc_node_path = g:opn14_node_path
 let g:coc_disable_startup_warning = 1
+"let g:coc_config_home = g:opm_vim_script_dir.'/config/plugin'
+
 
 " TextEdit might fail if hidden is not set.
 set hidden
@@ -169,4 +171,7 @@ nnoremap <silent><nowait> <space>j  :<C-u>CocNext<CR>
 nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 " Resume latest coc list.
 nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
+
+" Python
+call coc#config('python', {'pythonPath': g:opy3_python_path})
 
