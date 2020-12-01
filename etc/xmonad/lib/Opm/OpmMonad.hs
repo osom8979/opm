@@ -7,10 +7,12 @@ import XMonad
 import XMonad.Hooks.ManageDocks(docks, avoidStruts)
 import XMonad.Hooks.EwmhDesktops(ewmh, fullscreenEventHook)
 import XMonad.Util.Run(spawnPipe)
+import XMonad.Layout.Tabbed
+import XMonad.Layout.Spacing(spacing)
+import XMonad.Layout.SimpleDecoration(shrinkText)
 
 import qualified Data.Map        as M
 import qualified XMonad.StackSet as W
-
 
 -- The preferred terminal program.
 opmTerminal = "alacritty"
@@ -140,10 +142,24 @@ opmMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList $
                                        >> windows W.shiftMaster))
     ]
 
-opmLayout = avoidStruts (tiled ||| Mirror tiled ||| Full)
+
+opmTabConfig = def {
+        activeColor         = "#556064",
+        inactiveColor       = "#2F3D44",
+        urgentColor         = "#FDF6E3",
+        activeBorderColor   = "#454948",
+        inactiveBorderColor = "#454948",
+        urgentBorderColor   = "#268BD2",
+        activeTextColor     = "#80FFF9",
+        inactiveTextColor   = "#1ABC9C",
+        urgentTextColor     = "#1ABC9C",
+        fontName            = "xft:DroidSansMono Nerd Font:size=10:bold:antialias=true:hinting=true"
+    }
+
+opmLayout = avoidStruts (tabbed shrinkText opmTabConfig ||| tiled ||| Mirror tiled ||| Full)
     where
         -- default tiling algorithm partitions the screen into two panes
-        tiled = Tall nmaster delta ratio
+        tiled = spacing 2 $ Tall nmaster delta ratio
 
         -- The default number of windows in the master pane
         nmaster = 1
