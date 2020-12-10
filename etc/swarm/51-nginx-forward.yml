@@ -15,7 +15,7 @@ services:
     networks:
       - traefik-net
     volumes:
-      - "/opt/opm/nginx-forward/${FRONTEND_HOST}:/etc/nginx/conf.d/default.conf"
+      - "${DEFAULT_CONFIG_PATH}:/etc/nginx/conf.d/default.conf"
 
 networks:
   traefik-net:
