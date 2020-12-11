@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
 FRONTEND_HOST=$1   # e.g. test.site.com
-BACKEND_HOST=$2    # e.g. 192.168.0.2:8080
-if [[ -z $FRONTEND_HOST || -z $BACKEND_HOST ]]; then
+BACKEND_PREFIX=$2  # e.g. https://192.168.0.2:8080
+if [[ -z $FRONTEND_HOST || -z $BACKEND_PREFIX ]]; then
     echo "Usage: $0 {frontend_host} {backend_host}"
     exit 1
 fi
 
 export FRONTEND_HOST
-export BACKEND_HOST
+export BACKEND_PREFIX
 echo "Frontend Host: $FRONTEND_HOST"
-echo "Backend Host: $BACKEND_HOST"
+echo "Backend Host: $BACKEND_PREFIX"
 
 if [[ $(id -u) -ne 0 ]]; then
     echo 'Please run as root.'
@@ -35,7 +35,7 @@ else
 
     cat "$DEFAULT_CONFIG_TEMPLATE" | sed \
         -e "s/@FRONTEND_HOST@/$FRONTEND_HOST/g" \
-        -e "s/@BACKEND_HOST@/$BACKEND_HOST/g" \
+        -e "s/@BACKEND_PREFIX@/$BACKEND_PREFIX/g" \
         > "$DEFAULT_CONFIG_PATH"
 fi
 
@@ -46,7 +46,7 @@ echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
 CODE=$?
 
-echo "Create Forward-proxy server: Public(${FRONTEND_HOST}) -> Private(${BACKEND_HOST})"
+echo "Create Forward-proxy server: Public(${FRONTEND_HOST}) -> Private(${BACKEND_PREFIX})"
 echo "Stack name: $STACK_NAME"
 echo "Done ($CODE)."
 
