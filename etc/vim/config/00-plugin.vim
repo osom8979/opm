@@ -45,6 +45,7 @@ NeoBundle 'garbas/vim-snipmate'             " [Snip] snipmate aims to provide su
 NeoBundle 'airblade/vim-gitgutter'          " [Git] shows a git diff in the gutter.
 NeoBundle 'tpope/vim-fugitive'              " [Git] git wrapper.
 NeoBundle 'neoclide/coc.nvim'               " Intellisense engine.
+NeoBundle 'psf/black'                       " Python formatting.
 
 " A command-line fuzzy finder.
 NeoBundle 'junegunn/fzf', {
