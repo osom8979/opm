@@ -27,7 +27,6 @@ fi
 SERVER_VERSION_PATH=$SERVER_DATA_DIR/.serverversion
 if [[ ! -f "$SERVER_VERSION_PATH" ]]; then
     devpi-init --serverdir "$SERVER_DATA_DIR" \
-               --no-root-pypi \
                --root-passwd "$DEVPI_ROOT_PW"
 fi
 
