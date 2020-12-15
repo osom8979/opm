@@ -5,6 +5,11 @@ if [[ -z $FRONTEND_HOST ]]; then
     exit 1
 fi
 
+if [[ -z $FRONTEND_SCHEME ]]; then
+    echo "Not exists FRONTEND_SCHEME env"
+    exit 1
+fi
+
 if [[ -z $DEVPI_ROOT_PW ]]; then
     DEVPI_ROOT_PW_PATH=${DEVPI_ROOT_PW_PATH:-/run/secrets/devpi-root-pw}
     if [[ ! -f $DEVPI_ROOT_PW_PATH ]]; then
@@ -27,8 +32,8 @@ if [[ ! -f "$SERVER_VERSION_PATH" ]]; then
 fi
 
 devpi-server --host 0.0.0.0 \
-             --port 8080 \
+             --port 3141 \
              --restrict-modify root \
              --serverdir "$SERVER_DATA_DIR" \
-             --outside-url "$FRONTEND_HOST"
+             --outside-url "$FRONTEND_SCHEME://$FRONTEND_HOST"
 

@@ -7,9 +7,10 @@ if [[ -z $IMAGE_EXISTS ]]; then
     exit 1
 fi
 
-FRONTEND_HOST=$1
-if [[ -z $FRONTEND_HOST]]; then
-    echo "Usage: $0 {frontend_host}"
+FRONTEND_HOST=$1  # e.g. test.site.com
+FRONTEND_SCHEME=${2:-https}
+if [[ -z $FRONTEND_HOST ]]; then
+    echo "Usage: $0 {frontend_host} {frontend_scheme:https}"
     exit 1
 fi
 
@@ -27,8 +28,9 @@ else
 fi
 
 export FRONTEND_HOST
+export FRONTEND_SCHEME
 export OPT_DIR
-echo "Frontend Host: $FRONTEND_HOST"
+echo "Frontend URL: $FRONTEND_SCHEME://$FRONTEND_HOST"
 echo "Server data directory: $OPT_DIR"
 
 SECRET_NAME=devpi-root-pw
@@ -48,7 +50,7 @@ echo "Deploy stack: $STACK_NAME"
 docker stack deploy -c "$COMPOSE_YML" "$STACK_NAME"
 CODE=$?
 
-echo "Create devpi server: ${FRONTEND_HOST}"
+echo "Create devpi URL: $FRONTEND_SCHEME://$FRONTEND_HOST"
 echo "Stack name: $STACK_NAME"
 echo "Done ($CODE)."
 

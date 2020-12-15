@@ -1,8 +1,8 @@
 FROM python:3.7.9
 MAINTAINER zer0 <osom8979@gmail.com>
 
-RUN pip install devpi-server devpi-web devpi-client
+RUN pip install devpi-web
 COPY 30-devpi-entrypoint.sh /entrypoint.sh
 
-ENTRYPOINT [ "/bin/bash", "/runner.sh" ]
+ENTRYPOINT [ "/bin/bash", "/entrypoint.sh" ]
 
