@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-URL=$1
-REGISTRATION_TOKEN=$2
-TAG_LIST=$3
+URL=$1                      # https://git.test.site/
+REGISTRATION_TOKEN=$2       # aKw3RAukuZgPqwRzgnCz
+TAG_LIST=$3                 # common
 DOCKER_IMAGE=${4:-alpine}
 
 if [[ -z $URL || -z $REGISTRATION_TOKEN || -z $TAG_LIST || -z $DOCKER_IMAGE ]]; then
