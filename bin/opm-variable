@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+# [WARNING]
+# This script should not refer to other OPM scripts.
+
+if [[ -z $OPM_HOME ]]; then
+OPM_HOME=$(cd "$(dirname "${BASH_SOURCE[0]}")/.."; pwd)
+fi
+
+USAGE_MESSAGE="
+Print variables from opm information.
+
+  Usage: opm-variable [options] key [key2] [key3] ... [keyN]
+
+Available options are:
+  -h, --help        Print this message.
+  -s {path}, --source={path}
+                    Source file path.
+  -k, --with-key    Print including key.
+"
+
+function variable_main
+{
+    local src="$OPM_HOME/INFORMATION"
+    local with_key=0
+
+    while [[ ! -z $1 ]]; do
+        case $1 in
+        -h|--help)
+            echo "$USAGE_MESSAGE"
+            return 0
+            ;;
+        --source=*)
+            src=${1:9}
+            shift
+            ;;
+        -s)
+            src=${2}
+            shift 2
+            ;;
+        -k|--with-key)
+            with_key=1
+            shift
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local total=$(cat "$src" | grep --color=never -E '^[ \t]*[a-zA-Z0-9_]+=' | sed 's/^[ \t]*//g')
+    if [[ ${#@} -eq 0 ]]; then
+        echo -e "$total"
+        return 0
+    fi
+
+    for v in $@; do
+        if [[ $with_key -eq 0 ]]; then
+            echo -e "$total" | grep "^${v}=" | sed "s/^${v}=//g"
+        else
+            echo -e "$total" | grep "^${v}="
+        fi
+    done
+}
+
+variable_main "$@"
+
