@@ -217,7 +217,7 @@ function package_main
             return 0
             ;;
         --manager=*)
-            manager=${1:3}
+            manager=${1:10}
             shift
             ;;
         -m)
