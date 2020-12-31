@@ -139,13 +139,34 @@ start_ime_ibus
 # Run window manager
 # ------------------
 
-WHICH_XMONAD=`which xmonad 2> /dev/null`
+function start_xmonad
+{
+    local which_xmonad=`which xmonad 2> /dev/null`
 
-if [[ -n "$WHICH_XMONAD" ]]; then
-    print_info "Run $WHICH_XMONAD"
-    exec "$WHICH_XMONAD"
-else
-    print_error "Not found xmonad executable."
-    exit 1
-fi
+    if [[ -n "$which_xmonad" ]]; then
+        print_info "Run $which_xmonad"
+        exec "$which_xmonad"
+    else
+        print_error "Not found xmonad executable."
+        exit 1
+    fi
+}
+
+function start_qtile
+{
+    local which_qtile=`which qtile 2> /dev/null`
+    local qtile_config_dir=$OPM_HOME/etc/qtile
+    local qtile_config_path=$qtile_config_dir/config.py
+
+    if [[ -n "$which_qtile" ]]; then
+        print_info "Run $which_qtile"
+        PYTHONPATH="$qtile_config_dir:$PYTHONPATH" "$which_qtile" -c "$qtile_config_path" "$@"
+    else
+        print_error "Not found qtile executable."
+        exit 1
+    fi
+}
+
+start_xmonad
+# start_qtile
 
