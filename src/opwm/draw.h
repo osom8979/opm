@@ -1,29 +1,39 @@
-/* See LICENSE file for copyright and license details. */
+
+#include <stddef.h>
+#include <X11/Xlib.h>
+#include <X11/Xft/Xft.h>
+
+#define UTF_INVALID 0xFFFD
+#define UTF_SIZ     4
+
+long utf8decodebyte(const char c, size_t *i);
+size_t utf8validate(long *u, size_t i);
+size_t utf8decode(const char *c, long *u, size_t clen);
 
 typedef struct {
-	Cursor cursor;
+    Cursor cursor;
 } Cur;
 
 typedef struct Fnt {
-	Display *dpy;
-	unsigned int h;
-	XftFont *xfont;
-	FcPattern *pattern;
-	struct Fnt *next;
+    Display *dpy;
+    unsigned int h;
+    XftFont *xfont;
+    FcPattern *pattern;
+    struct Fnt *next;
 } Fnt;
 
 enum { ColFg, ColBg, ColBorder }; /* Clr scheme index */
 typedef XftColor Clr;
 
 typedef struct {
-	unsigned int w, h;
-	Display *dpy;
-	int screen;
-	Window root;
-	Drawable drawable;
-	GC gc;
-	Clr *scheme;
-	Fnt *fonts;
+    unsigned int w, h;
+    Display *dpy;
+    int screen;
+    Window root;
+    Drawable drawable;
+    GC gc;
+    Clr *scheme;
+    Fnt *fonts;
 } Drw;
 
 /* Drawable abstraction */
@@ -55,3 +65,4 @@ int drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned in
 
 /* Map functions */
 void drw_map(Drw *drw, Window win, int x, int y, unsigned int w, unsigned int h);
+

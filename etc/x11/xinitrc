@@ -152,19 +152,6 @@ function start_xmonad
     fi
 }
 
-function start_dwm
-{
-    local which_dwm=`which dwm 2> /dev/null`
-
-    if [[ -n "$which_dwm" ]]; then
-        print_info "Run $which_dwm"
-        exec "$which_dwm"
-    else
-        print_error "Not found dwm executable."
-        exit 1
-    fi
-}
-
 function start_qtile
 {
     local which_qtile=`which qtile 2> /dev/null`
@@ -180,7 +167,34 @@ function start_qtile
     fi
 }
 
-start_xmonad
-#start_dwm
+function start_dwm
+{
+    local which_dwm=`which dwm 2> /dev/null`
+
+    if [[ -n "$which_dwm" ]]; then
+        print_info "Run $which_dwm"
+        exec "$which_dwm"
+    else
+        print_error "Not found dwm executable."
+        exit 1
+    fi
+}
+
+function start_opwm
+{
+    local which_opwm=`which opwm 2> /dev/null`
+
+    if [[ -n "$which_opwm" ]]; then
+        print_info "Run $which_opwm"
+        exec "$which_opwm"
+    else
+        print_error "Not found opwm executable."
+        exit 1
+    fi
+}
+
+#start_xmonad
 #start_qtile
+#start_dwm
+start_opwm
 
