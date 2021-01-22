@@ -26,6 +26,14 @@ else
     mkdir -p "$LOG_DIR"
 fi
 
+CONFIG_DIR=$OPT_DIR/config
+if [[ -d "$CONFIG_DIR" ]]; then
+    echo "Exists $CONFIG_DIR directory"
+else
+    echo "Create $CONFIG_DIR directory"
+    mkdir -p "$CONFIG_DIR"
+fi
+
 ACME_PATH=$OPT_DIR/acme.json
 if [[ -f "$ACME_PATH" ]]; then
     echo "Exists $ACME_PATH file"
@@ -46,17 +54,17 @@ if [[ -f "$TOML_PATH" ]]; then
 else
     echo "Not found $TOML_PATH file"
 
-    ACME_DOMAIN=$1
-    ACME_EMAIL=$2
-    WEB_PORT=$3
+    ACME_DOMAIN=$1  # localhost.com
+    ACME_EMAIL=$2  # my-test-email@localhost.com
+    TRAEFIK_WEB_PORT=$3
 
     if [[ -z $ACME_DOMAIN || -z $ACME_EMAIL ]]; then
         echo "Usage: $0 {acme_domain} {acme_email} {publish_port:10000}"
         exit 1
     fi
 
-    if [[ ! -z $WEB_PORT ]]; then
-        PUBLISH_PORT=$WEB_PORT
+    if [[ ! -z $TRAEFIK_WEB_PORT ]]; then
+        PUBLISH_PORT=$TRAEFIK_WEB_PORT
     fi
 
     echo "ACME Domain: $ACME_DOMAIN"

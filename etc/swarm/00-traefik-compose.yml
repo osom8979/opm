@@ -18,7 +18,8 @@ services:
       - traefik-net
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      #- /opt/opm/traefik/log:/traefik-log
+      - /opt/opm/traefik/log:/traefik-log
+      - /opt/opm/traefik/config:/traefik-config
       - /opt/opm/traefik/traefik.toml:/traefik.toml
       - /opt/opm/traefik/acme.json:/acme.json
       - /opt/opm/traefik/traefik.key:/traefik-data/traefik.key

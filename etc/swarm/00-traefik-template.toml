@@ -3,11 +3,11 @@ debug = false
 logLevel = "ERROR"
 defaultEntryPoints = ["http", "https"]
 
-#[traefikLog]
-#  filePath = "/traefik-log/traefik.log"
-#
-#[accessLog]
-#  filePath = "/traefik-log/access.log"
+[traefikLog]
+  filePath = "/traefik-log/traefik.log"
+
+[accessLog]
+  filePath = "/traefik-log/access.log"
 
 [entryPoints]
   ## Local area.
@@ -50,4 +50,8 @@ acmeLogging = true
 onHostRule = true
   [acme.httpChallenge]
   entryPoint = "http"
+
+[file]
+  directory = "/traefik-config/"
+  watch = true
 
