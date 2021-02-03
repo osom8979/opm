@@ -20,7 +20,7 @@ services:
       - raw_db:/var/lib/mysql
 
   web:
-    image: nextcloud:19.0.3
+    image: nextcloud:20.0.6
     depends_on:
       - db
     deploy:
@@ -32,6 +32,9 @@ services:
         - "traefik.docker.network=traefik-net"
         - "traefik.port=80"
         - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
+        - "traefik.frontend.redirect.permanent=true"
+        - "traefik.frontend.redirect.regex=https://(.*)/.well-known/(card|cal)dav"
+        - "traefik.frontend.redirect.replacement=https://$$1/remote.php/dav/"
     networks:
       - traefik-net
       - postfix-net
