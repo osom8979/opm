@@ -31,7 +31,6 @@ NeoBundle 'sjl/gundo.vim'                   " undo tree.
 NeoBundle 'VisIncr'                         " produce increasing/decreasing columns. Usage: :II or :II -1
 NeoBundle 'skywind3000/asynctasks.vim'      " modern task system.
 NeoBundle 'skywind3000/asyncrun.vim'        " run async shell commands.
-NeoBundle 'skywind3000/quickmenu.vim'       " a nice customizable popup menu for vim.
 NeoBundle 'skywind3000/vim-quickui'         " ui extensions for vim.
 NeoBundle 'ryanoasis/vim-devicons'          " adds file type icons to vim plugins
 NeoBundle 'echofunc.vim'                    " print function parameter information.
