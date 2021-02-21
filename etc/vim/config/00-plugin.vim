@@ -23,6 +23,7 @@ NeoBundleFetch 'Shougo/neobundle.vim'
 
 NeoBundle 'scrooloose/nerdtree'             " directory browser.
 NeoBundle 'scrooloose/nerdcommenter'        " language dependent commenter.
+NeoBundle 'Xuyuanp/nerdtree-git-plugin'     " showing git status flags.
 NeoBundle 'majutsushi/tagbar'               " tagbar window.
 NeoBundle 'easymotion/vim-easymotion'       " motions on speed.
 NeoBundle 'kshenoy/vim-signature'           " display marks.
