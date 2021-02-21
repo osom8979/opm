@@ -22,6 +22,8 @@ OPM_INITRC_DIR=$OPM_HOME/etc/x11/xinitrc.d
 LOG_DIR=$OPM_HOME/var/log
 LOG_PATH=$LOG_DIR/xinitrc.log
 
+STATE_UPDATE_SECONDS=1
+
 function print_raw
 {
     echo "$@" >> $LOG_PATH
@@ -135,6 +137,27 @@ function start_ime_ibus
 #start_ime_fcitx
 start_ime_ibus
 
+# --------------
+# Status updater
+# --------------
+
+function xorg_root_updater
+{
+    local which_xsetroot=`which xsetroot 2> /dev/null`
+    if [[ ! -n "$which_xsetroot" ]]; then
+        print_error "Not found xsetroot executable."
+        return
+    fi
+
+    while true; do
+        local date_time=$(date +"%F %T")
+        local root_name=$date_time
+
+       "$which_xsetroot" -name "$root_name"
+       sleep ${STATE_UPDATE_SECONDS}s
+    done
+}
+
 # ------------------
 # Run window manager
 # ------------------
@@ -192,6 +215,8 @@ function start_opwm
         exit 1
     fi
 }
+
+xorg_root_updater &
 
 #start_xmonad
 #start_qtile
