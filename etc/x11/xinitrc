@@ -216,7 +216,33 @@ function start_opwm
     fi
 }
 
+# -----------------
+# Helpful utilities
+# -----------------
+
+function set_window_manager_name
+{
+    # This is helpful when attempting to run java swing(broken) applications,
+    # it makes them think they are running through the looking glass and behave as expected.
+    # The following command sets the window manager name.
+    # https://tools.suckless.org/x/wmname/
+
+    local which_opwmname=`which opwmname 2> /dev/null`
+
+    if [[ -n "$which_opwmname" ]]; then
+        print_info "Run $which_opwmname"
+        export _JAVA_AWT_WM_NONREPARENTING=1
+        export AWT_TOOLKIT=MToolkit
+        "$which_opwmname" LG3D
+    else
+        print_error "Not found opwmname executable."
+        exit 1
+    fi
+}
+
 xorg_root_updater &
+
+set_window_manager_name
 
 #start_xmonad
 #start_qtile
