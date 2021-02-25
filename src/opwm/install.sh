@@ -36,5 +36,11 @@ fi
     VERBOSE=1
 
 "$CMAKE_PATH" \
+    --build "$BINARY_DIR" \
+    --target opwmname \
+    -- \
+    VERBOSE=1
+
+"$CMAKE_PATH" \
     -P "$BINARY_DIR/cmake_install.cmake"
 
