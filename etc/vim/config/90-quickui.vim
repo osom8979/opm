@@ -26,61 +26,72 @@ endif
 call quickui#menu#switch(g:opm_default_quickui_namespace)
 call quickui#menu#reset()
 
-call quickui#menu#install('&File', [
-            \ [ '&New Buffer', ':new' ],
-            \ [ '&Vertically New Buffer', ':vnew' ],
-            \ [ '--', '' ],
-            \ [ 'E&xit', ':qa' ],
+call quickui#menu#install("&File", [
+            \ [ "&New Buffer", ":new" ],
+            \ [ "&Vertically New Buffer", ":vnew" ],
+            \ [ "--", "" ],
+            \ [ "E&xit", ":qa" ],
             \ ])
 
-call quickui#menu#install('&Edit', [
-            \ [ 'Remove carriage return', ':call RemoveCr()' ],
-            \ [ 'Remove trailing space', ':call RemoveTrailingSpace()' ],
-            \ [ 'Remove blank lines', ':call RemoveBlankLines()' ],
-            \ [ '--', '' ],
+call quickui#menu#install("&Navigation", [
+            \ [ "GoTo &definition\tgd", ':execute "normal \<Plug>(coc-definition)"' ],
+            \ [ "GoTo &references\tgr", ':execute "normal \<Plug>(coc-references)"' ],
+            \ [ "GoTo &type\tgy", ':execute "normal \<Plug>(coc-type-definition)"' ],
+            \ [ "GoTo &implementation\tgi", ':execute "normal \<Plug>(coc-implementation)"' ],
+            \ [ "--", "" ],
+            \ [ "Diagnostic &prev\t[g", ':execute "normal \<Plug>(coc-diagnostic-prev)"' ],
+            \ [ "Diagnostic &next\t]g", ':execute "normal \<Plug>(coc-diagnostic-next)"' ],
+            \ [ "--", "" ],
             \ ])
 
-call quickui#menu#install('&View', [
-            \ [ '&HEX mode', ':OpmHexMode' ],
-            \ [ '&TEXT mode', ':OpmTextMode' ],
-            \ [ '--', '' ],
-            \ [ '&Json formatting', ':OpmJsonFormat' ],
+call quickui#menu#install("&Edit", [
+            \ [ "Remove carriage return", ":call RemoveCr()" ],
+            \ [ "Remove trailing space", ":call RemoveTrailingSpace()" ],
+            \ [ "Remove blank lines", ":call RemoveBlankLines()" ],
+            \ [ "--", "" ],
             \ ])
 
-call quickui#menu#install('&Find', [
-            \ [ '--', '' ],
-            \ [ 'grep-ri()', ':call AsyncRunGrepCwordCwdRecursiveIgnoreCase()' ],
-            \ [ 'grep-ri(p)', ':call AsyncRunGrepCwdRecursiveIgnoreCase()' ],
-            \ [ 'grep-ri(f)', ':call AsyncRunGrepCwordRecursiveIgnoreCase()' ],
-            \ [ 'grep-ri(p,f)', ':call AsyncRunGrepRecursiveIgnoreCase()' ],
-            \ [ '--', '' ],
-            \ [ 'grep-r()', ':call AsyncRunGrepCwordCwdRecursive()' ],
-            \ [ 'grep-r(p)', ':call AsyncRunGrepCwdRecursive()' ],
-            \ [ 'grep-r(f)', ':call AsyncRunGrepCwordRecursive()' ],
-            \ [ 'grep-r(p,f)', ':call AsyncRunGrepRecursive()' ],
-            \ [ '--', '' ],
-            \ [ 'grep-i()', ':call AsyncRunGrepCwordCurrentFileIgnoreCase()' ],
-            \ [ 'grep-i(p)', ':call AsyncRunGrepCurrentFileIgnoreCase()' ],
-            \ [ '--', '' ],
-            \ [ 'grep()', ':call AsyncRunGrepCwordCurrentFile()' ],
-            \ [ 'grep(p)', ':call AsyncRunGrepCurrentFile()' ],
+call quickui#menu#install("&View", [
+            \ [ "&HEX mode", ":OpmHexMode" ],
+            \ [ "&TEXT mode", ":OpmTextMode" ],
+            \ [ "--", "" ],
+            \ [ "&Json formatting", ":OpmJsonFormat" ],
             \ ])
 
-call quickui#menu#install('&Options', [
+call quickui#menu#install("&Find", [
+            \ [ "--", "" ],
+            \ [ "grep-ri()", ":call AsyncRunGrepCwordCwdRecursiveIgnoreCase()" ],
+            \ [ "grep-ri(p)", ":call AsyncRunGrepCwdRecursiveIgnoreCase()" ],
+            \ [ "grep-ri(f)", ":call AsyncRunGrepCwordRecursiveIgnoreCase()" ],
+            \ [ "grep-ri(p,f)", ":call AsyncRunGrepRecursiveIgnoreCase()" ],
+            \ [ "--", "" ],
+            \ [ "grep-r()", ":call AsyncRunGrepCwordCwdRecursive()" ],
+            \ [ "grep-r(p)", ":call AsyncRunGrepCwdRecursive()" ],
+            \ [ "grep-r(f)", ":call AsyncRunGrepCwordRecursive()" ],
+            \ [ "grep-r(p,f)", ":call AsyncRunGrepRecursive()" ],
+            \ [ "--", "" ],
+            \ [ "grep-i()", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
+            \ [ "grep-i(p)", ":call AsyncRunGrepCurrentFileIgnoreCase()" ],
+            \ [ "--", "" ],
+            \ [ "grep()", ":call AsyncRunGrepCwordCurrentFile()" ],
+            \ [ "grep(p)", ":call AsyncRunGrepCurrentFile()" ],
+            \ ])
+
+call quickui#menu#install("&Options", [
             \ ['Set &Spell %{&spell? "Off":"On"}', 'set spell!'],
             \ ['Set &Cursor Line %{&cursorline? "Off":"On"}', 'set cursorline!'],
             \ ['Set &Paste %{&paste? "Off":"On"}', 'set paste!'],
             \ ])
 
-call quickui#menu#install('H&elp', [
-            \ ['Vim &Cheatsheet', 'help index'],
-            \ ['Vim T&ips', 'help tips'],
-            \ ['Vim &Tutorial', 'help tutor'],
-            \ ['Vim &Quick Reference', 'help quickref'],
-            \ ['--', ''],
-            \ ['&Loaded Scripts', ':OpmLoadedScripts'],
-            \ ['--', ''],
-            \ ['&Reload', ':OpmReload'],
+call quickui#menu#install("H&elp", [
+            \ ["Vim &Cheatsheet", "help index"],
+            \ ["Vim T&ips", "help tips"],
+            \ ["Vim &Tutorial", "help tutor"],
+            \ ["Vim &Quick Reference", "help quickref"],
+            \ ["--", ""],
+            \ ["&Loaded Scripts", ":OpmLoadedScripts"],
+            \ ["--", ""],
+            \ ["&Reload", ":OpmReload"],
             \ ], 10000)
 
 " enable to display tips in the cmdline

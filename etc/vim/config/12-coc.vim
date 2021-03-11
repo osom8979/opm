@@ -17,8 +17,8 @@ let g:coc_global_extensions = [
     \ 'coc-tasks'
     \]
 
-"let g:coc_node_path = g:opn14_node_path
 let g:coc_disable_startup_warning = 1
+"let g:coc_node_path = g:opn14_node_path
 "let g:coc_config_home = g:opm_vim_script_dir.'/config/plugin'
 
 
@@ -32,7 +32,7 @@ set nowritebackup
 " Give more space for displaying messages.
 set cmdheight=1
 
-" Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
+" Having longer updatetime (default is 4000ms=4s) leads to noticeable
 " delays and poor user experience.
 set updatetime=300
 

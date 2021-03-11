@@ -44,7 +44,15 @@ NeoBundle 'tomtom/tlib_vim'                 " [Snip] dependency of 'vim-snipmate
 NeoBundle 'garbas/vim-snipmate'             " [Snip] snipmate aims to provide support for textual snippets.
 NeoBundle 'airblade/vim-gitgutter'          " [Git] shows a git diff in the gutter.
 NeoBundle 'tpope/vim-fugitive'              " [Git] git wrapper.
-NeoBundle 'neoclide/coc.nvim'               " Intellisense engine.
+NeoBundle 'neoclide/coc.nvim'               " intellisense engine.
+NeoBundle 'nanotech/jellybeans.vim'         " a colorful, dark color scheme for vim.
+NeoBundle 'tpope/vim-surround'              " quoting/parenthesizing made simple.
+NeoBundle 'junegunn/vim-easy-align'         " a vim alignment plugin.
+NeoBundle 'editorconfig/editorconfig-vim'   " editorconfig plugin for vim.
+NeoBundle 'nathanaelkane/vim-indent-guides' " visually displaying indent levels in code.
+NeoBundle 'blueyed/vim-diminactive'         " dim inactive windows.
+NeoBundle 'chrisbra/unicode.vim'            " handling unicode and digraphs characters.
+NeoBundle 'diepm/vim-rest-console'          " a rest console for vim.
 NeoBundle 'KangOl/vim-pudb'                 " Manage pudb breakpoints.
 
 " A command-line fuzzy finder.

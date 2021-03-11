@@ -46,7 +46,9 @@ endif
 
 " theme setting.
 "set background=dark
-colorscheme desert
+"colorscheme desert
+"colorscheme solarized
+colorscheme  jellybeans
 
 " grep setting.
 set grepprg=grep\ -Hn\ $*\ '%:p'
