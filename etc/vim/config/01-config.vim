@@ -38,6 +38,8 @@ set  noswapfile                 " no swap file.
 set  backspace=indent,eol,start " make that backspace key work the way it should
 "set clipboard=unnamedplus
 "set paste                      " don't use this: (for the SnipMate plugin)
+set  textwidth=120              " maximum width of text that is being inserted.
+set  colorcolumn=+0,88,100      " highlight columns
 
 " enable mouse event.
 if has('mouse')
