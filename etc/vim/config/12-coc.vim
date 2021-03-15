@@ -172,6 +172,22 @@ nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 " Resume latest coc list.
 nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 
-" Python
-call coc#config('python', {'pythonPath': g:opy3_python_path})
+" ----------
+" coc-python
+" ----------
+
+call coc#config('python', {
+    \   'pythonPath': g:opy3_python_path,
+    \   'linting': {
+    \       'enabled': v:false,
+    \       'flake8Enabled': v:false,
+    \       'banditEnabled': v:false,
+    \       'mypyEnabled': v:false,
+    \       'pep8Enabled': v:false,
+    \       'prospectorEnabled': v:false,
+    \       'pydocstyleEnabled': v:false,
+    \       'pylamaEnabled': v:false,
+    \       'pylintEnabled': v:false,
+    \   },
+    \})
 
