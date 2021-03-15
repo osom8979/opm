@@ -178,9 +178,17 @@ nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 
 call coc#config('python', {
     \   'pythonPath': g:opy3_python_path,
+    \   'formatting': {
+    \       'provider': 'black',
+    \   },
     \   'linting': {
-    \       'enabled': v:false,
-    \       'flake8Enabled': v:false,
+    \       'enabled': v:true,
+    \       'flake8Enabled': v:true,
+    \       'flake8Args': [
+    \           '--extend-ignore=E203,W503',
+    \           '--max-line-length=88',
+    \           '--exclude=*_pb2.py,*_pb2_grpc.py',
+    \       ],
     \       'banditEnabled': v:false,
     \       'mypyEnabled': v:false,
     \       'pep8Enabled': v:false,
