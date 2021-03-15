@@ -23,7 +23,9 @@ NeoBundleFetch 'Shougo/neobundle.vim'
 
 NeoBundle 'scrooloose/nerdtree'             " directory browser.
 NeoBundle 'scrooloose/nerdcommenter'        " language dependent commenter.
-NeoBundle 'Xuyuanp/nerdtree-git-plugin'     " showing git status flags.
+NeoBundle 'Xuyuanp/nerdtree-git-plugin'     " [Git] showing git status flags.
+NeoBundle 'airblade/vim-gitgutter'          " [Git] shows a git diff in the gutter.
+NeoBundle 'tpope/vim-fugitive'              " [Git] git wrapper.
 NeoBundle 'majutsushi/tagbar'               " tagbar window.
 NeoBundle 'easymotion/vim-easymotion'       " motions on speed.
 NeoBundle 'kshenoy/vim-signature'           " display marks.
@@ -42,8 +44,6 @@ NeoBundle 'vim-airline/vim-airline'         " [AirLine]
 NeoBundle 'MarcWeber/vim-addon-mw-utils'    " [Snip] dependency of 'vim-snipmate'
 NeoBundle 'tomtom/tlib_vim'                 " [Snip] dependency of 'vim-snipmate'
 NeoBundle 'garbas/vim-snipmate'             " [Snip] snipmate aims to provide support for textual snippets.
-NeoBundle 'airblade/vim-gitgutter'          " [Git] shows a git diff in the gutter.
-NeoBundle 'tpope/vim-fugitive'              " [Git] git wrapper.
 NeoBundle 'neoclide/coc.nvim'               " intellisense engine.
 NeoBundle 'nanotech/jellybeans.vim'         " a colorful, dark color scheme for vim.
 NeoBundle 'tpope/vim-surround'              " quoting/parenthesizing made simple.

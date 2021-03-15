@@ -8,13 +8,13 @@ if !neobundle#is_installed(s:plugin_name)
     finish
 endif
 
-function! s:EditTasksForDefaultCppProject()
+function! s:EditTasksForDefault()
     silent execute ':edit .tasks'
     if filereadable('.tasks')
         return
     endif
 
-    for content in readfile(g:opm_vim_script_dir . '/template/tasks/default-cpp.tasks')
+    for content in readfile(g:opm_vim_script_dir . '/template/tasks/default.tasks')
         call append(line('$'), content)
     endfor
 endfunction
@@ -23,7 +23,7 @@ endfunction
 " Command mapping
 " ---------------
 
-function! OpmEditTasksForDefaultCppProject()
-    call s:EditTasksForDefaultCppProject()
+function! OpmEditTasksForDefault()
+    call s:EditTasksForDefault()
 endfunction
 

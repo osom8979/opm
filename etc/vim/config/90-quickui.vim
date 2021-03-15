@@ -27,13 +27,23 @@ call quickui#menu#switch(g:opm_default_quickui_namespace)
 call quickui#menu#reset()
 
 call quickui#menu#install("&File", [
-            \ [ "&New Buffer", ":new" ],
-            \ [ "&Vertically New Buffer", ":vnew" ],
+            \ [ "New &Horizontally Buffer\t:new", ":new", "Create a new window and start editing an empty file in it." ],
+            \ [ "New &Vertically Buffer\t:vnew", ":vnew", "Create a new window and start editing an empty file in it. but split vertically." ],
             \ [ "--", "" ],
-            \ [ "E&xit", ":qa" ],
+            \ [ "Edit .tasks", ":call OpmEditTasksForDefault()" ],
+            \ [ "--", "" ],
+            \ [ "E&xit\t:qa", ":qa", "Exit Vim, unless there are some buffers which have been changed." ],
+            \ [ "Exit Force\t:qa!", ":qa", "Exit Vim. Any changes to buffers are lost." ],
             \ ])
 
-call quickui#menu#install("&Navigation", [
+call quickui#menu#install("&Edit", [
+            \ [ "Remove &carriage return", ":call RemoveCr()" ],
+            \ [ "Remove &trailing space", ":call RemoveTrailingSpace()" ],
+            \ [ "Remove &blank lines", ":call RemoveBlankLines()" ],
+            \ [ "--", "" ],
+            \ ])
+
+call quickui#menu#install("&CoC", [
             \ [ "GoTo &definition\tgd", ':execute "normal \<Plug>(coc-definition)"' ],
             \ [ "GoTo &references\tgr", ':execute "normal \<Plug>(coc-references)"' ],
             \ [ "GoTo &type\tgy", ':execute "normal \<Plug>(coc-type-definition)"' ],
@@ -41,13 +51,6 @@ call quickui#menu#install("&Navigation", [
             \ [ "--", "" ],
             \ [ "Diagnostic &prev\t[g", ':execute "normal \<Plug>(coc-diagnostic-prev)"' ],
             \ [ "Diagnostic &next\t]g", ':execute "normal \<Plug>(coc-diagnostic-next)"' ],
-            \ [ "--", "" ],
-            \ ])
-
-call quickui#menu#install("&Edit", [
-            \ [ "Remove carriage return", ":call RemoveCr()" ],
-            \ [ "Remove trailing space", ":call RemoveTrailingSpace()" ],
-            \ [ "Remove blank lines", ":call RemoveBlankLines()" ],
             \ [ "--", "" ],
             \ ])
 
