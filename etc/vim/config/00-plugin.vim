@@ -45,7 +45,6 @@ NeoBundle 'MarcWeber/vim-addon-mw-utils'    " [Snip] dependency of 'vim-snipmate
 NeoBundle 'tomtom/tlib_vim'                 " [Snip] dependency of 'vim-snipmate'
 NeoBundle 'garbas/vim-snipmate'             " [Snip] snipmate aims to provide support for textual snippets.
 NeoBundle 'neoclide/coc.nvim'               " intellisense engine.
-NeoBundle 'nanotech/jellybeans.vim'         " a colorful, dark color scheme for vim.
 NeoBundle 'tpope/vim-surround'              " quoting/parenthesizing made simple.
 NeoBundle 'junegunn/vim-easy-align'         " a vim alignment plugin.
 NeoBundle 'editorconfig/editorconfig-vim'   " editorconfig plugin for vim.

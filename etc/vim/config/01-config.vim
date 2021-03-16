@@ -50,7 +50,8 @@ endif
 "set background=dark
 "colorscheme desert
 "colorscheme solarized
-colorscheme  jellybeans
+"colorscheme jellybeans
+colorscheme  opvim
 
 " grep setting.
 set grepprg=grep\ -Hn\ $*\ '%:p'
