@@ -53,6 +53,7 @@ NeoBundle 'blueyed/vim-diminactive'         " dim inactive windows.
 NeoBundle 'chrisbra/unicode.vim'            " handling unicode and digraphs characters.
 NeoBundle 'diepm/vim-rest-console'          " a rest console for vim.
 NeoBundle 'KangOl/vim-pudb'                 " Manage pudb breakpoints.
+NeoBundle 'nanotech/jellybeans.vim'         " a colorful, dark color scheme for vim.
 
 " A command-line fuzzy finder.
 NeoBundle 'junegunn/fzf', {

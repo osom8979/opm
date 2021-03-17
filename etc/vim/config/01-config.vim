@@ -51,7 +51,7 @@ endif
 "colorscheme desert
 "colorscheme solarized
 "colorscheme jellybeans
-colorscheme  opvim
+"colorscheme opvim
 
 " grep setting.
 set grepprg=grep\ -Hn\ $*\ '%:p'
