@@ -1,4 +1,7 @@
-external_url 'http://@FRONTEND_HOST@/'
+external_url 'https://@FRONTEND_HOST@/'
+
+nginx['listen_port'] = 80
+nginx['listen_https'] = false
 
 ## An open source Git extension for versioning large files
 gitlab_rails['lfs_enabled'] = true
