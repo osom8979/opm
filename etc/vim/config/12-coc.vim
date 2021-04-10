@@ -178,6 +178,10 @@ nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 
 call coc#config('python', {
     \   'pythonPath': g:opy3_python_path,
+    \   'jediEnabled': v:false,
+    \   'autoComplete': {
+    \       'extraPaths': [getcwd()],
+    \   },
     \   'formatting': {
     \       'provider': 'black',
     \   },
