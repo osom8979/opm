@@ -20,6 +20,7 @@ if [[ -z $STRIP_PATH ]]; then
 fi
 
 if [[ ! -d "$BINARY_DIR" ]]; then
+    echo "Create build directory: $BINARY_DIR"
     mkdir -p "$BINARY_DIR"
 fi
 
