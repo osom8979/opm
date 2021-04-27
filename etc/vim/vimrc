@@ -36,9 +36,12 @@ function! s:GetOpyPythonPath(home, prefix, name, version)
          \ a:version . '/bin/python'
 endfunction
 
-function! s:GetOpnNodePath(home, version)
-    return a:home . '/.nodenv/versions/' .
-         \ a:version . '/bin/node'
+function! s:GetOpnNodePath(home)
+    return a:home . '/.n/bin/node'
+endfunction
+
+function! s:GetOpnNeovimNodeHostPath(home)
+    return a:home . '/.n/bin/neovim-node-host'
 endfunction
 
 function! s:ExecuteVimSourceFiles(dir)
@@ -53,10 +56,10 @@ let g:opm_information_path = g:opm_home.'/INFORMATION'
 let g:opm_version = s:GetOpmVariable(g:opm_information_path, 'VERSION')
 let g:opy2_version = s:GetOpmVariable(g:opm_information_path, 'OPY2_VERSION')
 let g:opy3_version = s:GetOpmVariable(g:opm_information_path, 'OPY3_VERSION')
-let g:opn14_version = s:GetOpmVariable(g:opm_information_path, 'OPN14_VERSION')
 let g:opy2_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, g:opy2_version)
 let g:opy3_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, g:opy3_version)
-let g:opn14_node_path = s:GetOpnNodePath(s:home_dir, g:opn14_version)
+let g:opn_node_path = s:GetOpnNodePath(s:home_dir)
+let g:opn_neovim_node_host_path = s:GetOpnNeovimNodeHostPath(s:home_dir)
 let &runtimepath .= ',' . g:opm_vim_script_dir
 
 "let g:loaded_python_provider = 1
@@ -67,6 +70,13 @@ if executable(g:opy2_python_path)
 endif
 if executable(g:opy3_python_path)
     let g:python3_host_prog = g:opy3_python_path
+endif
+
+if executable(g:opn_node_path)
+    let $PATH = fnamemodify(g:opn_node_path, ":p:h") . ":" . $PATH
+    if executable(g:opn_neovim_node_host_path)
+        let g:node_host_prog = g:opn_neovim_node_host_path
+    endif
 endif
 
 " auto-load setting.

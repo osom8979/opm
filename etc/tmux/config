@@ -2,6 +2,12 @@
 
 #set-option -g default-command "reattach-to-user-namespace -l ${SHELL}"
 
+# 256 color mode.
+set-option -g default-terminal "screen-256color"
+
+# TrueColor/RGB capability set
+set-option -sa terminal-overrides ",alacritty:RGB"
+
 # No delay for escape key press.
 set -sg escape-time 0
 

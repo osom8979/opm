@@ -172,7 +172,7 @@ function opn_main
     fi
 }
 
-OPN_VERSION=${OPN_VERSION:-14.13.1}
+OPN_VERSION=${OPN_VERSION:-14.16.1}
 OPN_VERBOSE=${OPN_VERBOSE:-0}
 
 opn_main "$OPN_VERSION" "$OPN_VERBOSE"

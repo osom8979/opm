@@ -44,7 +44,6 @@ NeoBundle 'vim-airline/vim-airline'         " [AirLine]
 NeoBundle 'MarcWeber/vim-addon-mw-utils'    " [Snip] dependency of 'vim-snipmate'
 NeoBundle 'tomtom/tlib_vim'                 " [Snip] dependency of 'vim-snipmate'
 NeoBundle 'garbas/vim-snipmate'             " [Snip] snipmate aims to provide support for textual snippets.
-NeoBundle 'neoclide/coc.nvim'               " intellisense engine.
 NeoBundle 'tpope/vim-surround'              " quoting/parenthesizing made simple.
 NeoBundle 'junegunn/vim-easy-align'         " a vim alignment plugin.
 NeoBundle 'editorconfig/editorconfig-vim'   " editorconfig plugin for vim.
@@ -76,6 +75,14 @@ NeoBundle 'Shougo/vimproc.vim', {
     \       'linux'  : 'make',
     \       'unix'   : 'gmake',
     \   },
+    \}
+
+" intellisense engine.
+NeoBundle 'neoclide/coc.nvim', {
+    \   'branch': 'master',
+    \   'do': {
+    \       -> coc#util#install()
+    \   }
     \}
 
 " opm-vim

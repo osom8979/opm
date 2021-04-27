@@ -18,7 +18,7 @@ let g:coc_global_extensions = [
     \]
 
 let g:coc_disable_startup_warning = 1
-"let g:coc_node_path = g:opn14_node_path
+let g:coc_node_path = g:opn_node_path
 "let g:coc_config_home = g:opm_vim_script_dir.'/config/plugin'
 
 
