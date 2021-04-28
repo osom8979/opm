@@ -93,6 +93,7 @@ call quickui#menu#install("H&elp", [
             \ ["Vim &Quick Reference", "help quickref"],
             \ ["--", ""],
             \ ["&Loaded Scripts", ":OpmLoadedScripts"],
+            \ ["Healthcheck", ":checkhealth"],
             \ ["--", ""],
             \ ["&Reload", ":OpmReload"],
             \ ], 10000)

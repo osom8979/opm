@@ -6,6 +6,7 @@ fi
 
 # neovim setup
 
+opy-pip install --upgrade pip
 opy-pip install neovim
 opn-npm install -g yarn
 opn-npm install -g neovim
