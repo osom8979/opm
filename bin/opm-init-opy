@@ -283,7 +283,8 @@ function install_virtualenv_if_not_exist
 
 function enable_pyenv
 {
-    export PATH="~/.pyenv/bin:$PATH"
+    export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
     eval "$(pyenv init -)"
     eval "$(pyenv virtualenv-init -)"
 }

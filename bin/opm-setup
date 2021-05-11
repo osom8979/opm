@@ -13,3 +13,8 @@ opn-npm install -g neovim
 
 nvim +NeoBundleInstall +qall
 
+# coc.vim build
+COC_DIR=$HOME/.vim/bundle/coc.nvim
+opn-yarn --cwd "$COC_DIR"
+opn-yarn --cwd "$COC_DIR" build
+
