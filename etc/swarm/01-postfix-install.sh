@@ -20,8 +20,8 @@ if [[ -f "$MAIN_CF_PATH" ]]; then
 else
     echo "Not found $MAIN_CF_PATH file"
 
-    HOST_NAME=$1
-    DOMAIN_NAME=$2
+    HOST_NAME=$1    # Host FQDN, e.g. email.site.com
+    DOMAIN_NAME=$2  # Only domain, e.g. site.com
     if [[ -z $HOST_NAME || -z $DOMAIN_NAME ]]; then
         echo "Usage: $0 {host_name} {domain_name}"
         exit 1
