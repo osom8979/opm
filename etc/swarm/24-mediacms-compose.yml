@@ -1,0 +1,123 @@
+version: "3.3"
+
+services:
+  migrations:
+    image: mediacms/mediacms:latest
+    networks:
+      - net
+    volumes:
+      - /opt/opm/mediacms/local_settings.py:/home/mediacms.io/mediacms/deploy/docker/local_settings.py
+      - data:/home/mediacms.io/mediacms/
+    environment:
+      ENABLE_UWSGI: 'no'
+      ENABLE_NGINX: 'no'
+      ENABLE_CELERY_SHORT: 'no'
+      ENABLE_CELERY_LONG: 'no'
+      ENABLE_CELERY_BEAT: 'no'
+    depends_on:
+      - redis
+      - db
+
+  web:
+    image: mediacms/mediacms:latest
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.port=80"
+        - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
+    networks:
+      - traefik-net
+      - postfix-net
+      - net
+    volumes:
+      - /opt/opm/mediacms/local_settings.py:/home/mediacms.io/mediacms/deploy/docker/local_settings.py
+      - data:/home/mediacms.io/mediacms/
+    environment:
+      ENABLE_CELERY_BEAT: 'no'
+      ENABLE_CELERY_SHORT: 'no'
+      ENABLE_CELERY_LONG: 'no'
+      ENABLE_MIGRATIONS: 'no'
+    depends_on:
+      - migrations
+
+  celery_beat:
+    image: mediacms/mediacms:latest
+    networks:
+      - postfix-net
+      - net
+    volumes:
+      - /opt/opm/mediacms/local_settings.py:/home/mediacms.io/mediacms/deploy/docker/local_settings.py
+      - data:/home/mediacms.io/mediacms/
+    environment:
+      ENABLE_UWSGI: 'no'
+      ENABLE_NGINX: 'no'
+      ENABLE_CELERY_SHORT: 'no'
+      ENABLE_CELERY_LONG: 'no'
+      ENABLE_MIGRATIONS: 'no'
+    depends_on:
+      - redis
+
+  celery_worker:
+    image: mediacms/mediacms:latest
+    networks:
+      - postfix-net
+      - net
+    deploy:
+      replicas: 1
+    volumes:
+      - /opt/opm/mediacms/local_settings.py:/home/mediacms.io/mediacms/deploy/docker/local_settings.py
+      - data:/home/mediacms.io/mediacms/
+    environment:
+      ENABLE_UWSGI: 'no'
+      ENABLE_NGINX: 'no'
+      ENABLE_CELERY_BEAT: 'no'
+      ENABLE_MIGRATIONS: 'no'
+    depends_on:
+      - migrations
+
+  db:
+    image: postgres
+    networks:
+      - net
+    volumes:
+      - raw_db:/var/lib/postgresql/data/
+    restart: always
+    secrets:
+      - mediacms-db-pw
+    environment:
+      - "POSTGRES_USER=mediacms"
+      - "POSTGRES_PASSWORD_FILE=/run/secrets/mediacms-db-pw"
+      - "POSTGRES_DB=mediacms"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mediacms"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: "redis:alpine"
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  data:
+  raw_db:
+
+secrets:
+  mediacms-db-pw:
+    external: true
+
+networks:
+  traefik-net:
+    external: true
+  postfix-net:
+    external: true
+  net:
+    driver: overlay
+
