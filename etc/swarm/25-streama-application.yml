@@ -1,0 +1,40 @@
+## application.yml
+
+environments:
+  production:
+    dataSource:
+      driverClassName: "com.mysql.jdbc.Driver"
+      url: "jdbc:mysql://db/streama"
+      username: "streama"
+      password: "@DATABASE_PASSWORD@"
+    server:
+      port: 80
+
+streama:
+  uploadtypes:
+    - "video/h264"
+    - "video/mp4"
+    - "video/mpeg"
+    - "video/quicktime"
+    - "video/webm"
+    - "video/x-ms-wm"
+    - "video/x-ms-wmv"
+    - "video/x-msvideo"
+    - "image/bmp"
+    - "image/gif"
+    - "image/jpeg"
+    - "image/pjpeg"
+    - "image/png"
+    - "image/svg+xml"
+    - "image/x-icon"
+    - "image/x-png"
+    - "application/x-subrip"
+    - "text/plain"
+    - "text/vtt"
+    - "text/plain"
+    - "application/octet-stream"
+
+grails:
+  mail:
+    host: "postfix_api"
+

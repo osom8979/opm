@@ -1,0 +1,57 @@
+version: "3.3"
+
+services:
+  db:
+    image: mariadb
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - net
+    secrets:
+      - streama-db-pw
+    environment:
+      - "MYSQL_DATABASE=streama"
+      - "MYSQL_USER=streama"
+      - "MYSQL_PASSWORD_FILE=/run/secrets/streama-db-pw"
+      - "MYSQL_RANDOM_ROOT_PASSWORD=yes"
+    volumes:
+      - raw_db:/var/lib/mysql
+
+  web:
+    image: gkiko/streama:latest
+    depends_on:
+      - db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.port=8080"
+        - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
+    networks:
+      - traefik-net
+      - postfix-net
+      - net
+    volumes:
+      - data:/data
+
+volumes:
+  data:
+  raw_db:
+
+secrets:
+  streama-db-pw:
+    external: true
+
+networks:
+  traefik-net:
+    external: true
+  postfix-net:
+    external: true
+  net:
+    driver: overlay
+
