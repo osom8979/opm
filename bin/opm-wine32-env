@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+export WINEARCH=win32
+export WINEPREFIX=$HOME/.wine32
+
