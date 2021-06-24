@@ -285,8 +285,23 @@ function enable_pyenv
 {
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
-    eval "$(pyenv init -)"
-    eval "$(pyenv virtualenv-init -)"
+
+    local platform_name=$(uname -s)
+    case "$platform_name" in
+        Darwin)
+            eval "$(pyenv init -)"
+            eval "$(pyenv virtualenv-init -)"
+            return 0
+            ;;
+        Linux)
+            eval "$(pyenv init --path)"
+            eval "$(pyenv init -)"
+            return 0
+            ;;
+        *)
+            opm-println-error "Unsupported platform: $platform_name"
+            return 0
+    esac
 }
 
 function active_virtualenv
