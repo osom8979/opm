@@ -81,9 +81,11 @@ call quickui#menu#install("&Find", [
             \ ])
 
 call quickui#menu#install("&Options", [
-            \ ['Set &Spell %{&spell? "Off":"On"}', 'set spell!'],
-            \ ['Set &Cursor Line %{&cursorline? "Off":"On"}', 'set cursorline!'],
-            \ ['Set &Paste %{&paste? "Off":"On"}', 'set paste!'],
+            \ ['Set &Spell (%{&spell? "Off":"On"})', 'set spell!'],
+            \ ['Set Scroll&bind (%{&scrollbind? "Off":"On"})', 'set scrollbind!'],
+            \ ['Set &Cursor Line (%{&cursorline? "Off":"On"})', 'set cursorline!'],
+            \ ['Set &Paste (%{&paste? "Off":"On"})', 'set paste!'],
+            \ ['Set &Wrap (%{&wrap? "Off":"On"})', 'set wrap!'],
             \ ])
 
 call quickui#menu#install("H&elp", [
