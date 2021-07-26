@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+fi
+
+function run_open
+{
+    PLATFORM=$(uname -s)
+    case "$PLATFORM" in
+    Darwin)
+        OPEN_CMD=open
+        ;;
+    Linux*|CYGWIN*|MINGW*|MSYS*)
+        OPEN_CMD=xdg-open
+        ;;
+    *)
+        echo "Unsupported platform: $PLATFORM"
+        exit 1
+        ;;
+    esac
+
+    OPEN_PATH=$(which $OPEN_CMD 2> /dev/null)
+    if [[ ! -x $OPEN_PATH ]]; then
+        echo "Not found '${OPEN_CMD}' executable."
+        exit 1
+    fi
+
+    "$OPEN_PATH" "$@"
+}
+
+run_open "$@"
+
