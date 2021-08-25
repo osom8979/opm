@@ -54,6 +54,7 @@ function install_neovim_libs
 
 # opm-package install tmux ffmpeg
 # opm-package install ctags  # or 'exuberant-ctags'
+# npm install -g yarn
 
 install_docker
 install_nodejs
