@@ -73,9 +73,3 @@ install_vimrc "$SRC_VIMRC"     "$VIMRC"
 install_vimrc "$SRC_IDEAVIMRC" "$IDEAVIMRC"
 install_vimrc "$SRC_VIMRC"     "$NEOVIMRC"
 
-## Install bundles.
-yes_or_no_question "Install bundles?" INSTALL_VARIABLE_VIM_BUNDLES
-if [[ $INSTALL_VARIABLE_VIM_BUNDLES -eq 1 ]]; then
-    "$VIM_CMD" +NeoBundleInstall +qall
-fi
-

@@ -4,12 +4,61 @@ if [[ -z $(which opm-version 2> /dev/null) ]]; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
 fi
 
-# neovim setup
+if [[ -z $(which lsb_release 2> /dev/null) ]]; then
+    opm-println-error "Not found lsb_release executable."
+    exit 1
+fi
 
-opy-pip install --upgrade pip
-opy-pip install neovim
-opn-npm install -g yarn
-opn-npm install -g neovim
+DISTRIBUTOR_ID=$(lsb_release -is)  # e.g. Ubuntu
+DISTRIBUTOR_RELEASE=$(lsb_release -rs)  # e.g. 20.04
+DISTRIBUTOR_CODE_NAME=$(lsb_release -cs)  # e.g. focal
+
+function install_docker
+{
+    if [[ -n $(which docker 2> /dev/null) ]]; then
+        return
+    fi
+
+    if [[ "$DISTRIBUTOR_ID" == "Ubuntu" ]]; then
+        bash "$OPM_HOME/etc/docker/install-docker-ubuntu-x86_64.sh"
+    fi
+}
+
+function install_nodejs
+{
+    if [[ -n $(which node 2> /dev/null) ]]; then
+        return
+    fi
+
+    if [[ "$DISTRIBUTOR_ID" == "Ubuntu" ]]; then
+        bash "$OPM_HOME/etc/nodejs/install-node-lts-ubuntu.sh"
+    fi
+}
+
+function install_neovim
+{
+    if [[ -n $(which nvim 2> /dev/null) ]]; then
+        return
+    fi
+
+    opm-package install neovim
+}
+
+function install_neovim_libs
+{
+    opy-pip install --upgrade pip
+    opy-pip install neovim
+    opn-npm install -g yarn
+    opn-npm install -g neovim
+}
+
+# opm-package install tmux ffmpeg
+# opm-package install ctags  # or 'exuberant-ctags'
+
+install_docker
+install_nodejs
+install_neovim
+install_neovim_libs
 
 nvim +NeoBundleInstall +qall
 
