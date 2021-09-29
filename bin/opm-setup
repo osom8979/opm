@@ -62,6 +62,7 @@ install_neovim
 install_neovim_libs
 
 nvim +NeoBundleInstall +qall
+nvim +UpdateRemotePlugins +qall
 
 # coc.vim build
 COC_DIR=$HOME/.vim/bundle/coc.nvim
