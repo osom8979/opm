@@ -19,7 +19,7 @@ docker run --rm -it \
     -p $HOST_PORT:5800 \
     -v "$DOWNLOAD_DIR:/config/downloads:rw" \
     -e "FF_PREF_HOMEPAGE=browser.startup.homepage=\"$HOMEPAGE\"" \
-    -e "FF_PREF_TRR_URI=network.trr.uri=\"https://cloudflare-dns.com/dns-query\"" \
+    -e "FF_PREF_TRR_URI=network.trr.uri=\"https://mozilla.cloudflare-dns.com/dns-query\"" \
     -e "FF_PREF_TRR_BOOTSTRAP=network.trr.bootstrapAddress=\"1.1.1.1\"" \
     -e "FF_PREF_TRR_MODE=network.trr.mode=2" \
     -e "FF_PREF_ESNI=network.security.esni.enabled=true" \
