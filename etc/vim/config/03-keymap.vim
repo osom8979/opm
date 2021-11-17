@@ -18,6 +18,10 @@ noremap  <leader><leader>5  <ESC>:GundoToggle<CR>
 " Jump window.
 noremap  <leader>1  <ESC>:NERDTreeFocus<CR>
 
+" Buffer settings.
+noremap <M-{> <ESC>:call OpmMoveNextBuffer()<CR>
+noremap <M-}> <ESC>:call OpmMovePrevBuffer()<CR>
+
 " Tab settings.
 noremap <leader><F1>  <ESC>:tabprevious<CR>
 noremap <leader><F2>  <ESC>:tabNext<CR>

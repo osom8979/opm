@@ -2,4 +2,6 @@
 
 scriptencoding utf-8
 
+" nnoremap <C-\><C-[> <ESC>:action PreviousTab<CR>
+" nnoremap <C-\><C-]> <ESC>:action NextTab<CR>
 
