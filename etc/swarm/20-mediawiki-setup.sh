@@ -31,6 +31,8 @@ else
     cp "$LOCALSETTINGS" "$LOCALSETTINGS_PATH"
 
     echo 'Update file extensions ...'
+    echo '## Maximum size of uploaded files (in bytes)' >> "$LOCALSETTINGS_PATH"
+    echo '$wgMaxUploadSize = 256 * 1024 * 1024;'        >> "$LOCALSETTINGS_PATH"
     echo '## FileExtensions:'            >> "$LOCALSETTINGS_PATH"
     echo '$wgFileExtensions[] =  "png";' >> "$LOCALSETTINGS_PATH"
     echo '$wgFileExtensions[] =  "gif";' >> "$LOCALSETTINGS_PATH"
