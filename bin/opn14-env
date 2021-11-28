@@ -4,7 +4,8 @@ if [[ -z $(which opm-version 2> /dev/null) ]]; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
 fi
 
-export OPN_VERSION=$(opm-variable OPN14_VERSION)
-export OPN_VERBOSE=$(opm-variable OPN_VERBOSE)
+export OPN_VERSION=${OPN_VERSION:-$(opm-variable OPN14_VERSION)}
+export OPN_VERBOSE=${OPN_VERBOSE:-$(opm-variable OPN_VERBOSE)}
+
 source opm-init-opn
 
