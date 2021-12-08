@@ -18,17 +18,22 @@ Available options are:
   -1, --stdout      Write to the standard output. [default]
   -2, --stderr      Write to the standard error.
   -v, --verbose     The 'VERBOSE' environment variable must be 'true' to output.
+  -s, --silent      The 'SILENT' environment variable must be 'false' to output.
   --                Skip handling options.
 "
 
 function println_raw
 {
     local verbose_flag=${1:-0}
-    local stderr_flag=${2:-0}
-    local log_level=${3:-r}
-    shift 3
+    local silent_flag=${2:-0}
+    local stderr_flag=${3:-0}
+    local log_level=${4:-r}
+    shift 4
 
     if [[ $verbose_flag -ne 0 && $VERBOSE -eq 0 ]]; then
+        return 0
+    fi
+    if [[ $silent_flag -ne 0 && $SILENT -ne 0 ]]; then
         return 0
     fi
 
@@ -61,13 +66,14 @@ function println_raw
 function println_main
 {
     local verbose_flag=0
+    local silent_flag=0
     local stderr_flag=0
     local log_level=r
 
     while [[ ! -z $1 ]]; do
         case $1 in
         -h|--help)
-            println_raw 0 0 r "$USAGE_MESSAGE"
+            println_raw 0 0 0 r "$USAGE_MESSAGE"
             exit 0
             ;;
         -r|--raw)
@@ -102,6 +108,10 @@ function println_main
             verbose_flag=1
             shift
             ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
         --)
             shift
             break
@@ -112,7 +122,7 @@ function println_main
         esac
     done
 
-    println_raw $verbose_flag $stderr_flag $log_level "$@"
+    println_raw $verbose_flag $silent_flag $stderr_flag $log_level "$@"
 }
 
 println_main "$@"
