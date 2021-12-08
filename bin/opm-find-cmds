@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Find executable commands.
+
+  Usage: opm-find-cmds [options] ...
+
+Available options are:
+  -h, --help        Print this message.
+  -s, --space       Use spaces instead of newlines.
+  -n, --not         Print not exsits commands.
+  -l, --locate      Prints the full path that matches.
+  --                Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function print_exists_cmd
+{
+    local locate=$1
+    local cmd=$2
+    local which_cmd=$(which "$cmd" 2> /dev/null)
+
+    if [[ -n "$which_cmd" ]]; then
+        if [[ $locate -eq 0 ]]; then
+            echo -n "$cmd"
+        else
+            echo -n "$which_cmd"
+        fi
+    fi
+}
+
+function print_not_exists_cmd
+{
+    local cmd=$1
+    local which_cmd=$(which "$cmd" 2> /dev/null)
+
+    if [[ -z "$which_cmd" ]]; then
+        echo -n "$cmd"
+    fi
+}
+
+function print_find_cmd
+{
+    local not=$1
+    local locate=$2
+    local cmd=$3
+
+    if [[ $not -eq 0 ]]; then
+        print_exists_cmd "$locate" "$cmd"
+    else
+        print_not_exists_cmd "$cmd"
+    fi
+}
+
+function print_find_cmds
+{
+    local space=$1
+    local not=$2
+    local locate=$3
+    shift 3
+
+    local first_exists=0
+    local current_cmd
+
+    for i in $@; do
+        current_cmd=$(print_find_cmd "$not" "$locate" "$i")
+        if [[ -z "$current_cmd" ]]; then
+            continue
+        fi
+
+        if [[ $first_exists -eq 0 ]]; then
+            echo -n "$current_cmd"
+            first_exists=1
+        else
+            if [[ $space -eq 0 ]]; then
+                echo -n -e "\n"
+            else
+                echo -n " "
+            fi
+            echo -n "$current_cmd"
+        fi
+    done
+}
+
+function opm_find_cmds_main
+{
+    local space=0
+    local not=0
+    local locate=0
+
+    while [[ ! -z $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        -s|--space)
+            space=1
+            shift
+            ;;
+        -n|--not)
+            not=1
+            shift
+            ;;
+        -l|--locate)
+            locate=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    print_find_cmds "$space" "$not" "$locate" "$@"
+}
+
+opm_find_cmds_main "$@"
+
