@@ -1,0 +1,420 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Calculates and verifies the checksum.
+
+  Usage: opm-checksum [options] {value or file} {checksum}
+
+Available options are:
+  -h, --help        Print this message.
+  -f, --file        The first argument is the file path.
+  -v, --value       The first argument is the value. (default)
+  -s, --silent      Suppresses all messages.
+  --md5             Use md5 (128-bit) checksum. (default)
+  --sha1            Use sha1 (160-bit) checksum.
+  --sha224          Use sha224 (224-bit) checksum.
+  --sha256          Use sha256 (256-bit) checksum.
+  --sha384          Use sha384 (384-bit) checksum.
+  --sha512          Use sha512 (512-bit) checksum.
+  --                Skip handling options.
+
+If a checksum argument is provided,
+the result of the calculation is validated.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function exists_program_or_exit
+{
+    local cmd=$1
+    local cmd_which=$(which $cmd 2> /dev/null)
+
+    if [[ -z "$cmd_which" ]]; then
+        opm-println-error -s "Not found executable: $cmd"
+        exit 1
+    fi
+}
+
+function print_md5_val
+{
+    local val=$1
+    if [[ -n "$(which md5 2> /dev/null)" ]]; then
+        # Darwin kernel
+        echo -n "$val" | md5 -r | awk '{print $1}'
+    elif [[ -n "$(which md5sum 2> /dev/null)" ]]; then
+        echo -n "$val" | md5sum | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        echo -n "$val" | openssl md5 -r | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute md5 checksum."
+        exit 1
+    fi
+}
+
+function print_md5_file
+{
+    local file=$1
+    if [[ -n "$(which md5 2> /dev/null)" ]]; then
+        # Darwin kernel
+        md5 -r "$file" | awk '{print $1}'
+    elif [[ -n "$(which md5sum 2> /dev/null)" ]]; then
+        md5sum "$file" | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        openssl md5 -r "$file" | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute md5 checksum."
+        exit 1
+    fi
+}
+
+function print_sha1_val
+{
+    local val=$1
+    if [[ -n "$(which sha1sum 2> /dev/null)" ]]; then
+        echo -n "$val" | sha1sum | awk '{print $1}'
+    elif [[ -n "$(which shasum 2> /dev/null)" ]]; then
+        echo -n "$val" | shasum -a 1 | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        echo -n "$val" | openssl sha1 -r | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute sha1 checksum."
+        exit 1
+    fi
+}
+
+function print_sha1_file
+{
+    local file=$1
+    if [[ -n "$(which sha1sum 2> /dev/null)" ]]; then
+        sha1sum "$file" | awk '{print $1}'
+    elif [[ -n "$(which shasum 2> /dev/null)" ]]; then
+        shasum -a 1 "$file" | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        openssl sha1 -r "$file" | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute sha1 checksum."
+        exit 1
+    fi
+}
+
+function print_sha224_val
+{
+    local val=$1
+    if [[ -n "$(which sha224sum 2> /dev/null)" ]]; then
+        echo -n "$val" | sha224sum | awk '{print $1}'
+    elif [[ -n "$(which shasum 2> /dev/null)" ]]; then
+        echo -n "$val" | shasum -a 224 | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        echo -n "$val" | openssl sha224 -r | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute sha224 checksum."
+        exit 1
+    fi
+}
+
+function print_sha224_file
+{
+    local file=$1
+    if [[ -n "$(which sha224sum 2> /dev/null)" ]]; then
+        sha224sum "$file" | awk '{print $1}'
+    elif [[ -n "$(which shasum 2> /dev/null)" ]]; then
+        shasum -a 224 "$file" | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        openssl sha224 -r "$file" | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute sha224 checksum."
+        exit 1
+    fi
+}
+
+function print_sha256_val
+{
+    local val=$1
+    if [[ -n "$(which sha256sum 2> /dev/null)" ]]; then
+        echo -n "$val" | sha256sum | awk '{print $1}'
+    elif [[ -n "$(which shasum 2> /dev/null)" ]]; then
+        echo -n "$val" | shasum -a 256 | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        echo -n "$val" | openssl sha256 -r | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute sha256 checksum."
+        exit 1
+    fi
+}
+
+function print_sha256_file
+{
+    local file=$1
+    if [[ -n "$(which sha256sum 2> /dev/null)" ]]; then
+        sha256sum "$file" | awk '{print $1}'
+    elif [[ -n "$(which shasum 2> /dev/null)" ]]; then
+        shasum -a 256 "$file" | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        openssl sha256 -r "$file" | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute sha256 checksum."
+        exit 1
+    fi
+}
+
+function print_sha384_val
+{
+    local val=$1
+    if [[ -n "$(which sha384sum 2> /dev/null)" ]]; then
+        echo -n "$val" | sha384sum | awk '{print $1}'
+    elif [[ -n "$(which shasum 2> /dev/null)" ]]; then
+        echo -n "$val" | shasum -a 384 | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        echo -n "$val" | openssl sha384 -r | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute sha384 checksum."
+        exit 1
+    fi
+}
+
+function print_sha384_file
+{
+    local file=$1
+    if [[ -n "$(which sha384sum 2> /dev/null)" ]]; then
+        sha384sum "$file" | awk '{print $1}'
+    elif [[ -n "$(which shasum 2> /dev/null)" ]]; then
+        shasum -a 384 "$file" | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        openssl sha384 -r "$file" | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute sha384 checksum."
+        exit 1
+    fi
+}
+
+function print_sha512_val
+{
+    local val=$1
+    if [[ -n "$(which sha512sum 2> /dev/null)" ]]; then
+        echo -n "$val" | sha512sum | awk '{print $1}'
+    elif [[ -n "$(which shasum 2> /dev/null)" ]]; then
+        echo -n "$val" | shasum -a 512 | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        echo -n "$val" | openssl sha512 -r | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute sha256 checksum."
+        exit 1
+    fi
+}
+
+function print_sha512_file
+{
+    local file=$1
+
+    if [[ -n "$(which sha512sum 2> /dev/null)" ]]; then
+        sha512sum "$file" | awk '{print $1}'
+    elif [[ -n "$(which shasum 2> /dev/null)" ]]; then
+        shasum -a 512 "$file" | awk '{print $1}'
+    elif [[ -n "$(which openssl 2> /dev/null)" ]]; then
+        openssl sha512 -r "$file" | awk '{print $1}'
+    else
+        opm-println-error -s "Unable to compute sha256 checksum."
+        exit 1
+    fi
+}
+
+function print_checksum_val
+{
+    local method=$1
+    local val=$2
+
+    case "$method" in
+    md5)
+        print_md5_val "$val"
+        ;;
+    sha1)
+        print_sha1_val "$val"
+        ;;
+    sha224)
+        print_sha224_val "$val"
+        ;;
+    sha256)
+        print_sha256_val "$val"
+        ;;
+    sha384)
+        print_sha384_val "$val"
+        ;;
+    sha512)
+        print_sha512_val "$val"
+        ;;
+    *)
+        opm-println-error -s "Unsupported checksum method: $method"
+        exit 1
+        ;;
+    esac
+}
+
+function print_checksum_file
+{
+    local method=$1
+    local file=$2
+
+    if [[ ! -f $file ]]; then
+        opm-println-error -s "Not exists file: $file"
+        exit 1
+    fi
+
+    if [[ ! -r $file ]]; then
+        opm-println-error -s "Not readable file: $file"
+        exit 1
+    fi
+
+    case "$method" in
+    md5)
+        print_md5_file "$file"
+        ;;
+    sha1)
+        print_sha1_file "$file"
+        ;;
+    sha224)
+        print_sha224_file "$file"
+        ;;
+    sha256)
+        print_sha256_file "$file"
+        ;;
+    sha384)
+        print_sha384_file "$file"
+        ;;
+    sha512)
+        print_sha512_file "$file"
+        ;;
+    *)
+        opm-println-error -s "Unsupported checksum method: $method"
+        exit 1
+        ;;
+    esac
+}
+
+function print_checksum
+{
+    local is_file=$1
+    local method=$2
+    local input=$3
+
+    if [[ $is_file -eq 0 ]]; then
+        print_checksum_val "$method" "$input"
+    else
+        print_checksum_file "$method" "$input"
+    fi
+}
+
+function compare_checksum_or_exit
+{
+    local expected=$1
+    local actual=$2
+
+    if [[ "$expected" == "$actual" ]]; then
+        opm-println-info -s "The checksum is correct: $actual"
+    else
+        opm-println-error -s "Mismatch checksum: expected($expected) vs actual($actual)"
+        exit 1
+    fi
+}
+
+function exit_on_error
+{
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        exit $code
+    fi
+}
+
+function opm_download_main
+{
+    local is_file=0
+    local silent=0
+    local method=md5
+
+    while [[ ! -z $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        -f|--file)
+            is_file=1
+            shift
+            ;;
+        -v|--value)
+            is_file=0
+            shift
+            ;;
+        -s|--silent)
+            silent=1
+            shift
+            ;;
+        -md5|--md5)
+            method=md5
+            shift
+            ;;
+        -sha1|--sha1)
+            method=sha1
+            shift
+            ;;
+        -sha224|--sha224)
+            method=sha224
+            shift
+            ;;
+        -sha256|--sha256)
+            method=sha256
+            shift
+            ;;
+        -sha384|--sha384)
+            method=sha384
+            shift
+            ;;
+        -sha512|--sha512)
+            method=sha512
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local input=$1
+    local expected=$2
+
+    if [[ $silent -ne 0 ]]; then
+        export SILENT=1
+    fi
+
+    exists_program_or_exit awk
+
+    local actual
+    # [IMPORTANT]
+    # If you use `local` and `command substitution` together,
+    # you won't get an `exit code`.
+    actual=$(print_checksum "$is_file" "$method" "$input")
+
+    exit_on_error
+
+    if [[ -z $expected ]]; then
+        if [[ $silent -eq 0 && -n $actual ]]; then
+            echo "$actual"
+        fi
+    else
+        compare_checksum_or_exit "$expected" "$actual"
+        exit $?
+    fi
+}
+
+opm_download_main "$@"
+
