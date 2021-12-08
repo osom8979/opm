@@ -7,7 +7,7 @@ fi
 USAGE_MESSAGE="
 Calculates and verifies the checksum.
 
-  Usage: opm-checksum [options] {value or file} {checksum}
+  Usage: opm-checksum [options] input checksum
 
 Available options are:
   -h, --help        Print this message.
