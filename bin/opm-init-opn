@@ -30,24 +30,8 @@ function find_node_version
 {
     local version=$1
     local n_cmd=$(must_n_path)
-    N_PREFIX=$N_INSTALL_DIR "$n_cmd" ls | sed 's|^node/||' | grep --color=never -Fx "$version"
-}
-
-function find_not_found_cmds
-{
-    if [[ $# -ge 1 ]]; then
-        if [[ -z $(which "$1" 2> /dev/null) ]]; then
-            echo -n "$1"
-        fi
-        shift
-    fi
-    if [[ $# -ge 1 ]]; then
-        for i in $@; do
-            if [[ -z $(which "$1" 2> /dev/null) ]]; then
-                echo -n " $i"
-            fi
-        done
-    fi
+    N_PREFIX=$N_INSTALL_DIR \
+        "$n_cmd" ls | sed 's|^node/||' | grep --color=never -Fx "$version"
 }
 
 # ---------
@@ -56,13 +40,13 @@ function find_not_found_cmds
 
 function install_n
 {
-    local not_found_cmds=$(find_not_found_cmds curl)
+    local not_found_cmds=$(opm-find-cmds -n -s curl)
     if [[ -n $not_found_cmds ]]; then
         opm-println "Not found commands: $not_found_cmds"
         opm-package update
         opm-package install $not_found_cmds
 
-        not_found_cmds=$(find_not_found_cmds curl)
+        not_found_cmds=$(opm-find-cmds -n -s curl)
         if [[ -n $not_found_cmds ]]; then
             opm-println-error "installation failed: $not_found_cmds"
             return 1
