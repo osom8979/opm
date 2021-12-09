@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ -z $(which opm-version 2> /dev/null) ]]; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 USAGE_MESSAGE="
@@ -34,7 +34,8 @@ function print_usage
 function exists_program_or_exit
 {
     local cmd=$1
-    local cmd_which=$(which $cmd 2> /dev/null)
+    local cmd_which
+    cmd_which=$(which "$cmd" 2> /dev/null)
 
     if [[ -z "$cmd_which" ]]; then
         opm-println-error -s "Not found executable: $cmd"
@@ -337,7 +338,7 @@ function opm_download_main
     local silent=0
     local method=md5
 
-    while [[ ! -z $1 ]]; do
+    while [[ -n $1 ]]; do
         case $1 in
         -h|--help)
             print_usage
@@ -399,9 +400,6 @@ function opm_download_main
     exists_program_or_exit awk
 
     local actual
-    # [IMPORTANT]
-    # If you use `local` and `command substitution` together,
-    # you won't get an `exit code`.
     actual=$(print_checksum "$is_file" "$method" "$input")
 
     exit_on_error

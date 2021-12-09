@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ -z $(which opm-version 2> /dev/null) ]]; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 USAGE_MESSAGE="
@@ -11,7 +11,7 @@ Print distribution information.
 
 Available options are:
   -h, --help     Print this message.
-  -k, --kernel   Print Kernal name.
+  -k, --kernel   Print kernel name.
   -m, --machine  print the machine hardware name
   -i, --id       Print distribution ID. [default]
   -v, --version  Print distribution VERSION.
@@ -27,12 +27,13 @@ function get_variable
         return 1
     fi
 
-    local val=`cat "$file" | grep --color=never "^$key=" | sed "s/^$key=//g" | tr '[:upper:]' '[:lower:]'`
+    local val
+    val=$(grep --color=never "^$key=" "$file" | sed "s/^$key=//g" | tr '[:upper:]' '[:lower:]')
     if [[ -z "$val" ]]; then
         return 1
     fi
 
-    echo $val
+    echo "$val"
     return 0
 }
 
@@ -62,13 +63,14 @@ function get_uname
         return 1
     fi
 
-    local val=`uname $1 | tr '[:upper:]' '[:lower:]'`
+    local val
+    val=$(uname "$1" | tr '[:upper:]' '[:lower:]')
+
     if [[ -z "$val" ]]; then
         return 1
     fi
 
-    echo $val
-    return 0
+    echo "$val"
 }
 
 function exit_on_success
@@ -134,4 +136,3 @@ function distribution_main
 }
 
 distribution_main "$@"
-

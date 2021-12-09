@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ -z $(which opm-version 2> /dev/null) ]]; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 USAGE_MESSAGE="
@@ -12,7 +12,7 @@ Find executable commands.
 Available options are:
   -h, --help        Print this message.
   -s, --space       Use spaces instead of newlines.
-  -n, --not         Print not exsits commands.
+  -n, --not         Print not exists commands.
   -l, --locate      Prints the full path that matches.
   --                Skip handling options.
 "
@@ -26,13 +26,14 @@ function print_exists_cmd
 {
     local locate=$1
     local cmd=$2
-    local which_cmd=$(which "$cmd" 2> /dev/null)
+    local cmd_which
+    cmd_which=$(which "$cmd" 2> /dev/null)
 
-    if [[ -n "$which_cmd" ]]; then
+    if [[ -n "$cmd_which" ]]; then
         if [[ $locate -eq 0 ]]; then
             echo -n "$cmd"
         else
-            echo -n "$which_cmd"
+            echo -n "$cmd_which"
         fi
     fi
 }
@@ -40,9 +41,10 @@ function print_exists_cmd
 function print_not_exists_cmd
 {
     local cmd=$1
-    local which_cmd=$(which "$cmd" 2> /dev/null)
+    local cmd_which
+    cmd_which=$(which "$cmd" 2> /dev/null)
 
-    if [[ -z "$which_cmd" ]]; then
+    if [[ -z "$cmd_which" ]]; then
         echo -n "$cmd"
     fi
 }
@@ -70,7 +72,7 @@ function print_find_cmds
     local first_exists=0
     local current_cmd
 
-    for i in $@; do
+    for i in "$@"; do
         current_cmd=$(print_find_cmd "$not" "$locate" "$i")
         if [[ -z "$current_cmd" ]]; then
             continue
@@ -88,6 +90,10 @@ function print_find_cmds
             echo -n "$current_cmd"
         fi
     done
+
+    if [[ $first_exists -ne 0 ]]; then
+        echo -n -e "\n"
+    fi
 }
 
 function opm_find_cmds_main
@@ -96,7 +102,7 @@ function opm_find_cmds_main
     local not=0
     local locate=0
 
-    while [[ ! -z $1 ]]; do
+    while [[ -n $1 ]]; do
         case $1 in
         -h|--help)
             print_usage
@@ -128,4 +134,3 @@ function opm_find_cmds_main
 }
 
 opm_find_cmds_main "$@"
-
