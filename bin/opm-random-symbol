@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+FIRST_PATTERN="a-zA-Z_"
+MORE_PATTERN="a-zA-Z0-9"
+DEFAULT_LENGTH=32
+
+USAGE_MESSAGE="
+Generates a random symbol.
+
+  Usage: opm-random-symbol [options] {length:${DEFAULT_LENGTH}}
+
+Available options are:
+  -h, --help        Print this message.
+  -s, --silent      Suppresses all messages.
+  --prefix=text     Specifies the prefix.
+  --suffix=text     Specifies the suffix.
+  --                Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function print_random_symbol
+{
+    local length=$1
+
+    if [[ $length -lt 0 ]]; then
+        opm-println-error -s "length must be greater than or equal to 0"
+        return 1
+    fi
+
+    local first
+    if [[ $length -ge 1 ]]; then
+        first=$(tr -dc "$FIRST_PATTERN" < /dev/urandom | head -c 1)
+    fi
+
+    ((length--))
+    local more
+    if [[ $length -ge 1 ]]; then
+        more=$(tr -dc "$MORE_PATTERN" < /dev/urandom | head -c "$length")
+    fi
+
+    echo "$first$more"
+}
+
+function exit_on_error
+{
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        exit $code
+    fi
+}
+
+function opm_random_symbol_main
+{
+    local length=$DEFAULT_LENGTH
+    local silent_flag=0
+    local prefix=
+    local suffix=
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --prefix=*)
+            prefix=${1:9}
+            shift
+            ;;
+        --prefix)
+            prefix=$2
+            shift 2
+            ;;
+        --suffix=*)
+            suffix=${1:9}
+            shift
+            ;;
+        --suffix)
+            suffix=$2
+            shift 2
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    if [[ -n $1 ]]; then
+        length=$1
+    fi
+
+    local symbol
+    symbol=$(print_random_symbol "$length")
+    exit_on_error
+
+    echo "$prefix$symbol$suffix"
+}
+
+opm_random_symbol_main "$@"
