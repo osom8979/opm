@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ -z $(which opm-version 2> /dev/null) ]]; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 USAGE_MESSAGE="
@@ -14,6 +14,7 @@ Available options are:
   -m {name}, --manager={name}
                     Select a package manager.
   -v, --verbose     Be more verbose/talkative during the operation.
+  -s, --silent      Suppresses all messages.
   --                Skip handling options.
 
 Available command are:
@@ -28,13 +29,22 @@ Available command are:
   remove        Remove the package.
 "
 
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
 function find_target
 {
-    local kernel_name=$(opm-distribution -k)
+    local kernel_name
+    kernel_name=$(opm-distribution -k)
+
     if [[ $kernel_name == darwin ]]; then
         echo "darwin_brew"
     elif [[ $kernel_name == linux ]]; then
-        local distribution=$(opm-distribution -i)
+        local distribution
+        distribution=$(opm-distribution -i)
+
         case $distribution in
         arch)
             echo "linux_arch_pacman"
@@ -43,12 +53,12 @@ function find_target
             echo "linux_ubuntu_apt"
             ;;
         *)
-            opm-println-error "Unsupported distribution: $distribution"
+            opm-println-error -s "Unsupported distribution: $distribution"
             return 1
             ;;
         esac
     else
-        echo $kernel_name
+        echo "$kernel_name"
     fi
 }
 
@@ -56,7 +66,7 @@ function get_target_with_manager
 {
     local manager=$1
     if [[ -z $manager ]]; then
-        opm-println-error "Requires manager argument."
+        opm-println-error -s "Requires manager argument."
         return 1
     fi
 
@@ -71,72 +81,71 @@ function get_target_with_manager
         echo "darwin_brew"
         ;;
     *)
-        opm-println-error "Unsupported manager argument: $manager"
+        opm-println-error -s "Unsupported manager argument: $manager"
         return 1
         ;;
     esac
 }
 
-function do_getmanager
+function do_get_manager
 {
     local target=$1
-    local verbose_flag=$2
-    shift 2
+    shift
 
-    getmanager_$target
+    "get_manager_$target"
 }
 
 function do_which
 {
     local target=$1
-    local verbose_flag=$2
-    shift 2
+    shift
 
-    which_$target
+    "which_$target"
 }
 
 function do_update
 {
     local target=$1
-    local verbose_flag=$2
-    shift 2
+    shift
 
-    if [[ -z $(which_$target) ]]; then
-        opm-println-error "Not found package-manager command."
+    if [[ -z $("which_$target") ]]; then
+        opm-println-error -s "Not found package-manager command."
         return 1
     fi
 
-    update_$target
+    "update_$target"
 }
 
 function do_list
 {
     local target=$1
-    local verbose_flag=$2
-    shift 2
+    shift
 
-    if [[ -z $(which_$target) ]]; then
-        opm-println-error "Not found package-manager command."
+    if [[ -z $("which_$target") ]]; then
+        opm-println-error -s "Not found package-manager command."
         return 1
     fi
 
-    local packages=$(list_$target "$@")
+    local packages
+    packages=$("list_$target" "$@")
     if [[ $# -eq 0 ]]; then
         echo "$packages"
         return 0
     fi
 
     local count=0
-    for i in $@; do
-        if [[ -n $(echo "$packages" | grep --color=never -Fx "$i") ]]; then
-            if [[ $verbose_flag -ne 0 ]]; then
+    local grepped_package
+    for i in "$@"; do
+        grepped_package=$(echo "$packages" | grep --color=never -Fx "$i")
+        if [[ -n $grepped_package ]]; then
+            if [[ $VERBOSE -ne 0 ]]; then
                 opm-println-info "+ $i"
             else
                 echo "+ $i"
             fi
             (( count += 1 ))
         else
-            if [[ $verbose_flag -ne 0 ]]; then
+            if [[ $VERBOSE -ne 0 ]]; then
                 opm-println-error "- $i"
             else
                 echo "- $i"
@@ -154,66 +163,64 @@ function do_list
 function do_files
 {
     local target=$1
-    local verbose_flag=$2
-    shift 2
+    shift
 
-    if [[ -z $(which_$target) ]]; then
-        opm-println-error "Not found package-manager command."
+    if [[ -z $("which_$target") ]]; then
+        opm-println-error -s "Not found package-manager command."
         return 1
     fi
     if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
+        opm-println-error -s "You must enter the package."
         return 1
     fi
 
-    files_$target "$@"
+    "files_$target" "$@"
 }
 
 function do_install
 {
     local target=$1
-    local verbose_flag=$2
-    shift 2
+    shift
 
-    if [[ -z $(which_$target) ]]; then
-        opm-println-error "Not found package-manager command."
+    if [[ -z $("which_$target") ]]; then
+        opm-println-error -s "Not found package-manager command."
         return 1
     fi
     if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
+        opm-println-error -s "You must enter the package."
         return 1
     fi
 
-    install_$target "$@"
+    "install_$target" "$@"
 }
 
 function do_remove
 {
     local target=$1
-    local verbose_flag=$2
-    shift 2
+    shift
 
-    if [[ -z $(which_$target) ]]; then
-        opm-println-error "Not found package-manager command."
+    if [[ -z $("which_$target") ]]; then
+        opm-println-error -s "Not found package-manager command."
         return 1
     fi
     if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the package."
+        opm-println-error -s "You must enter the package."
         return 1
     fi
 
-    remove_$target "$@"
+    "remove_$target" "$@"
 }
 
 function package_main
 {
     local manager
     local verbose_flag=0
+    local silent_flag=0
 
-    while [[ ! -z $1 ]]; do
+    while [[ -n $1 ]]; do
         case $1 in
         -h|--help)
-            opm-println "$USAGE_MESSAGE"
+            print_usage
             return 0
             ;;
         --manager=*)
@@ -228,6 +235,10 @@ function package_main
             verbose_flag=1
             shift
             ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
         --)
             shift
             break
@@ -238,30 +249,44 @@ function package_main
         esac
     done
 
+    if [[ $verbose_flag -ne 0 ]]; then
+      VERBOSE=1
+      export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+      SILENT=1
+      export SILENT
+    fi
+
     local target
     if [[ -n $manager ]]; then
-        target=$(get_target_with_manager $manager)
+        target=$(get_target_with_manager "$manager")
     else
         target=$(find_target)
     fi
-    local code_of_target=$?
-    if [[ $code_of_target -ne 0 ]]; then
-        return $code_of_target
+
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        return $code
     fi
 
-    VERBOSE=$verbose_flag opm-println -v -i "Selected target name: $target"
+    opm-println-info -v -s "Selected target name: $target"
 
-    local target_source_name=opm-package-${target//_/-}
-    local which_target_source=$(which $target_source_name 2> /dev/null)
-    if [[ -z $which_target_source ]]; then
-        opm-println-error "Not found target source: $target_source_name"
+    local target_file_name="opm-package-${target//_/-}"
+    local which_target_source
+    which_target_source=$(which "$target_file_name" 2> /dev/null)
+    if [[ -z "$which_target_source" ]]; then
+        opm-println-error -s "Not found target file: $target_file_name"
         return 1
     fi
 
+    opm-println-info -v -s "Target source path: $which_target_source"
+
+    # shellcheck disable=SC1090
     source "$which_target_source"
 
     if [[ $# -eq 0 ]]; then
-        opm-println-error "You must enter the command."
+        opm-println-error -s "You must enter the command."
         return 1
     fi
 
@@ -270,32 +295,31 @@ function package_main
 
     case $command in
     get-manager)
-        do_getmanager $target $verbose_flag
+        do_get_manager "$target"
         ;;
     which)
-        do_which $target $verbose_flag
+        do_which "$target"
         ;;
     update)
-        do_update $target $verbose_flag
+        do_update "$target"
         ;;
     list)
-        do_list $target $verbose_flag "$@"
+        do_list "$target" "$@"
         ;;
     files)
-        do_files $target $verbose_flag "$@"
+        do_files "$target" "$@"
         ;;
     install)
-        do_install $target $verbose_flag "$@"
+        do_install "$target" "$@"
         ;;
     remove)
-        do_remove $target $verbose_flag "$@"
+        do_remove "$target" "$@"
         ;;
     *)
-        opm-println-error "Invalid command: $command"
+        opm-println-error -s "Invalid command: $command"
         return 1
         ;;
     esac
 }
 
 package_main "$@"
-

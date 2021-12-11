@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 if [[ -z $(which opm-version 2> /dev/null) ]]; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-function getmanager_linux_arch_pacman
+function get_manager_linux_arch_pacman
 {
-    opm-println-error "Unsupported operation."
+    opm-println-error -s "Arch platforms use pacman"
     return 1
 }
 
@@ -17,7 +17,11 @@ function which_linux_arch_pacman
 
 function update_linux_arch_pacman
 {
-    sudo pacman -Sy
+    if [[ $SILENT -ne 0 ]]; then
+        sudo pacman -Syq
+    else
+        sudo pacman -Sy
+    fi
 }
 
 function list_linux_arch_pacman
@@ -36,11 +40,15 @@ function install_linux_arch_pacman
     #   --noconfirm
     #     Bypass any and all "Are you sure?" messages.
     #     It’s not a good idea to do this unless you want to run pacman from a script.
-    sudo pacman -S "$@"
+
+    if [[ $SILENT -ne 0 ]]; then
+        sudo pacman -Sq "$@"
+    else
+        sudo pacman -S "$@"
+    fi
 }
 
 function remove_linux_arch_pacman
 {
     sudo pacman -Rs "$@"
 }
-
