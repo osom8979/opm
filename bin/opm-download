@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Download the file.
+
+  Usage: opm-download [options] url output
+
+Available options are:
+  -h, --help        Print this message.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  -s, --silent      Suppresses all messages.
+  -f, --force       If the output file exists, it is forcibly overwritten.
+  --                Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function install_curl_if_not_exists
+{
+    local not_found_cmds
+    not_found_cmds=$(opm-find-cmds -n -s curl)
+
+    if [[ -n $not_found_cmds ]]; then
+        opm-println -v -s "Not found commands: $not_found_cmds"
+        opm-package update
+        opm-package install curl
+
+        not_found_cmds=$(opm-find-cmds -n -s curl)
+        if [[ -n $not_found_cmds ]]; then
+            opm-println-error -s "installation failed: $not_found_cmds"
+            return 1
+        fi
+    fi
+}
+
+function download_file
+{
+    local force_flag=$1
+    local url=$2
+    local output=$3
+
+    if [[ -f "$output" ]]; then
+        if [[ $force_flag -eq 0 ]]; then
+            opm-println-info -v -s "Exists output file: $output"
+            return 0
+        else
+            opm-println-info -v -s "Remove exists output file: $output"
+            rm "$output"
+        fi
+    fi
+
+    opm-println-info -v -s "Download $url -> $output"
+    curl -L -k -o "$output" "$url"
+}
+
+function opm_download_main
+{
+    local verbose_flag=0
+    local silent_flag=0
+    local force_flag=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        -f|--force)
+            force_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    install_curl_if_not_exists
+
+    local url=$1
+    local output=$2
+    download_file "$force_flag" "$url" "$output" "$@"
+}
+
+opm_download_main "$@"
