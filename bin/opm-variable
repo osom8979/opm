@@ -4,7 +4,7 @@
 # This script should not refer to other OPM scripts.
 
 if [[ -z $OPM_HOME ]]; then
-OPM_HOME=$(cd "$(dirname "${BASH_SOURCE[0]}")/.."; pwd)
+OPM_HOME=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit; pwd)
 fi
 
 USAGE_MESSAGE="
@@ -24,7 +24,7 @@ function variable_main
     local src="$OPM_HOME/INFORMATION"
     local with_key=0
 
-    while [[ ! -z $1 ]]; do
+    while [[ -n $1 ]]; do
         case $1 in
         -h|--help)
             echo "$USAGE_MESSAGE"
@@ -48,13 +48,15 @@ function variable_main
         esac
     done
 
-    local total=$(cat "$src" | grep --color=never -E '^[ \t]*[a-zA-Z0-9_]+=' | sed 's/^[ \t]*//g')
+    local total
+    total=$(grep --color=never -E '^[ \t]*[a-zA-Z0-9_]+=' "$src" | sed 's/^[ \t]*//g')
+
     if [[ ${#@} -eq 0 ]]; then
         echo -e "$total"
         return 0
     fi
 
-    for v in $@; do
+    for v in "$@"; do
         if [[ $with_key -eq 0 ]]; then
             echo -e "$total" | grep "^${v}=" | sed "s/^${v}=//g"
         else
@@ -64,4 +66,3 @@ function variable_main
 }
 
 variable_main "$@"
-

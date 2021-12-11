@@ -2,4 +2,3 @@
 
 export WINEARCH=win64
 export WINEPREFIX=$HOME/.wine64
-

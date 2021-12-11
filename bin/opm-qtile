@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ -z $(which opm-version 2> /dev/null) ]]; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 LIBOPY_DIR=$OPM_HOME/lib/python
@@ -10,5 +10,4 @@ QTILE_CONFIG_PATH=$QTILE_SCRIPT_DIR/config.py
 
 PYTHONPATH=$QTILE_SCRIPT_DIR:$LIBOPY_DIR:$PYTHONPATH \
     source opy3-env && \
-    qtile --config=$QTILE_CONFIG_PATH "$@"
-
+    qtile --config="$QTILE_CONFIG_PATH" "$@"

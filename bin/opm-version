@@ -4,8 +4,7 @@
 # This script should not refer to other OPM scripts.
 
 if [[ -z $OPM_HOME ]]; then
-OPM_HOME=$(cd "$(dirname "${BASH_SOURCE[0]}")/.."; pwd)
+OPM_HOME=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit; pwd)
 fi
 
-cat "$OPM_HOME/INFORMATION" | grep --color=never "^VERSION=" | sed "s/^VERSION=//g"
-
+grep --color=never '^VERSION=' "$OPM_HOME/INFORMATION" | sed 's/^VERSION=//g'

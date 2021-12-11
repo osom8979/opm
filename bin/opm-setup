@@ -1,47 +1,101 @@
 #!/usr/bin/env bash
 
 if [[ -z $(which opm-version 2> /dev/null) ]]; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-if [[ -z $(which lsb_release 2> /dev/null) ]]; then
-    opm-println-error "Not found lsb_release executable."
-    exit 1
-fi
+USAGE_MESSAGE="
+Setup OPM.
 
-DISTRIBUTOR_ID=$(lsb_release -is)  # e.g. Ubuntu
-DISTRIBUTOR_RELEASE=$(lsb_release -rs)  # e.g. 20.04
-DISTRIBUTOR_CODE_NAME=$(lsb_release -cs)  # e.g. focal
+  Usage: opm-setup [options]
+
+Available options are:
+  -h, --help        Print this message.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  -s, --silent      Suppresses all messages.
+  --                Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
 
 function install_docker
 {
     if [[ -n $(which docker 2> /dev/null) ]]; then
+        opm-println -v "Docker is already installed"
         return
     fi
 
-    if [[ "$DISTRIBUTOR_ID" == "Ubuntu" ]]; then
-        bash "$OPM_HOME/etc/docker/install-docker-ubuntu-x86_64.sh"
-    fi
+    local id=$1
+    local mach=$2
+    opm-println -v "Install Docker (id=$id,mach=$mach) ..."
+
+    case "$id" in
+    ubuntu)
+        case "$mach" in
+        x86)
+            bash "$OPM_HOME/etc/docker/install-docker-ubuntu-x86.sh"
+            ;;
+        x86_64)
+            bash "$OPM_HOME/etc/docker/install-docker-ubuntu-x86_64.sh"
+            ;;
+        *)
+            opm-println-error -s "Unsupported Machine in Ubuntu: $mach"
+            return 1
+            ;;
+        esac
+        ;;
+    *)
+        opm-println-error -s "Unsupported Distribution ID: $id"
+        return 1
+        ;;
+    esac
 }
 
 function install_nodejs
 {
     if [[ -n $(which node 2> /dev/null) ]]; then
+        opm-println -v "Node.js is already installed"
         return
     fi
 
-    if [[ "$DISTRIBUTOR_ID" == "Ubuntu" ]]; then
+    local id=$1
+    local mach=$2
+    opm-println -v "Install Node.js (id=$id,mach=$mach) ..."
+
+    case "$id" in
+    ubuntu)
         bash "$OPM_HOME/etc/nodejs/install-node-lts-ubuntu.sh"
-    fi
+        ;;
+    *)
+        opm-println-error -s "Unsupported Distribution ID: $id"
+        return 1
+        ;;
+    esac
 }
 
 function install_neovim
 {
     if [[ -n $(which nvim 2> /dev/null) ]]; then
+        opm-println -v "Neovim is already installed"
         return
     fi
 
-    opm-package install neovim
+    local id=$1
+    local mach=$2
+    opm-println -v "Install Neovim (id=$id,mach=$mach) ..."
+
+    case "$id" in
+    ubuntu)
+        opm-package install neovim
+        ;;
+    *)
+        opm-println-error -s "Unsupported Distribution ID: $id"
+        return 1
+        ;;
+    esac
 }
 
 function install_neovim_libs
@@ -52,21 +106,68 @@ function install_neovim_libs
     opn-npm install -g neovim
 }
 
-# opm-package install tmux ffmpeg
-# opm-package install ctags  # or 'exuberant-ctags'
-# opm-package install fzf
-# npm install -g yarn
+function opm_setup_main
+{
+    local verbose_flag=0
+    local silent_flag=0
 
-install_docker
-install_nodejs
-install_neovim
-install_neovim_libs
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            opm-println-error -s "Invalid command: $1"
+            return 1
+            ;;
+        esac
+    done
 
-nvim +NeoBundleInstall +qall
-nvim +UpdateRemotePlugins +qall
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
 
-# coc.vim build
-COC_DIR=$HOME/.vim/bundle/coc.nvim
-opn-yarn --cwd "$COC_DIR"
-opn-yarn --cwd "$COC_DIR" build
+    local id
+    id=$(opm-distribution -i)
 
+    local mach
+    mach=$(opm-distribution -m)
+
+    install_docker "$id" "$mach"
+    install_nodejs "$id" "$mach"
+    install_neovim "$id" "$mach"
+    install_neovim_libs
+
+    # opm-package install tmux ffmpeg
+    # opm-package install ctags  # or 'exuberant-ctags'
+    # opm-package install fzf
+    # npm install -g yarn
+
+    nvim +NeoBundleInstall +qall
+    nvim +UpdateRemotePlugins +qall
+
+    # coc.vim build
+    COC_DIR=$HOME/.vim/bundle/coc.nvim
+    opn-yarn --cwd "$COC_DIR"
+    opn-yarn --cwd "$COC_DIR" build
+}
+
+opm_setup_main "$@"

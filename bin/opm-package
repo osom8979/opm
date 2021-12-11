@@ -250,12 +250,12 @@ function package_main
     done
 
     if [[ $verbose_flag -ne 0 ]]; then
-      VERBOSE=1
-      export VERBOSE
+        VERBOSE=1
+        export VERBOSE
     fi
     if [[ $silent_flag -ne 0 ]]; then
-      SILENT=1
-      export SILENT
+        SILENT=1
+        export SILENT
     fi
 
     local target
