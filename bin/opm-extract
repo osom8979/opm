@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Extract the file.
+
+  Usage: opm-extract [options] input output
+
+Available options are:
+  -h, --help        Print this message.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  -s, --silent      Suppresses all messages.
+  --                Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function exists_program_or_exit
+{
+    local cmd=$1
+    local cmd_which
+    cmd_which=$(which "$cmd" 2> /dev/null)
+
+    if [[ -z "$cmd_which" ]]; then
+        opm-println-error -s "Not found executable: $cmd"
+        exit 1
+    fi
+}
+
+function to_lower
+{
+    exists_program_or_exit awk
+    echo "$1" | awk '{ print tolower($0) }'
+}
+
+function file_extension
+{
+    echo "${1#*.}"
+}
+
+function extract
+{
+    local input=$1
+    local output=${2:-$PWD}
+
+    if [[ ! -f "$input" ]]; then
+        opm-println-error -s "File not found: $input"
+        return 1
+    fi
+
+    if [[ ! -d "$output" ]]; then
+        opm-println-error -v -s "Create output directory: $output"
+        mkdir -p "$output"
+    fi
+
+    local input_ext
+    input_ext=$(file_extension "$input")
+
+    local ext_lower
+    ext_lower=$(to_lower "$input_ext")
+
+    case $ext_lower in
+    .zip)
+        exists_program_or_exit unzip
+        unzip -qo "$input" -d "$output"
+        ;;
+    *)
+        exists_program_or_exit tar
+        tar -xf "$input" -C "$output"
+        ;;
+    esac
+}
+
+function opm_extract_main
+{
+    local verbose_flag=0
+    local silent_flag=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    local input=$1
+    local output=${2:-$PWD}
+    extract "$input" "$output"
+}
+
+opm_extract_main "$@"

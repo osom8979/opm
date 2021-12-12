@@ -56,8 +56,13 @@ function download_file
         fi
     fi
 
-    opm-println-info -v -s "Download $url -> $output"
-    curl -L -k -o "$output" "$url"
+    if [[ -n $output ]]; then
+        opm-println-info -v -s "Download $url -> $output"
+        curl -L -k -o "$output" "$url"
+    else
+        opm-println-info -v -s "Download $url"
+        curl -L -k -O "$url"
+    fi
 }
 
 function opm_download_main
