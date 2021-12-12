@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Remove untracked files from git
+
+  Usage: opm-git-remove-untracked-files [options]
+
+Available options are:
+  -h, --help        Print this message.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  -s, --silent      Suppresses all messages.
+  -y, --yes         Automatic yes to prompts.
+  --                Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function exit_on_git_error
+{
+    local which_git
+    which_git=$(which git)
+    if [[ -z $which_git ]]; then
+        opm-println-error -s "Not found git command"
+        return 1
+    fi
+
+    git rev-parse --git-dir &> /dev/null
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        opm-println-error -s "Not found git repository"
+        return 1
+    fi
+}
+
+function remove_untracked_files
+{
+    local auto_yes=$1
+    local files=()
+    mapfile -t files < <(git status -s | grep --color=never -e '^?? .*' | sed -e 's/^?? //g')
+
+    local count=${#files[*]}
+    if [[ $count -le 0 ]]; then
+        opm-println-error -s "Not found untracked files"
+        return 1
+    fi
+
+    opm-println-info -v -s "Found untracked files:"
+    for (( i = 0; i < ${#files[*]}; ++i )) do
+        opm-println-info -v -s "- ${files[i]}"
+    done
+
+    local yn
+    if [[ $auto_yes -ne 0 ]]; then
+        yn=y
+    else
+        read -r -p "Remove all $count files? (y/n) " yn
+    fi
+
+    case $yn in
+    [Yy]*)
+        for (( i = 0; i < ${#files[*]}; ++i )) do
+            rm -rf "${files[i]}"
+        done
+        ;;
+    *)
+        opm-println-error -s "Operation canceled."
+        return 1
+        ;;
+    esac
+}
+
+function opm_git_remove_untracked_files_main
+{
+    local verbose_flag=0
+    local silent_flag=0
+    local auto_yes=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        -y|--yes)
+            auto_yes=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            opm-println-error -s "Invalid command: $1"
+            return 1
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    exit_on_git_error
+    remove_untracked_files "$auto_yes"
+}
+
+opm_git_remove_untracked_files_main "$@"
