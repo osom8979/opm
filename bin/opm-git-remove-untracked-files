@@ -51,9 +51,9 @@ function remove_untracked_files
         return 1
     fi
 
-    opm-println-info -v -s "Found untracked files:"
+    opm-println-info -s "Found untracked files:"
     for (( i = 0; i < ${#files[*]}; ++i )) do
-        opm-println-info -v -s "- ${files[i]}"
+        opm-println-info -s "- ${files[i]}"
     done
 
     local yn
