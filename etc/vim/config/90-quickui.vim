@@ -88,6 +88,12 @@ call quickui#menu#install("&Options", [
             \ ['Set &Wrap (%{&wrap? "Off":"On"})', 'set wrap!'],
             \ ])
 
+call quickui#menu#install("&Information", [
+            \ [ "Print file path (relative)", ":echo @%" ],
+            \ [ "Print file path (absolute)", ":echo expand('%:p')" ],
+            \ [ "--", "" ],
+            \ ])
+
 call quickui#menu#install("H&elp", [
             \ ["Vim &Cheatsheet", "help index"],
             \ ["Vim T&ips", "help tips"],
