@@ -61,23 +61,22 @@ call quickui#menu#install("&View", [
             \ [ "&Json formatting", ":OpmJsonFormat" ],
             \ ])
 
-call quickui#menu#install("&Find", [
+call quickui#menu#install("&Grep", [
+            \ [ "Recursive Ignore (<cword>,<cwd>)", ":call AsyncRunGrepCwordCwdRecursiveIgnoreCase()" ],
+            \ [ "Recursive Ignore (pattern,<cwd>)", ":call AsyncRunGrepCwdRecursiveIgnoreCase()" ],
+            \ [ "Recursive Ignore (<cword>,file)", ":call AsyncRunGrepCwordRecursiveIgnoreCase()" ],
+            \ [ "Recursive Ignore (pattern,file)", ":call AsyncRunGrepRecursiveIgnoreCase()" ],
             \ [ "--", "" ],
-            \ [ "grep-ri()", ":call AsyncRunGrepCwordCwdRecursiveIgnoreCase()" ],
-            \ [ "grep-ri(p)", ":call AsyncRunGrepCwdRecursiveIgnoreCase()" ],
-            \ [ "grep-ri(f)", ":call AsyncRunGrepCwordRecursiveIgnoreCase()" ],
-            \ [ "grep-ri(p,f)", ":call AsyncRunGrepRecursiveIgnoreCase()" ],
+            \ [ "Recursive (<cword>,<cwd>)", ":call AsyncRunGrepCwordCwdRecursive()" ],
+            \ [ "Recursive (pattern,<cwd>)", ":call AsyncRunGrepCwdRecursive()" ],
+            \ [ "Recursive (<cword>,file)", ":call AsyncRunGrepCwordRecursive()" ],
+            \ [ "Recursive (pattern,file)", ":call AsyncRunGrepRecursive()" ],
             \ [ "--", "" ],
-            \ [ "grep-r()", ":call AsyncRunGrepCwordCwdRecursive()" ],
-            \ [ "grep-r(p)", ":call AsyncRunGrepCwdRecursive()" ],
-            \ [ "grep-r(f)", ":call AsyncRunGrepCwordRecursive()" ],
-            \ [ "grep-r(p,f)", ":call AsyncRunGrepRecursive()" ],
+            \ [ "Ignore (<cword>)", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
+            \ [ "Ignore (pattern)", ":call AsyncRunGrepCurrentFileIgnoreCase()" ],
             \ [ "--", "" ],
-            \ [ "grep-i()", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
-            \ [ "grep-i(p)", ":call AsyncRunGrepCurrentFileIgnoreCase()" ],
-            \ [ "--", "" ],
-            \ [ "grep()", ":call AsyncRunGrepCwordCurrentFile()" ],
-            \ [ "grep(p)", ":call AsyncRunGrepCurrentFile()" ],
+            \ [ "Normal (<cword>)", ":call AsyncRunGrepCwordCurrentFile()" ],
+            \ [ "Normal (pattern)", ":call AsyncRunGrepCurrentFile()" ],
             \ ])
 
 call quickui#menu#install("&Options", [
