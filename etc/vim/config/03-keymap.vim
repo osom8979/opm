@@ -33,9 +33,18 @@ vnoremap <F3>  "+y
 vnoremap <F4>  "+gP
 inoremap <F4>  <ESC>"+gpa
 
+" Binding vimspector-debugging
+" noremap  <F5>
+" noremap  <F6>
+
 " Quick-fix settings.
-noremap  <F5>  <ESC>:cprevious<CR>
-noremap  <F6>  <ESC>:cnext<CR>
+noremap  <F7>  <ESC>:cprevious<CR>
+noremap  <F8>  <ESC>:cnext<CR>
+
+" Binding vimspector-debugging
+" noremap  <F9>
+" noremap  <F10>
+" noremap  <F11>
 
 " Tags settings.
 noremap  <leader>t <ESC>:tags<CR>

@@ -53,6 +53,7 @@ NeoBundle 'chrisbra/unicode.vim'            " handling unicode and digraphs char
 NeoBundle 'diepm/vim-rest-console'          " a rest console for vim.
 NeoBundle 'KangOl/vim-pudb'                 " Manage pudb breakpoints.
 NeoBundle 'nanotech/jellybeans.vim'         " a colorful, dark color scheme for vim.
+NeoBundle 'puremourning/vimspector'         " a multi-language debugging system for Vim
 
 " Semantic highlighting for python in neovim.
 NeoBundle 'numirias/semshi', {
