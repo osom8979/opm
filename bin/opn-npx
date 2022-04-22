@@ -4,4 +4,4 @@ if [[ -z $(which opm-version 2> /dev/null) ]]; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-opn14-npx "$@"
+opn16-npx "$@"
