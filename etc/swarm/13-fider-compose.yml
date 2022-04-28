@@ -20,7 +20,8 @@ services:
       - net
     environment:
       GO_ENV: production
-      DATABASE_URL: "postgres://${DB_ID}:${DB_PW}@db:5432/fider?sslmode=disable"
+      HOST_DOMAIN: ${FRONTEND_HOST:?err}
+      DATABASE_URL: "postgres://${DB_ID}:${DB_PW}@db:5432/${DB_ID}?sslmode=disable"
       JWT_SECRET: ${JWT_SECRET:?err}
       EMAIL_NOREPLY: ${NOREPLY_EMAIL:?err}
       EMAIL_SMTP_HOST: postfix_api
