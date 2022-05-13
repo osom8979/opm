@@ -1,0 +1,55 @@
+version: '3.3'
+
+services:
+  web:
+    image: heartexlabs/label-studio:latest
+    depends_on:
+      - db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.port=8080"
+        - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
+    networks:
+      - traefik-net
+      - net
+    environment:
+      - DJANGO_DB=default
+      - POSTGRE_NAME=root_db
+      - POSTGRE_USER=${DB_ID:?err}
+      - POSTGRE_PASSWORD=${DB_PW:?err}
+      - POSTGRE_PORT=5432
+      - POSTGRE_HOST=db
+      - LABEL_STUDIO_HOST=${FRONTEND_HOST:?err}
+    volumes:
+      - ls_data:/label-studio/data
+
+  db:
+      image: postgres:11.5
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - net
+    environment:
+      - POSTGRES_USER=${DB_ID:?err}
+      - POSTGRES_PASSWORD=${DB_PW:?err}
+      - POSTGRES_DB=root_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
+  ls_data:
+
+networks:
+  traefik-net:
+    external: true
+  net:
+    driver: overlay
+
