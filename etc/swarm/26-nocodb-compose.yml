@@ -1,6 +1,26 @@
 version: '3.3'
 
 services:
+  db:
+    image: postgres
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - net
+    environment:
+      - POSTGRES_USER=${DB_ID:?err}
+      - POSTGRES_PASSWORD=${DB_PW:?err}
+      - POSTGRES_DB=root_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 10s
+      timeout: 2s
+      retries: 10
+
   web:
     image: nocodb/nocodb:latest
     depends_on:
@@ -18,25 +38,10 @@ services:
       - traefik-net
       - net
     environment:
-      - PORT=8080
-      - NC_DB=pg://db:5432?u=${DB_ID:?err}&p=${DB_PW:?err}&d=root_db
+      - "PORT=8080"
+      - "NC_DB=pg://db:5432?u=${DB_ID:?err}&p=${DB_PW:?err}&d=root_db"
     volumes:
       - nc_data:/usr/app/data
-
-  db:
-    image: postgres
-    deploy:
-      replicas: 1
-      restart_policy:
-        condition: any
-    networks:
-      - net
-    environment:
-      - POSTGRES_USER=${DB_ID:?err}
-      - POSTGRES_PASSWORD=${DB_PW:?err}
-      - POSTGRES_DB=root_db
-    volumes:
-      - db_data:/var/lib/postgresql/data
 
 volumes:
   db_data:
