@@ -40,6 +40,7 @@ services:
     environment:
       - "PORT=8080"
       - "NC_DB=pg://db:5432?u=${DB_ID:?err}&p=${DB_PW:?err}&d=root_db"
+      - "NC_INVITE_ONLY_SIGNUP=yes"
     volumes:
       - nc_data:/usr/app/data
 
