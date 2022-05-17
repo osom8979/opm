@@ -36,6 +36,7 @@ services:
         - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
     networks:
       - traefik-net
+      - postfix-net
       - net
     environment:
       - "PORT=8080"
@@ -50,6 +51,8 @@ volumes:
 
 networks:
   traefik-net:
+    external: true
+  postfix-net:
     external: true
   net:
     driver: overlay
