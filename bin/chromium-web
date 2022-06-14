@@ -5,7 +5,7 @@ HOST_WEB_PORT=${2:-5800}
 HOST_VNC_PORT=${3:-5900}
 DOWNLOAD_DIR=$HOME/Downloads
 
-echo "Run Firefox Web"
+echo "Run Chromium Web"
 echo "Homepage: $HOMEPAGE"
 echo "Download directory: $DOWNLOAD_DIR"
 echo "Access URL: http://localhost:$HOST_WEB_PORT"
@@ -17,12 +17,7 @@ docker run --rm -it \
     -p $HOST_WEB_PORT:5800 \
     -p $HOST_VNC_PORT:5900 \
     -v "$DOWNLOAD_DIR:/config/downloads:rw" \
-    -e "FF_PREF_HOMEPAGE=browser.startup.homepage=\"$HOMEPAGE\"" \
-    -e "FF_PREF_TRR_URI=network.trr.uri=\"https://mozilla.cloudflare-dns.com/dns-query\"" \
-    -e "FF_PREF_TRR_BOOTSTRAP=network.trr.bootstrapAddress=\"1.1.1.1\"" \
-    -e "FF_PREF_TRR_MODE=network.trr.mode=2" \
-    -e "FF_PREF_ESNI=network.security.esni.enabled=true" \
     -e ENABLE_CJK_FONT=1 \
     -e TZ=Asia/Seoul \
-    jlesage/firefox
+    overclockedllama/docker-chromium
 
