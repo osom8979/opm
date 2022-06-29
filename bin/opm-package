@@ -28,7 +28,6 @@ Available command are:
   install       Install the package.
   remove        Remove the package.
 "
-
 function print_usage
 {
     echo "$USAGE_MESSAGE"
@@ -116,6 +115,18 @@ function do_update
     "update_$target"
 }
 
+function find_package
+{
+    local target=$1
+    shift
+
+    for i in "$@"; do
+        if [[ "$target" == "$i" ]]; then
+            echo "$target"
+        fi
+    done
+}
+
 function do_list
 {
     local target=$1
@@ -127,16 +138,16 @@ function do_list
     fi
 
     local packages
-    packages=$("list_$target" "$@")
+    mapfile -t packages < <("list_$target" "$@")
     if [[ $# -eq 0 ]]; then
-        echo "$packages"
+        echo "${packages[@]}"
         return 0
     fi
 
     local count=0
     local grepped_package
     for i in "$@"; do
-        grepped_package=$(echo "$packages" | grep --color=never -Fx "$i")
+        grepped_package=$(find_package "$i" "${packages[@]}")
         if [[ -n $grepped_package ]]; then
             if [[ $VERBOSE -ne 0 ]]; then
                 opm-println-info "+ $i"

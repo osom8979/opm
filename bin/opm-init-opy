@@ -99,72 +99,72 @@ function install_pyenv_if_not_exist
 # Install python with pyenv
 # -------------------------
 
+# Mac OS X
+declare -a BREW_DEPS
+BREW_DEPS+=("openssl" "readline" "sqlite3" "xz" "zlib")
+
+# Ubuntu/Debian/Mint
+declare -a APT_DEPS
+APT_DEPS+=("make" "build-essential" "libssl-dev" "zlib1g-dev" "libbz2-dev")
+APT_DEPS+=("libreadline-dev" "libsqlite3-dev" "wget" "curl" "llvm")
+APT_DEPS+=("libncurses5-dev" "xz-utils" "tk-dev")
+APT_DEPS+=("libxml2-dev" "libxmlsec1-dev" "libffi-dev" "liblzma-dev")
+
+# CentOS/Fedora 21 and below
+declare -a YUM_DEPS
+YUM_DEPS+=("gcc" "zlib-devel" "bzip2" "bzip2-devel" "readline-devel" "sqlite")
+YUM_DEPS+=("sqlite-devel" "openssl-devel" "tk-devel" "libffi-devel" "xz")
+
+# Fedora 22 and above
+declare -a DNF_DEPS
+DNF_DEPS+=("make" "gcc" "zlib-devel" "bzip2" "bzip2-devel" "readline-devel")
+DNF_DEPS+=("sqlite" "sqlite-devel" "openssl-devel" "tk-devel" "libffi-devel")
+DNF_DEPS+=("xz")
+
+# openSUSE
+declare -a ZYPPER_DEPS
+ZYPPER_DEPS+=("gcc" "automake" "bzip2" "libbz2-devel" "xz" "xz-devel" "openssl-devel")
+ZYPPER_DEPS+=("ncurses-devel" "readline-devel" "zlib-devel" "tk-devel")
+ZYPPER_DEPS+=("libffi-devel" "sqlite3-devel" "xz")
+
+# Arch Linux
+declare -a PACMAN_DEPS
+PACMAN_DEPS+=("base-devel" "openssl" "zlib" "xz")
+
+# Solus
+# sudo eopkg it -c system.devel
+declare -a EOPKG_DEPS
+EOPKG_DEPS+=("git" "gcc" "make" "zlib-devel" "bzip2-devel" "readline-devel")
+EOPKG_DEPS+=("sqlite3-devel" "openssl-devel" "tk-devel")
+
+# Linuxbrew
+declare -a LINUX_BREW_DEPS
+LINUX_BREW_DEPS+=("bzip2" "libffi" "libxml2" "libxmlsec1" "openssl" "readline")
+LINUX_BREW_DEPS+=( "sqlite" "xz" "zlib")
+
+# Alpine Linux
+declare -a APK_DEPS
+APK_DEPS+=("git" "bash" "build-base" "libffi-dev" "openssl-dev" "bzip2-dev" "zlib-dev")
+APK_DEPS+=("readline-dev" "sqlite-dev")
+
+# Installation of Python 3.7 may fail due to Python 3.7.0 issue #34555.
+# Work around is to install the linux system headers package: `apk add linux-headers`
+
 function install_dependencies_if_not_installed
 {
     local kernel=$(opm-distribution -k)
     local distribution=$(opm-distribution)
+
     local dependencies
-
-    # Mac OS X
-    local BREW_DEPS
-    BREW_DEPS="openssl readline sqlite3 xz zlib"
-
-    # Ubuntu/Debian/Mint
-    local APT_DEPS
-    APT_DEPS="make build-essential libssl-dev zlib1g-dev libbz2-dev"
-    APT_DEPS="$APT_DEPS libreadline-dev libsqlite3-dev wget curl llvm"
-    APT_DEPS="$APT_DEPS libncurses5-dev xz-utils tk-dev"
-    APT_DEPS="$APT_DEPS libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev"
-
-    # CentOS/Fedora 21 and below
-    local YUM_DEPS
-    YUM_DEPS="gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
-    YUM_DEPS="$YUM_DEPS sqlite-devel openssl-devel tk-devel libffi-devel"
-    YUM_DEPS="$YUM_DEPS xz"
-
-    # Fedora 22 and above
-    local DNF_DEPS
-    DNF_DEPS="make gcc zlib-devel bzip2 bzip2-devel readline-devel sqlite"
-    DNF_DEPS="$DNF_DEPS sqlite-devel openssl-devel tk-devel libffi-devel"
-    DNF_DEPS="$DNF_DEPS xz"
-
-    # openSUSE
-    local ZYPPER_DEPS
-    ZYPPER_DEPS="gcc automake bzip2 libbz2-devel xz xz-devel openssl-devel"
-    ZYPPER_DEPS="$ZYPPER_DEPS ncurses-devel readline-devel zlib-devel tk-devel"
-    ZYPPER_DEPS="$ZYPPER_DEPS libffi-devel sqlite3-devel"
-    ZYPPER_DEPS="$ZYPPER_DEPS xz"
-
-    # Arch Linux
-    local PACMAN_DEPS
-    PACMAN_DEPS="base-devel openssl zlib"
-    PACMAN_DEPS="$PACMAN_DEPS xz"
-
-    # Solus
-    # sudo eopkg it -c system.devel
-    local EOPKG_DEPS
-    EOPKG_DEPS="git gcc make zlib-devel bzip2-devel readline-devel sqlite3-devel"
-    EOPKG_DEPS="$EOPKG_DEPS openssl-devel tk-devel"
-
-    # Linuxbrew
-    local LINUX_BREW_DEPS
-    LINUX_BREW_DEPS="bzip2 libffi libxml2 libxmlsec1 openssl readline sqlite xz zlib"
-
-    # Alpine Linux
-    local APK_DEPS
-    APK_DEPS="git bash build-base libffi-dev openssl-dev bzip2-dev zlib-dev"
-    APK_DEPS="$APK_DEPS readline-dev sqlite-dev"
-    # Installation of Python 3.7 may fail due to Python 3.7.0 issue #34555.
-    # Work around is to install the linux system headers package:
-    # apk add linux-headers
+    declare -a dependencies
 
     if [[ $kernel == darwin ]]; then
-        dependencies="$BREW_DEPS"
+        dependencies+=("${BREW_DEPS[@]}")
     elif [[ $kernel == linux ]]; then
         if [[ $distribution == arch ]]; then
-            dependencies="$PACMAN_DEPS"
+            dependencies+=("${PACMAN_DEPS[@]}")
         elif [[ $distribution == ubuntu ]]; then
-            dependencies="$APT_DEPS"
+            dependencies+=("${APT_DEPS[@]}")
         else
             opm-println-error "Unsupported distribution: $distribution"
             return 1
@@ -174,7 +174,7 @@ function install_dependencies_if_not_installed
         return 1
     fi
 
-    local not_exist_packages=$(opm-package list "$dependencies" 2>&1 | grep --color=never '^- ' | sed 's/^- //g')
+    local not_exist_packages=$(opm-package list "${dependencies[@]}" 2>&1 | grep --color=never '^- ' | sed 's/^- //g')
     if [[ -n $not_exist_packages ]]; then
         opm-package install $not_exist_packages
     fi

@@ -27,7 +27,7 @@ function update_linux_ubuntu_apt
 
 function list_linux_ubuntu_apt
 {
-    dpkg -l | sed -n '/+++/,$p' | sed -n '2,$p' | awk '{print $2}'
+    dpkg --get-selections | grep -v 'deinstall' | cut -f1 | awk -F: '{print $1}' | sort | uniq
 }
 
 function files_linux_ubuntu_apt
