@@ -27,7 +27,7 @@ function update_linux_ubuntu_apt
 
 function list_linux_ubuntu_apt
 {
-    dpkg --get-selections | grep -v 'deinstall' | cut -f1 | awk -F: '{print $1}' | sort | uniq
+    dpkg --get-selections | grep -P '(?<!de)install$' | cut -f1 | awk -F: '{print $1}' | sort | uniq
 }
 
 function files_linux_ubuntu_apt
