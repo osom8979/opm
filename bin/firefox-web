@@ -17,6 +17,8 @@ docker run --rm -it \
     -p $HOST_WEB_PORT:5800 \
     -p $HOST_VNC_PORT:5900 \
     -v "$DOWNLOAD_DIR:/config/downloads:rw" \
+    -e "DISPLAY_WIDTH=1600" \
+    -e "DISPLAY_HEIGHT=900" \
     -e "FF_PREF_HOMEPAGE=browser.startup.homepage=\"$HOMEPAGE\"" \
     -e "FF_PREF_TRR_URI=network.trr.uri=\"https://mozilla.cloudflare-dns.com/dns-query\"" \
     -e "FF_PREF_TRR_BOOTSTRAP=network.trr.bootstrapAddress=\"1.1.1.1\"" \
