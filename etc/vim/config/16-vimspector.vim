@@ -8,8 +8,49 @@ if !neobundle#is_installed(s:plugin_name)
     finish
 endif
 
+function! s:EditVimspectorForDefault()
+    silent execute ':edit .vimspector.json'
+    if filereadable('.vimspector.json')
+        return
+    endif
+
+    for content in readfile(g:opm_vim_script_dir . '/template/vimspector/default.vimspector.json')
+        call append(line('$'), content)
+    endfor
+endfunction
+
+" ---------------
+" Command mapping
+" ---------------
+
+function! OpmEditVimspectorForDefault()
+    call s:EditVimspectorForDefault()
+endfunction
+
+
 " vimspector-visual-studio-vscode
 let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
+let g:vimspector_install_gadgets = ['debugpy', 'vscode-cpptools', 'CodeLLDB']
+
+nmap <F5>         <Plug>VimspectorContinue
+nmap <S-F5>       <Plug>VimspectorStop
+nmap <C-S-F5>     <Plug>VimspectorRestart
+nmap <F6>         <Plug>VimspectorPause
+nmap <F9>         <Plug>VimspectorToggleBreakpoint
+nmap <S-F9>       <Plug>VimspectorAddFunctionBreakpoint
+nmap <F10>        <Plug>VimspectorStepOver
+nmap <F11>        <Plug>VimspectorStepInto
+nmap <S-F11>      <Plug>VimspectorStepOut
+
+nmap <Leader>di <Plug>VimspectorBalloonEval
+xmap <Leader>di <Plug>VimspectorBalloonEval
+
+nmap <LocalLeader><F11> <Plug>VimspectorUpFrame
+nmap <LocalLeader><F12> <Plug>VimspectorDownFrame
+
+" VimspectorMkSession
+" VimspectorLoadSession
+
 
 " =========================================================================================================================
 " |      _Key_      |                _Mapping_                |                         _Function_                        |

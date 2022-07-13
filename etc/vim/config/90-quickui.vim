@@ -31,6 +31,7 @@ call quickui#menu#install("&File", [
             \ [ "New &Vertically Buffer\t:vnew", ":vnew", "Create a new window and start editing an empty file in it. but split vertically." ],
             \ [ "--", "" ],
             \ [ "Edit .tasks", ":call OpmEditTasksForDefault()" ],
+            \ [ "Edit .vimspector.json", ":call OpmEditVimspectorForDefault()" ],
             \ [ "--", "" ],
             \ [ "E&xit\t:qa", ":qa", "Exit Vim, unless there are some buffers which have been changed." ],
             \ [ "Exit Force\t:qa!", ":qa", "Exit Vim. Any changes to buffers are lost." ],

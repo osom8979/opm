@@ -1,0 +1,19 @@
+{
+    "configurations": {
+        "python: launch": {
+            "adapter": "debugpy",
+            "filetypes": ["python"],
+            "configuration": {
+                "name": "python: launch",
+                "type": "python",
+                "request": "launch",
+                "cwd": "${workspaceFolder}",
+                "python": "opy",
+                "stopOnEntry": true,
+                "console": "externalTerminal",
+                "debugOptions": [],
+                "program": "main.py"
+            }
+        }
+    }
+}
