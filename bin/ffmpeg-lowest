@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo ffmpeg -i $1 -acodec aac -ac 2 -ab 192k -vcodec libx264 -profile:v high -b:v 1150k $2
+
