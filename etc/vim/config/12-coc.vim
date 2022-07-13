@@ -114,6 +114,9 @@ augroup mygroup
     autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
 augroup end
 
+" inoremap <silent> <c-p> <ESC>:call CocActionAsync('showSignatureHelp')<CR>
+inoremap <C-P> <C-\><C-O>:call CocActionAsync('showSignatureHelp')<CR>
+
 " Applying codeAction to the selected region.
 " Example: `<leader>aap` for current paragraph
 xmap <leader>a  <Plug>(coc-codeaction-selected)

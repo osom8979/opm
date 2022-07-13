@@ -22,5 +22,5 @@ let g:jellybeans_overrides =
             \   },
             \}
 
-colorscheme jellybeans
+" colorscheme jellybeans
 
