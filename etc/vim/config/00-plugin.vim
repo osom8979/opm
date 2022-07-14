@@ -56,6 +56,7 @@ NeoBundle 'nanotech/jellybeans.vim'         " a colorful, dark color scheme for 
 NeoBundle 'puremourning/vimspector'         " a multi-language debugging system for Vim
 NeoBundle 'arthurxavierx/vim-caser'         " easily change word casing
 NeoBundle 'doums/darcula'                   " jetbrains ide darcula theme
+NeoBundle 'shirk/vim-gas'                   " advanced syntax highlighting for gnu as
 
 " Semantic highlighting for python in neovim.
 NeoBundle 'numirias/semshi', {
