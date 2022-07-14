@@ -111,7 +111,3 @@ function! OpmDebugContinue()
     call s:Continue()
 endfunction
 
-" silent execute 'noremap '.g:opm_debug_step_into_key.' <ESC>:call OpmDebugStepInto()<CR>'
-" silent execute 'noremap '.g:opm_debug_step_over_key.' <ESC>:call OpmDebugStepOver()<CR>'
-" silent execute 'noremap '.g:opm_debug_finish_key   .' <ESC>:call OpmDebugFinish()<CR>'
-

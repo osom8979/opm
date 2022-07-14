@@ -44,24 +44,6 @@ call quickui#menu#install("&Edit", [
             \ [ "--", "" ],
             \ ])
 
-call quickui#menu#install("&CoC", [
-            \ [ "GoTo &definition\tgd", ':execute "normal \<Plug>(coc-definition)"' ],
-            \ [ "GoTo &references\tgr", ':execute "normal \<Plug>(coc-references)"' ],
-            \ [ "GoTo &type\tgy", ':execute "normal \<Plug>(coc-type-definition)"' ],
-            \ [ "GoTo &implementation\tgi", ':execute "normal \<Plug>(coc-implementation)"' ],
-            \ [ "--", "" ],
-            \ [ "Diagnostic &prev\t[g", ':execute "normal \<Plug>(coc-diagnostic-prev)"' ],
-            \ [ "Diagnostic &next\t]g", ':execute "normal \<Plug>(coc-diagnostic-next)"' ],
-            \ [ "--", "" ],
-            \ ])
-
-call quickui#menu#install("&View", [
-            \ [ "&HEX mode", ":OpmHexMode" ],
-            \ [ "&TEXT mode", ":OpmTextMode" ],
-            \ [ "--", "" ],
-            \ [ "&Json formatting", ":OpmJsonFormat" ],
-            \ ])
-
 call quickui#menu#install("&Grep", [
             \ [ "Recursive Ignore (<cword>,<cwd>)", ":call AsyncRunGrepCwordCwdRecursiveIgnoreCase()" ],
             \ [ "Recursive Ignore (pattern,<cwd>)", ":call AsyncRunGrepCwdRecursiveIgnoreCase()" ],
@@ -80,6 +62,44 @@ call quickui#menu#install("&Grep", [
             \ [ "Normal (pattern)", ":call AsyncRunGrepCurrentFile()" ],
             \ ])
 
+call quickui#menu#install("&CoC", [
+            \ [ "GoTo &definition\tgd", ':execute "normal \<Plug>(coc-definition)"' ],
+            \ [ "GoTo &references\tgr", ':execute "normal \<Plug>(coc-references)"' ],
+            \ [ "GoTo &type\tgy", ':execute "normal \<Plug>(coc-type-definition)"' ],
+            \ [ "GoTo &implementation\tgi", ':execute "normal \<Plug>(coc-implementation)"' ],
+            \ [ "--", "" ],
+            \ [ "Diagnostic &prev\t[g", ':execute "normal \<Plug>(coc-diagnostic-prev)"' ],
+            \ [ "Diagnostic &next\t]g", ':execute "normal \<Plug>(coc-diagnostic-next)"' ],
+            \ [ "--", "" ],
+            \ ])
+
+call quickui#menu#install("&Debug", [
+            \ [ "&Launch\tS-F9", ':execute "normal \<Plug>VimspectorLaunch"' ],
+            \ [ "&Continue\tF9", ':execute "normal \<Plug>VimspectorContinue"' ],
+            \ [ "&Stop", ':execute "normal \<Plug>VimspectorStop"' ],
+            \ [ "&Restart", ':execute "normal \<Plug>VimspectorRestart"' ],
+            \ [ "&Pause", ':execute "normal \<Plug>VimspectorPause"' ],
+            \ [ "--", "" ],
+            \ [ "Toggle &Breakpoint\tC-F8", ':execute "normal \<Plug>VimspectorToggleBreakpoint"' ],
+            \ [ "Toggle Conditional Breakpoint", ':execute "normal \<Plug>VimspectorToggleConditionalBreakpoint"' ],
+            \ [ "--", "" ],
+            \ [ "Step &Into\tF7", ':execute "normal \<Plug>VimspectorStepInto"' ],
+            \ [ "Step Over (&Next)\tF8", ':execute "normal \<Plug>VimspectorStepOver"' ],
+            \ [ "Step &Out\tS-F8", ':execute "normal \<Plug>VimspectorStepOut"' ],
+            \ [ "--", "" ],
+            \ [ "Frame &Up\tC-F11", ':execute "normal \<Plug>VimspectorUpFrame"' ],
+            \ [ "Frame &Down\tC-F12", ':execute "normal \<Plug>VimspectorDownFrame"' ],
+            \ [ "--", "" ],
+            \ [ "Balloon &Eval", ':execute "normal \<Plug>VimspectorBalloonEval"' ],
+            \ ])
+
+call quickui#menu#install("&View", [
+            \ [ "&HEX mode", ":OpmHexMode" ],
+            \ [ "&TEXT mode", ":OpmTextMode" ],
+            \ [ "--", "" ],
+            \ [ "&Json formatting", ":OpmJsonFormat" ],
+            \ ])
+
 call quickui#menu#install("&Options", [
             \ ['Set &Spell (%{&spell? "Off":"On"})', 'set spell!'],
             \ ['Set Scroll&bind (%{&scrollbind? "Off":"On"})', 'set scrollbind!'],
@@ -88,7 +108,7 @@ call quickui#menu#install("&Options", [
             \ ['Set &Wrap (%{&wrap? "Off":"On"})', 'set wrap!'],
             \ ])
 
-call quickui#menu#install("&Information", [
+call quickui#menu#install("&Info", [
             \ [ "Print file path (relative)", ":echo @%" ],
             \ [ "Print file path (absolute)", ":echo expand('%:p')" ],
             \ [ "--", "" ],

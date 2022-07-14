@@ -10,7 +10,7 @@ endif
 
 colorscheme darcula
 set termguicolors
-" let g:lightline = { 'colorscheme': 'darculaOriginal' }
+let g:lightline = { 'colorscheme': 'darculaOriginal' }
 
 " GitGutter
 hi! link GitGutterAdd GitAddStripe

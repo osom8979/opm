@@ -27,50 +27,24 @@ function! OpmEditVimspectorForDefault()
     call s:EditVimspectorForDefault()
 endfunction
 
+let g:vimspector_enable_mappings = 'opvim'
 
-" vimspector-visual-studio-vscode
-let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
-let g:vimspector_install_gadgets = ['debugpy', 'vscode-cpptools', 'CodeLLDB']
+" vscode-cpptools requires mono-core
+let g:vimspector_install_gadgets = ['CodeLLDB', 'debugpy', 'delve']
 
-nmap <F5>         <Plug>VimspectorContinue
-nmap <S-F5>       <Plug>VimspectorStop
-nmap <C-S-F5>     <Plug>VimspectorRestart
-nmap <F6>         <Plug>VimspectorPause
-nmap <F9>         <Plug>VimspectorToggleBreakpoint
-nmap <S-F9>       <Plug>VimspectorAddFunctionBreakpoint
-nmap <F10>        <Plug>VimspectorStepOver
-nmap <F11>        <Plug>VimspectorStepInto
-nmap <S-F11>      <Plug>VimspectorStepOut
-
-nmap <Leader>di <Plug>VimspectorBalloonEval
-xmap <Leader>di <Plug>VimspectorBalloonEval
-
-nmap <LocalLeader><F11> <Plug>VimspectorUpFrame
-nmap <LocalLeader><F12> <Plug>VimspectorDownFrame
+if g:vimspector_enable_mappings ==# 'opvim'
+    nmap <S-F9>     <Plug>VimspectorLaunch
+    nmap <F9>       <Plug>VimspectorContinue
+    nmap <F7>       <Plug>VimspectorStepInto
+    nmap <F8>       <Plug>VimspectorStepOver
+    nmap <S-F8>     <Plug>VimspectorStepOut
+    nmap <C-F8>     <Plug>VimspectorToggleBreakpoint
+    nmap <leader>di <Plug>VimspectorBalloonEval
+    xmap <leader>di <Plug>VimspectorBalloonEval
+    nmap <C-F11>    <Plug>VimspectorUpFrame
+    nmap <C-F12>    <Plug>VimspectorDownFrame
+endif
 
 " VimspectorMkSession
 " VimspectorLoadSession
-
-
-" =========================================================================================================================
-" |      _Key_      |                _Mapping_                |                         _Function_                        |
-" =========================================================================================================================
-" | 'F5'            | '<Plug>VimspectorContinue'              | When debugging, continue. Otherwise start debugging.      |
-" -------------------------------------------------------------------------------------------------------------------------
-" | 'Shift F5'      | '<Plug>VimspectorStop'                  | Stop debugging.                                           |
-" -------------------------------------------------------------------------------------------------------------------------
-" | 'Ctrl Shift F5' | '<Plug>VimspectorRestart'               | Restart debugging with the same configuration.            |
-" -------------------------------------------------------------------------------------------------------------------------
-" | 'F6'            | '<Plug>VimspectorPause'                 | Pause debuggee.                                           |
-" -------------------------------------------------------------------------------------------------------------------------
-" | 'F9'            | '<Plug>VimspectorToggleBreakpoint'      | Toggle line breakpoint on the current line.               |
-" -------------------------------------------------------------------------------------------------------------------------
-" | 'Shift F9'      | '<Plug>VimspectorAddFunctionBreakpoint' | Add a function breakpoint for the expression under cursor |
-" -------------------------------------------------------------------------------------------------------------------------
-" | 'F10'           | '<Plug>VimspectorStepOver'              | Step Over                                                 |
-" -------------------------------------------------------------------------------------------------------------------------
-" | 'F11'           | '<Plug>VimspectorStepInto'              | Step Into                                                 |
-" -------------------------------------------------------------------------------------------------------------------------
-" | 'Shift F11'     | '<Plug>VimspectorStepOut'               | Step out of current function scope                        |
-" -------------------------------------------------------------------------------------------------------------------------
 

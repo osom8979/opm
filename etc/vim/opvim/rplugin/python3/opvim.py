@@ -20,4 +20,6 @@ class TestPlugin(object):
 
     @pynvim.autocmd('BufEnter', pattern='*.py', eval='expand("<afile>")', sync=True)
     def on_bufenter(self, filename):
-        self.nvim.out_write('testplugin is in ' + filename + '\n')
+        # self.nvim.out_write('testplugin is in ' + filename + '\n')
+        pass
+
