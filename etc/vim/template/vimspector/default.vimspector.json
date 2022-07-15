@@ -31,9 +31,9 @@
             },
             "breakpoints": {
                 "exception": {
-                    "raised": "Y",
+                    "raised": "N",
                     "uncaught": "Y",
-                    "userUnhandled": "Y"
+                    "userUnhandled": "N"
                 }
             }
         }

@@ -81,7 +81,7 @@ let g:alternateExtensions_hh = "cpp,cc,cxx"
 
 " NERDTree
 let g:NERDTreeWinPos = "left"
-let g:NERDTreeWinSize = 25
+let g:NERDTreeWinSize = 32
 let g:NERDTreeShowBookmarks = 1
 let NERDTreeShowHidden = 1
 let NERDTreeIgnore  = ['^\..*', '^\.$', '^\.\.$', '\~$']
