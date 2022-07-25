@@ -15,6 +15,7 @@ let g:coc_global_extensions = [
     \ 'coc-omnisharp',
     \ 'coc-python',
     \ 'coc-rls',
+    \ 'coc-go',
     \ 'coc-tasks'
     \]
 
