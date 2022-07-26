@@ -1,6 +1,28 @@
 {
     "configurations": {
-        "Node.js": {
+        "C-family Launch": {
+            "adapter": "CodeLLDB",
+            "filetypes": ["cpp", "c", "objc"],
+            "configuration": {
+                "request": "launch",
+                "stopOnEntry": true,
+                "console": "integratedTerminal",
+                "cwd": "${workspaceRoot}/cmake-build-debug",
+                "program": "${workspaceRoot}/cmake-build-debug/main"
+            }
+        },
+        "Rust Launch": {
+            "adapter": "CodeLLDB",
+            "filetypes": [ "cpp", "c", "objc", "rust" ],
+            "configuration": {
+                "request": "launch",
+                "stopOnEntry": true,
+                "console": "integratedTerminal",
+                "cwd": "${workspaceRoot}",
+                "program": "${workspaceRoot}/target/debug/main"
+            }
+        },
+        "Node.js Launch": {
             "adapter": "vscode-node",
             "filetypes": ["javascript"],
             "default": true,
@@ -12,11 +34,13 @@
                 "program": "${workspaceRoot}/main.js"
             }
         },
-        "Python": {
+        "Python Launch": {
             "adapter": "debugpy",
             "filetypes": ["python"],
             "default": true,
-            "variables": {},
+            "variables": {
+                "VERBOSE_FLAG": "--verbose"
+            },
             "configuration": {
                 "request": "launch",
                 "type": "python",
@@ -27,7 +51,9 @@
                 "env": {
                     "PYTHONPATH": "${workspaceRoot}"
                 },
-                "args": []
+                "args": [
+                    "${VERBOSE_FLAG}"
+                ]
             },
             "breakpoints": {
                 "exception": {
