@@ -62,7 +62,14 @@ call quickui#menu#install("&Grep", [
             \ [ "Normal (pattern)", ":call AsyncRunGrepCurrentFile()" ],
             \ ])
 
-call quickui#menu#install("&CoC", [
+call quickui#menu#install("&Code", [
+            \ [ "&HEX mode", ":OpmHexMode" ],
+            \ [ "&TEXT mode", ":OpmTextMode" ],
+            \ [ "--", "" ],
+            \ [ "&Json formatting", ":OpmJsonFormat" ],
+            \ ])
+
+call quickui#menu#install("&Navigation", [
             \ [ "GoTo &definition\tgd", ':execute "normal \<Plug>(coc-definition)"' ],
             \ [ "GoTo &references\tgr", ':execute "normal \<Plug>(coc-references)"' ],
             \ [ "GoTo &type\tgy", ':execute "normal \<Plug>(coc-type-definition)"' ],
@@ -75,6 +82,7 @@ call quickui#menu#install("&CoC", [
 
 call quickui#menu#install("&Debug", [
             \ [ "&Launch\tS-F9", ':execute "normal \<Plug>VimspectorLaunch"' ],
+            \ [ "--", "" ],
             \ [ "&Continue\tF9", ':execute "normal \<Plug>VimspectorContinue"' ],
             \ [ "&Stop", ':execute "normal \<Plug>VimspectorStop"' ],
             \ [ "&Restart", ':execute "normal \<Plug>VimspectorRestart"' ],
@@ -91,13 +99,15 @@ call quickui#menu#install("&Debug", [
             \ [ "Frame &Down\tC-F12", ':execute "normal \<Plug>VimspectorDownFrame"' ],
             \ [ "--", "" ],
             \ [ "Balloon &Eval", ':execute "normal \<Plug>VimspectorBalloonEval"' ],
+            \ [ "--", "" ],
+            \ [ "Install Gadgets", ':VimspectorInstall' ],
+            \ [ "Update Gadgets", ':VimspectorUpdate' ],
             \ ])
 
 call quickui#menu#install("&View", [
-            \ [ "&HEX mode", ":OpmHexMode" ],
-            \ [ "&TEXT mode", ":OpmTextMode" ],
-            \ [ "--", "" ],
-            \ [ "&Json formatting", ":OpmJsonFormat" ],
+            \ [ "&NERDTree\t\\\\1", ":NERDTreeToggle" ],
+            \ [ "&Quickfix\t\\\\3", ":call OpmToggleQuickfixBuffer()" ],
+            \ [ "&Terminal\t\\\\4", ":call OpmToggleTerminalBuffer()" ],
             \ ])
 
 call quickui#menu#install("&Options", [

@@ -30,7 +30,14 @@ endfunction
 let g:vimspector_enable_mappings = 'opvim'
 
 " vscode-cpptools requires mono-core
-let g:vimspector_install_gadgets = ['CodeLLDB', 'debugpy', 'delve']
+let g:vimspector_install_gadgets = [
+            \ 'CodeLLDB',
+            \ 'debugpy',
+            \ 'delve',
+            \ 'vscode-node-debug2',
+            \ 'debugger-for-chrome',
+            \ 'vscode-firefox-debug',
+            \ ]
 
 if g:vimspector_enable_mappings ==# 'opvim'
     nmap <S-F9>     <Plug>VimspectorLaunch

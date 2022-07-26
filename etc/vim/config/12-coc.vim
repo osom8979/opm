@@ -11,12 +11,13 @@ endif
 " Global extension names to install when they aren't installed.
 let g:coc_global_extensions = [
     \ 'coc-clangd',
+    \ 'coc-go',
     \ 'coc-metals',
     \ 'coc-omnisharp',
     \ 'coc-python',
     \ 'coc-rls',
-    \ 'coc-go',
-    \ 'coc-tasks'
+    \ 'coc-tasks',
+    \ 'coc-vetur',
     \]
 
 let g:coc_disable_startup_warning = 1
