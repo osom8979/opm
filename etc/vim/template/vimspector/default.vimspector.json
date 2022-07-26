@@ -9,6 +9,12 @@
                 "console": "integratedTerminal",
                 "cwd": "${workspaceRoot}/cmake-build-debug",
                 "program": "${workspaceRoot}/cmake-build-debug/main"
+            },
+            "breakpoints": {
+                "exception": {
+                    "cpp_throw": "Y",
+                    "cpp_catch": "N"
+                }
             }
         },
         "Rust Launch": {
@@ -20,6 +26,12 @@
                 "console": "integratedTerminal",
                 "cwd": "${workspaceRoot}",
                 "program": "${workspaceRoot}/target/debug/main"
+            },
+            "breakpoints": {
+                "exception": {
+                    "cpp_throw": "Y",
+                    "cpp_catch": "N"
+                }
             }
         },
         "Node.js Launch": {
