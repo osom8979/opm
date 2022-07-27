@@ -82,12 +82,14 @@ call quickui#menu#install("&Navigation", [
 
 call quickui#menu#install("&Debug", [
             \ [ "&Launch\tS-F9", ':execute "normal \<Plug>VimspectorLaunch"' ],
+            \ [ "Reset", ':VimspectorReset' ],
             \ [ "--", "" ],
             \ [ "&Continue\tF9", ':execute "normal \<Plug>VimspectorContinue"' ],
             \ [ "&Stop", ':execute "normal \<Plug>VimspectorStop"' ],
             \ [ "&Restart", ':execute "normal \<Plug>VimspectorRestart"' ],
             \ [ "&Pause", ':execute "normal \<Plug>VimspectorPause"' ],
             \ [ "--", "" ],
+            \ [ "Breakpoints", ':VimspectorBreakpoints' ],
             \ [ "Toggle &Breakpoint\tC-F8", ':execute "normal \<Plug>VimspectorToggleBreakpoint"' ],
             \ [ "Toggle Conditional Breakpoint", ':execute "normal \<Plug>VimspectorToggleConditionalBreakpoint"' ],
             \ [ "--", "" ],

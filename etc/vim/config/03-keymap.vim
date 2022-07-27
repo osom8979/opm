@@ -9,9 +9,10 @@ endif
 
 " Open window.
 noremap  <leader><leader>1  <ESC>:NERDTreeToggle<CR>
-"noremap <leader><leader>2  <ESC>:Tagbar<CR>
-"noremap <leader><leader>3  " It is already set in opm: NextBuffer
-"noremap <leader><leader>4  " It is already set in opm: PrevBuffer
+noremap  <leader><leader>2  <ESC>:Tagbar<CR>
+"noremap <leader><leader>2  <ESC>:Vista!!<CR>
+"noremap <leader><leader>3  " It is already set in opm
+"noremap <leader><leader>4  " It is already set in opm
 noremap  <leader><leader>5  <ESC>:GundoToggle<CR>
 "noremap <leader><leader>8  <ESC>:SrcExplToggle<CR>
 

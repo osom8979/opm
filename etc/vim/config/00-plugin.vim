@@ -57,10 +57,11 @@ NeoBundle 'puremourning/vimspector'         " a multi-language debugging system 
 NeoBundle 'arthurxavierx/vim-caser'         " easily change word casing
 NeoBundle 'doums/darcula'                   " jetbrains ide darcula theme
 NeoBundle 'shirk/vim-gas'                   " advanced syntax highlighting for gnu as
+NeoBundle 'rust-lang/rust.vim'              " vim configuration for rust
 
 " Semantic highlighting for python in neovim.
 NeoBundle 'numirias/semshi', {
-    \    'do': ':UpdateRemotePlugins'
+    \   'do': ':UpdateRemotePlugins'
     \}
 
 " A command-line fuzzy finder.
@@ -68,6 +69,10 @@ NeoBundle 'junegunn/fzf', {
     \   'do': {
     \       -> fzf#install()
     \   }
+    \}
+NeoBundle 'yuki-yano/fzf-preview.vim', {
+    \   'branch': 'release/remote',
+    \   'do': ':UpdateRemotePlugins'
     \}
 
 " Interactive command execution in Vim.

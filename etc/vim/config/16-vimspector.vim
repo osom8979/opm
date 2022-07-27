@@ -41,15 +41,26 @@ let g:vimspector_install_gadgets = [
 
 if g:vimspector_enable_mappings ==# 'opvim'
     nmap <S-F9>     <Plug>VimspectorLaunch
+    nmap <F33>      <Plug>VimspectorLaunch
+
     nmap <F9>       <Plug>VimspectorContinue
     nmap <F7>       <Plug>VimspectorStepInto
     nmap <F8>       <Plug>VimspectorStepOver
+
     nmap <S-F8>     <Plug>VimspectorStepOut
+    nmap <F20>      <Plug>VimspectorStepOut
+
     nmap <C-F8>     <Plug>VimspectorToggleBreakpoint
+    nmap <F32>      <Plug>VimspectorToggleBreakpoint
+
     nmap <leader>di <Plug>VimspectorBalloonEval
     xmap <leader>di <Plug>VimspectorBalloonEval
+
     nmap <C-F11>    <Plug>VimspectorUpFrame
+    nmap <F35>      <Plug>VimspectorUpFrame
+
     nmap <C-F12>    <Plug>VimspectorDownFrame
+    nmap <F36>      <Plug>VimspectorDownFrame
 endif
 
 " VimspectorMkSession

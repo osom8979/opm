@@ -12,6 +12,7 @@ endif
 let g:coc_global_extensions = [
     \ 'coc-clangd',
     \ 'coc-go',
+    \ 'coc-lists',
     \ 'coc-metals',
     \ 'coc-omnisharp',
     \ 'coc-python',
