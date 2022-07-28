@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+CONKY_CONFIG="$OPM_HOME/etc/conky/conky.lua"
+
+if [[ -n $(which conky 2> /dev/null) ]]; then
+    conky -c "$CONKY_CONFIG" --daemonize
+else
+    exit 1
+fi
