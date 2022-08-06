@@ -40,6 +40,7 @@ set  backspace=indent,eol,start " make that backspace key work the way it should
 "set paste                      " don't use this: (for the SnipMate plugin)
 "set textwidth=120              " maximum width of text that is being inserted.
 set  colorcolumn=88,100,120     " highlight columns
+set  termguicolors              " Enables 24-bit rgb color in the TUI.
 
 " enable mouse event.
 if has('mouse')
