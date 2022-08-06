@@ -9,7 +9,6 @@ if !neobundle#is_installed(s:plugin_name)
 endif
 
 colorscheme darcula
-set termguicolors
 let g:lightline = { 'colorscheme': 'darculaOriginal' }
 
 " GitGutter
