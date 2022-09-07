@@ -1,0 +1,84 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - net
+    environment:
+      - POSTGRES_USER=${DB_ID:?err}
+      - POSTGRES_PASSWORD=${DB_PW:?err}
+      - POSTGRES_DB=baserow_db
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      interval: 10s
+      timeout: 2s
+      retries: 10
+
+  redis:
+    image: redis:6
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+    networks:
+      - net
+    volumes:
+      - redis_data:/data
+    command: ["redis-server"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: baserow/baserow:1.11.0
+    depends_on:
+      - db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik-net"
+        - "traefik.port=80"
+        - "traefik.frontend.rule=Host:${FRONTEND_HOST:?err}"
+    networks:
+      - traefik-net
+      - postfix-net
+      - net
+    environment:
+      - "BASEROW_PUBLIC_URL=https://${FRONTEND_HOST:?err}"
+      - "DATABASE_HOST=db"
+      - "DATABASE_NAME=baserow_db"
+      - "DATABASE_USER=${DB_ID:?err}"
+      - "DATABASE_PASSWORD=${DB_PW:?err}"
+      - "DATABASE_PORT=5432"
+      - "REDIS_HOST=redis"
+      - "EMAIL_SMTP=True"
+      - "EMAIL_SMTP_HOST=postfix_api"
+      - "EMAIL_SMTP_PORT=25"
+    volumes:
+      - baserow_data:/baserow/data
+
+volumes:
+  db_data:
+  redis_data:
+  baserow_data:
+
+networks:
+  traefik-net:
+    external: true
+  postfix-net:
+    external: true
+  net:
+    driver: overlay
+
