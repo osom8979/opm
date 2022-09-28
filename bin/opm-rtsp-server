@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+GUEST_VIDEO_PATH=/tmp/video.mp4
+DEFAULT_HOST_PORT=8554
+
+USAGE_MESSAGE="
+Start RTSP Server
+
+  Usage: opm-rtsp-server [options] {video}
+
+Available options are:
+  -h, --help            Print this message.
+  -p {n}, --port={n}    Host port number (default: $DEFAULT_HOST_PORT)
+  --                    Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function opm_rtsp_server_main
+{
+    local port=$DEFAULT_HOST_PORT
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --port=*)
+            port=${1:7}
+            shift
+            ;;
+        -p)
+            port=$2
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local video_path=$1
+    local options=(-e "ENABLE_TIME_OVERLAY=true" -p "$port:8554")
+
+    if [[ -n "$video_path" ]]; then
+        options+=(-e "INPUT=$GUEST_VIDEO_PATH")
+        options+=(-v "$(realpath "$video_path"):$GUEST_VIDEO_PATH")
+    fi
+
+    docker run --rm "${options[@]}" ullaakut/rtspatt
+}
+
+opm_rtsp_server_main "$@"
