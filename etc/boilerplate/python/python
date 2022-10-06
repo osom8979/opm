@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
+
+OPY_PATH=$(which opy 2> /dev/null)
+PYTHON3_PATH=$(which python3 2> /dev/null)
+PYTHON_PATH=$(which python 2> /dev/null)
+
+function run_base_python
+{
+    if [[ -x "$OPY_PATH" ]]; then
+        "$OPY_PATH" "$@"
+    elif [[ -x "$PYTHON3_PATH" ]]; then
+        "$PYTHON3_PATH" "$@"
+    elif [[ -x "$PYTHON_PATH" ]]; then
+        "$PYTHON_PATH" "$@"
+    else
+        echo "The python executable could not be found." 1>&2
+        exit 1
+    fi
+}
+
+VENV_HOME=$ROOT_DIR/.venv
+VENV_PYTHON=$VENV_HOME/bin/python3
+
+if [[ ! -d "$VENV_HOME" ]]; then
+    run_base_python -m venv "$VENV_HOME"
+    if [[ -x "$VENV_PYTHON" ]]; then
+        "$VENV_PYTHON" -m pip install -r "$ROOT_DIR/requirements.txt"
+    fi
+fi
+if [[ ! -x "$VENV_PYTHON" ]]; then
+    echo "The venv's python executable could not be found." 1>&2
+    exit 1
+fi
+
+export PYTHONPATH
+PYTHONPATH=$ROOT_DIR:$PYTHONPATH
+
+"$VENV_PYTHON" "$@"

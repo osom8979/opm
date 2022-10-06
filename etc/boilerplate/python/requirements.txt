@@ -1,0 +1,3 @@
+-r requirements.deploy.txt
+-r requirements.main.txt
+-r requirements.test.txt
