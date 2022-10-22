@@ -4,7 +4,7 @@ set -e # Exit immediately if a command exits with a non-zero status.
 set -u # Treat unset variables as an error.
 
 export HOME=/config
-export PROFILE_DIR=$HOME/profile/extensions
+export PROFILE_DIR=$HOME/profile
 export EXTENSIONS_DIR=$PROFILE_DIR/extensions
 
 export VDH_EXT_OUT=/vdh.xpi
