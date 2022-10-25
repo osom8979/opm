@@ -1,24 +1,26 @@
 # -*- coding: utf-8 -*-
 
 import os
-from typing import List
+from re import Pattern
+from re import compile as re_compile
+from typing import Final, List
 
 from setuptools import setup
 
 SOURCE_PATH = os.path.abspath(__file__)
 SOURCE_DIR = os.path.dirname(SOURCE_PATH)
+COMMENT_PATTERN: Final[Pattern] = re_compile(r"#.*$")
 REQUIREMENTS_MAIN = os.path.join(SOURCE_DIR, "requirements.main.txt")
 REQUIREMENTS_TEST = os.path.join(SOURCE_DIR, "requirements.test.txt")
 
 
-def install_requires(path: str, encoding="utf-8") -> List[str]:
-    with open(path, encoding=encoding) as f:
+def install_requires(encoding="utf-8") -> List[str]:
+    with open(REQUIREMENTS_MAIN, encoding=encoding) as f:
         content = f.read()
     lines0 = content.split("\n")
-    lines1 = map(lambda x: x.strip(), lines0)
-    lines2 = filter(lambda x: x and not x.startswith("#"), lines1)
-    lines3 = filter(lambda x: x and not x.startswith("-"), lines2)
-    return list(lines3)
+    lines1 = map(lambda x: COMMENT_PATTERN.sub("", x).strip(), lines0)
+    lines2 = filter(lambda x: x, lines1)
+    return list(lines2)
 
 
 if __name__ == "__main__":
