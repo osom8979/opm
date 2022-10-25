@@ -7,15 +7,15 @@ from typing import Final, List
 
 from setuptools import setup
 
+COMMENT_PATTERN: Final[Pattern] = re_compile(r"#.*$")
 SOURCE_PATH = os.path.abspath(__file__)
 SOURCE_DIR = os.path.dirname(SOURCE_PATH)
-COMMENT_PATTERN: Final[Pattern] = re_compile(r"#.*$")
 REQUIREMENTS_MAIN = os.path.join(SOURCE_DIR, "requirements.main.txt")
 REQUIREMENTS_TEST = os.path.join(SOURCE_DIR, "requirements.test.txt")
 
 
-def install_requires(encoding="utf-8") -> List[str]:
-    with open(REQUIREMENTS_MAIN, encoding=encoding) as f:
+def install_requires(file: str, encoding="utf-8") -> List[str]:
+    with open(file, encoding=encoding) as f:
         content = f.read()
     lines0 = content.split("\n")
     lines1 = map(lambda x: COMMENT_PATTERN.sub("", x).strip(), lines0)
