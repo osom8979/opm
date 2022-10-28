@@ -5,81 +5,15 @@ if [[ -z $(which opm-version 2> /dev/null) ]]; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
 fi
 
-N_URL="https://raw.githubusercontent.com/tj/n/master/bin/n"
-N_INSTALL_DIR="$HOME/.n"
-N_BIN_DIR="$N_INSTALL_DIR/bin"
-N_VERSIONS_DIR="$N_INSTALL_DIR/n/versions"
-N_CMD_PATH="$N_BIN_DIR/n"
+INSTALL_PREFIX="$HOME/.n"
+N_EXE="$(opm-root)/etc/n/n"
+RECOMMAND_PACKAGES=(yarn neovim)
 
-function get_n_path
-{
-    PATH=$N_BIN_DIR:$PATH which n 2> /dev/null
-}
+if [[ ! -x "$N_EXE" ]]; then
+    opm-println-error "Could not find executable n command on path '$N_EXE'"
+    exit 1
+fi
 
-function must_n_path
-{
-    local n_cmd=$(get_n_path)
-    if [[ -z $n_cmd ]]; then
-        opm-println-error "Not found n command."
-        exit 1  # The assertion error ends immediately.
-    fi
-    echo "$n_cmd"
-}
-
-function find_node_version
-{
-    local version=$1
-    local n_cmd=$(must_n_path)
-    N_PREFIX=$N_INSTALL_DIR \
-        "$n_cmd" ls | sed 's|^node/||' | grep --color=never -Fx "$version"
-}
-
-# ---------
-# Install n
-# ---------
-
-function install_n
-{
-    local not_found_cmds=$(opm-find-cmds -n -s curl)
-    if [[ -n $not_found_cmds ]]; then
-        opm-println "Not found commands: $not_found_cmds"
-        opm-package update
-        opm-package install $not_found_cmds
-
-        not_found_cmds=$(opm-find-cmds -n -s curl)
-        if [[ -n $not_found_cmds ]]; then
-            opm-println-error "installation failed: $not_found_cmds"
-            return 1
-        fi
-    fi
-
-    opm-println "Install n ..."
-    if [[ ! -d "$N_BIN_DIR" ]]; then
-        mkdir -p "$N_BIN_DIR"
-    fi
-    if [[ ! -d "$N_VERSIONS_DIR" ]]; then
-        mkdir -p "$N_VERSIONS_DIR"
-    fi
-
-    curl -L -o "$N_CMD_PATH" "$N_URL"
-    chmod +x "$N_CMD_PATH"
-}
-
-function install_n_if_not_exist
-{
-    if [[ -n $(get_n_path) ]]; then
-        return 0
-    fi
-
-    opm-println "Not found 'n' command."
-    install_n
-
-    local code=$?
-    if [[ $code -ne 0 ]]; then
-        opm-println-error "n installation failed: $code"
-        return $code
-    fi
-}
 
 # -------------------
 # Install node with n
@@ -87,22 +21,39 @@ function install_n_if_not_exist
 
 function install_node_if_not_exist
 {
-    local node_version=$1
-    if [[ -n $(find_node_version $node_version) ]]; then
+    local n_prefix=$1
+    local node_exe="$n_prefix/bin/node"
+    local node_version=$2
+
+    if [[ -x "$node_exe" ]]; then
+        local actually_version
+        actually_version="$("$node_exe" --version | sed 's/^v//g')"
+
+        if [[ "$actually_version" != "$node_version" ]]; then
+            opm-println-warn \
+                "Mismatch node version" \
+                "\n Expected: $node_version" \
+                "\n Actually: $actually_version"
+        fi
         return 0
     fi
 
-    opm-println "Not found '$node_version' in n."
+    opm-println "Could not find executable node command on path '$node_exe'"
     opm-println "Install node $node_version ..."
 
-    local n_cmd=$(must_n_path)
-    N_PREFIX=$N_INSTALL_DIR "$n_cmd" "$node_version"
+    N_PREFIX="$n_prefix" "$N_EXE" install "$node_version"
 
     local code=$?
     if [[ $code -ne 0 ]]; then
         opm-println-error "node installation failed: $code"
         return $code
     fi
+
+    opm-println "Install recommand packages"
+    for i in "${RECOMMAND_PACKAGES[@]}"; do
+        opm-println "Install npm package: "
+        N_PREFIX="$n_prefix" "$N_EXE" exec "$node_version" npm install --global "$i"
+    done
 }
 
 # ----------
@@ -111,16 +62,14 @@ function install_node_if_not_exist
 
 function active_n
 {
-    export N_PREFIX=$N_INSTALL_DIR
-    export PATH="$N_BIN_DIR:$PATH"
+    export PATH="$1/bin:$PATH"
 }
 
-function print_n_infos
+function print_node_infos
 {
     opm-println-info "[OSOM Node Environment]"
     opm-println-info "- Node version: $(node --version 2>&1)"
     opm-println-info "- Node executable: $(which node)"
-    opm-println-info "- N version: $(n --version)"
 }
 
 function exit_on_error
@@ -134,30 +83,37 @@ function exit_on_error
 function opn_main
 {
     local node_version=$1
-    local n_verbose=$2
+    local n_dirname=$2
+    local n_verbose=$3
+    local n_prefix="$INSTALL_PREFIX/$n_dirname"
 
     # Installation ...
 
-    install_n_if_not_exist
-    exit_on_error
-
-    install_node_if_not_exist "$node_version"
+    install_node_if_not_exist "$n_prefix" "$node_version"
     exit_on_error
 
     # Activation ...
 
-    active_n
+    active_n "$n_prefix"
     exit_on_error
 
     # Information ...
 
     if [[ $n_verbose -ne 0 ]]; then
-        print_n_infos
+        print_node_infos
     fi
 }
 
-OPN_VERSION=${OPN_VERSION:-$(opm-variable OPN14_VERSION)}
-OPN_VERBOSE=${OPN_VERBOSE:-0}
+CURRENT_USER_NAME=$(id -u -n)
 
-opn_main "$OPN_VERSION" "$OPN_VERBOSE"
+OPN_PREFIX=${OPN_PREFIX:-opn}
+OPN_USER=${OPN_USER:-$CURRENT_USER_NAME}
+OPN_VERSION=${OPN_VERSION:-$(opm-variable OPN18_VERSION)}
+OPN_SUFFIX=${OPN_SUFFIX:-default}
+OPN_DEFAULT_ENV=$OPN_PREFIX-$OPN_USER-$OPN_VERSION-$OPN_SUFFIX
+
+OPN_ENV=${OPN_ENV:-$OPN_DEFAULT_ENV}
+OPN_VERBOSE=${OPN_VERBOSE:-$(opm-variable OPN_VERBOSE)}
+
+opn_main "$OPN_VERSION" "$OPN_ENV" "$OPN_VERBOSE"
 
