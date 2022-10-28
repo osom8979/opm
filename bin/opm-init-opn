@@ -7,7 +7,7 @@ fi
 
 INSTALL_PREFIX="$HOME/.n"
 N_EXE="$(opm-root)/etc/n/n"
-RECOMMAND_PACKAGES=(yarn neovim)
+RECOMMEND_PACKAGES=(yarn neovim)
 
 if [[ ! -x "$N_EXE" ]]; then
     opm-println-error "Could not find executable n command on path '$N_EXE'"
@@ -49,8 +49,8 @@ function install_node_if_not_exist
         return $code
     fi
 
-    opm-println "Install recommand packages"
-    for i in "${RECOMMAND_PACKAGES[@]}"; do
+    opm-println "Install recommend packages"
+    for i in "${RECOMMEND_PACKAGES[@]}"; do
         opm-println "Install npm package: "
         N_PREFIX="$n_prefix" "$N_EXE" exec "$node_version" npm install --global "$i"
     done
