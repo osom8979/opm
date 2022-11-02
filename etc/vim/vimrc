@@ -8,6 +8,9 @@ scriptencoding utf-8
 let s:home_dir = $HOME
 let s:user_name = $USER
 let s:opy_prefix = 'opy'
+let g:opy_suffix = 'default'
+let s:opn_prefix = 'opn'
+let g:opn_suffix = 'default'
 let s:opm_home_by_env = $OPM_HOME
 let s:opm_home_by_sfile = expand('<sfile>:p:h:h:h')
 
@@ -29,19 +32,30 @@ function! s:GetOpmVariable(file, key)
     return ''
 endfunction
 
-function! s:GetOpyPythonPath(home, prefix, name, version)
+function! s:GetOpyPythonPath(home, prefix, name, version, suffix)
     return a:home    . '/.pyenv/versions/' .
          \ a:prefix  . '-' .
          \ a:name    . '-' .
-         \ a:version . '/bin/python'
+         \ a:version . '-' .
+         \ a:suffix  . '/bin/python'
 endfunction
 
-function! s:GetOpnNodePath(home)
-    return a:home . '/.n/bin/node'
+function! s:GetOpnNodePath(home, prefix, name, version, suffix)
+    return a:home . '/.n/' .
+         \ a:prefix  . '-' .
+         \ a:name    . '-' .
+         \ a:version . '-' .
+         \ a:suffix  . '/n/versions/node/' .
+         \ a:version . '/bin/node'
 endfunction
 
-function! s:GetOpnNeovimNodeHostPath(home)
-    return a:home . '/.n/bin/neovim-node-host'
+function! s:GetOpnNeovimNodeHostPath(home, prefix, name, version, suffix)
+    return a:home . '/.n/' .
+         \ a:prefix  . '-' .
+         \ a:name    . '-' .
+         \ a:version . '-' .
+         \ a:suffix  . '/n/versions/node/' .
+         \ a:version . '/bin/neovim-node-host'
 endfunction
 
 function! s:ExecuteVimSourceFiles(dir)
@@ -56,10 +70,11 @@ let g:opm_information_path = g:opm_home.'/INFORMATION'
 let g:opm_version = s:GetOpmVariable(g:opm_information_path, 'VERSION')
 let g:opy2_version = s:GetOpmVariable(g:opm_information_path, 'OPY2_VERSION')
 let g:opy3_version = s:GetOpmVariable(g:opm_information_path, 'OPY3_VERSION')
-let g:opy2_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, g:opy2_version)
-let g:opy3_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, g:opy3_version)
-let g:opn_node_path = s:GetOpnNodePath(s:home_dir)
-let g:opn_neovim_node_host_path = s:GetOpnNeovimNodeHostPath(s:home_dir)
+let g:opn16_version = s:GetOpmVariable(g:opm_information_path, 'OPN16_VERSION')
+let g:opy2_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, g:opy2_version, g:opy_suffix)
+let g:opy3_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, g:opy3_version, g:opy_suffix)
+let g:opn_node_path = s:GetOpnNodePath(s:home_dir, s:opn_prefix, s:user_name, g:opn16_version, g:opn_suffix)
+let g:opn_neovim_node_host_path = s:GetOpnNeovimNodeHostPath(s:home_dir, s:opn_prefix, s:user_name, g:opn16_version, g:opn_suffix)
 let &runtimepath .= ',' . g:opm_vim_script_dir
 
 "let g:loaded_python_provider = 1
