@@ -24,7 +24,7 @@ function find_pyenv_version
 {
     local version=$1
     local pyenv_cmd=$(must_pyenv_path)
-    "$pyenv_cmd" versions | sed 's/*//g' | awk '{print($1);}' | grep --color=never -Fx "$version"
+    "$pyenv_cmd" versions --bare | grep --color=never -Fx "$version"
 }
 
 # -------------
