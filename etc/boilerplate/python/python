@@ -29,32 +29,34 @@ function cancel_black
     exit 1
 }
 
-PYENV_EXE=$(which pyenv 2> /dev/null)
-if [[ -z "$PYENV_EXE" ]]; then
-    if [[ -x "$DEFAULT_PYENV_EXE" ]]; then
-        PYENV_EXE=$DEFAULT_PYENV_EXE
-    else
-        print_error "Could not find executable pyenv command" 1>&2
+if [[ ! -x "$VENV_PYTHON" ]]; then
+    PYENV_EXE=$(which pyenv 2> /dev/null)
+    if [[ -z "$PYENV_EXE" ]]; then
+        if [[ -x "$DEFAULT_PYENV_EXE" ]]; then
+            PYENV_EXE=$DEFAULT_PYENV_EXE
+        else
+            print_error "Could not find executable pyenv command" 1>&2
+            exit 1
+        fi
+    fi
+
+    VIRTUALENV_VERSION=$("$PYENV_EXE" virtualenv --version 2> /dev/null)
+    if [[ -z "$VIRTUALENV_VERSION" ]]; then
+        print_error "Could not find pyenv-virtualenv" 1>&2
         exit 1
     fi
-fi
 
-VIRTUALENV_VERSION=$("$PYENV_EXE" virtualenv --version 2> /dev/null)
-if [[ -z "$VIRTUALENV_VERSION" ]]; then
-    print_error "Could not find pyenv-virtualenv" 1>&2
-    exit 1
-fi
+    AVAILABLE_INSTALL_VERSION=$(
+        "$PYENV_EXE" install -l \
+            | sed -n -e 's/^ *//g' -e '2,$p' \
+            | grep --color=none -Fx "$PYTHON_VERSION"
+    )
 
-AVAILABLE_INSTALL_VERSION=$(
-    "$PYENV_EXE" install -l \
-        | sed -n -e 's/^ *//g' -e '2,$p' \
-        | grep --color=none -Fx "$PYTHON_VERSION"
-)
-
-if [[ -z "$AVAILABLE_INSTALL_VERSION" ]]; then
-    print_error "Not found available python version: $PYTHON_VERSION" 1>&2
-    print_error "Please update pyenv" 1>&2
-    exit 1
+    if [[ -z "$AVAILABLE_INSTALL_VERSION" ]]; then
+        print_error "Not found available python version: $PYTHON_VERSION" 1>&2
+        print_error "Please update pyenv" 1>&2
+        exit 1
+    fi
 fi
 
 function find_pyenv_version

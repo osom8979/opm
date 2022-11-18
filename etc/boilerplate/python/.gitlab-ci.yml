@@ -1,0 +1,48 @@
+image: python:3.9
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+    - .venv/
+
+before_script:
+  - pip install virtualenv
+  - virtualenv .venv
+  - source .venv/bin/activate
+  - bash ./python -m pip install -r requirements.txt
+
+stages:
+  - analysis
+  - test
+  - build
+
+black:
+  stage: analysis
+  script:
+    - bash ./black.sh
+
+flake8:
+  stage: analysis
+  script:
+    - bash ./flake8.sh
+
+mypy:
+  stage: analysis
+  script:
+    - bash ./mypy.sh
+
+pytest:
+  stage: test
+  script:
+    - bash ./pytest.sh
+
+build:
+  stage: build
+  script:
+    - bash ./build.sh
+  artifacts:
+    paths:
+      - dist/*.whl
