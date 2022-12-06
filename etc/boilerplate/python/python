@@ -7,7 +7,12 @@ DEFAULT_PYENV_EXE=$HOME/.pyenv/bin/pyenv
 PYENV_NAME=%PROJECT_LOWER%-$USER-$PYTHON_VERSION
 
 VENV_HOME=$ROOT_DIR/.venv
-VENV_PYTHON=$VENV_HOME/bin/python3
+
+if [[ -n $WHICH_PYTHON ]]; then
+    VENV_PYTHON=$(which "$WHICH_PYTHON" 2> /dev/null)
+else
+    VENV_PYTHON=$VENV_HOME/bin/python3
+fi
 
 function print_error
 {
@@ -193,7 +198,7 @@ function run_base_python
     fi
 }
 
-if [[ ! -d "$VENV_HOME" ]]; then
+if [[ ! -x "$VENV_PYTHON" ]]; then
     run_base_python -m venv "$VENV_HOME"
     if [[ -x "$VENV_PYTHON" ]]; then
         "$VENV_PYTHON" -m pip install -r "$ROOT_DIR/requirements.txt"
