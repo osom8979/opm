@@ -7,11 +7,12 @@ DEFAULT_PYENV_EXE=$HOME/.pyenv/bin/pyenv
 PYENV_NAME=%PROJECT_LOWER%-$USER-$PYTHON_VERSION
 
 VENV_HOME=$ROOT_DIR/.venv
+VENV_PYTHON=$VENV_HOME/bin/python3
 
-if [[ -n $WHICH_PYTHON ]]; then
-    VENV_PYTHON=$(which "$WHICH_PYTHON" 2> /dev/null)
+if [[ -n $USE_SYSTEM_PYTHON ]]; then
+    PYTHON_EXE=$(which python3 2> /dev/null)
 else
-    VENV_PYTHON=$VENV_HOME/bin/python3
+    PYTHON_EXE=${PYTHON_EXE:-$VENV_PYTHON}
 fi
 
 function print_error
@@ -34,7 +35,7 @@ function cancel_black
     exit 1
 }
 
-if [[ ! -x "$VENV_PYTHON" ]]; then
+if [[ ! -x "$PYTHON_EXE" ]]; then
     PYENV_EXE=$(which pyenv 2> /dev/null)
     if [[ -z "$PYENV_EXE" ]]; then
         if [[ -x "$DEFAULT_PYENV_EXE" ]]; then
@@ -198,15 +199,16 @@ function run_base_python
     fi
 }
 
-if [[ ! -x "$VENV_PYTHON" ]]; then
+if [[ ! -x "$PYTHON_EXE" ]]; then
     run_base_python -m venv "$VENV_HOME"
     if [[ -x "$VENV_PYTHON" ]]; then
         "$VENV_PYTHON" -m pip install -r "$ROOT_DIR/requirements.txt"
+        PYTHON_EXE=$VENV_PYTHON
     fi
 fi
-if [[ ! -x "$VENV_PYTHON" ]]; then
+if [[ ! -x "$PYTHON_EXE" ]]; then
     print_error "The venv's python executable could not be found." 1>&2
     exit 1
 fi
 
-PYTHONPATH="$ROOT_DIR:$PYTHONPATH" "$VENV_PYTHON" "$@"
+PYTHONPATH="$ROOT_DIR:$PYTHONPATH" "$PYTHON_EXE" "$@"
