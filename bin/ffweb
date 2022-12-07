@@ -4,7 +4,7 @@ HOMEPAGE=${1:-https://duckduckgo.com}
 HOST_WEB_PORT=${2:-5800}
 HOST_VNC_PORT=${3:-5900}
 DOWNLOAD_DIR=$HOME/Downloads
-DWHELPER_DIR=$DOWNLOAD_DIR/dwhelper
+DWHELPER_DIR=$DOWNLOAD_DIR/.dwhelper
 
 echo "Run Firefox Web"
 echo "Homepage: $HOMEPAGE"
