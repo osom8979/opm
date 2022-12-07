@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
+BOILERPLATE_DIR=$ROOT_DIR
 
 VERBOSE=0
 
@@ -9,6 +10,7 @@ Usage: ${BASH_SOURCE[0]} [options] src dest
 
 Available options are:
   -h, --help        Print this message.
+  -l, --list        Print the source list.
   -v, --verbose     Be more verbose/talkative during the operation
   --                Stop handling options.
 "
@@ -52,6 +54,10 @@ while [[ -n $1 ]]; do
         print_usage
         exit 0
         ;;
+    -l|--list)
+        find "$BOILERPLATE_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%P\n'
+        exit 0
+        ;;
     -v|--verbose)
         VERBOSE=1
         shift
@@ -86,9 +92,10 @@ if [[ ! -d "$SOURCE_DIR" ]]; then
 fi
 
 read -r -p 'Project name? ' PROJECT_NAME
-read -r -p 'Project description? ' PROJECT_DESC
+read -r -p 'Project description? (Do not use quotation marks) ' PROJECT_DESC
 read -r -p 'User name? ' USER_NAME
 read -r -p 'User e-mail? ' USER_EMAIL
+read -r -p 'Github ID? ' GITHUB_ID
 PROJECT_LOWER=$(echo "${PROJECT_NAME,,}" | sed -e 's/[^a-zA-Z0-9]/_/g')
 YEAR=$(date +%Y)
 
@@ -103,6 +110,7 @@ SED_ARGS=(
     -e "s/%PROJECT_DESC%/$PROJECT_DESC/g"
     -e "s/%USER_NAME%/$USER_NAME/g"
     -e "s/%USER_EMAIL%/$USER_EMAIL/g"
+    -e "s/%GITHUB_ID%/$GITHUB_ID/g"
     -e "s/%YEAR%/$YEAR/g"
 )
 
@@ -111,9 +119,6 @@ if [[ "${YN,,}" != 'y' ]]; then
     print_error "The job has been canceled"
     exit 1
 fi
-
-mapfile -t dirs < <(find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%P\n')
-mapfile -t files < <(find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -type f -printf '%P\n')
 
 if [[ ! -d "$DESTINATION_DIR" ]]; then
     mkdir -p -v "$DESTINATION_DIR"
@@ -143,7 +148,7 @@ function install_dir
     local dirs
     local files
 
-    print_verbose "Change working directory: $working_dir"
+    print_verbose "Change source directory: $working_dir"
     print_verbose "Change target directory: $target_dir"
 
     mapfile -t dirs < <(find "$working_dir" -mindepth 1 -maxdepth 1 -type d -printf '%P\n')
