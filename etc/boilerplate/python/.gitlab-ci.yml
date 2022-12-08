@@ -2,47 +2,38 @@ image: python:3.9
 
 variables:
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  USE_SYSTEM_PYTHON: 3
+  POSTGRES_USER: pguser
+  POSTGRES_PASSWORD: pgpass
+  POSTGRES_HOST_AUTH_METHOD: trust
+
+services:
+  - timescale/timescaledb:2.1.0-pg13
 
 cache:
   paths:
     - .cache/pip
-    - .venv/
+    - cache.tar.gz
 
 before_script:
-  - pip install virtualenv
-  - virtualenv .venv
-  - source .venv/bin/activate
-  - bash ./python -m pip install -r requirements.txt
+  - bash ci.sh extract-cache
+  - bash ci.sh install-packages
 
 stages:
-  - analysis
   - test
-  - build
+  - deploy
 
-black:
-  stage: analysis
-  script:
-    - bash ./black.sh
-
-flake8:
-  stage: analysis
-  script:
-    - bash ./flake8.sh
-
-mypy:
-  stage: analysis
-  script:
-    - bash ./mypy.sh
-
-pytest:
+test-all:
   stage: test
   script:
-    - bash ./pytest.sh
+    - bash ci.sh test
+    - bash ci.sh create-cache
 
-build:
-  stage: build
+deploy-pypi:
+  stage: deploy
+  only:
+    - tags
   script:
-    - bash ./build.sh
-  artifacts:
-    paths:
-      - dist/*.whl
+    - bash ci.sh build
+    - bash ci.sh deploy
+    - bash ci.sh create-cache
