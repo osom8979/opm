@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+
+if [[ -z $(which opm-version 2> /dev/null) ]]; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+fi
+
+BOILERPLATE_DIR=$(opm-root)/etc/boilerplate
+VERBOSE=0
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} [options] src dest
+
+Available options are:
+  -h, --help        Print this message.
+  -l, --list        Print the source list.
+  -v, --verbose     Be more verbose/talkative during the operation
+  --                Stop handling options.
+"
+
+function print_error
+{
+    # shellcheck disable=SC2145
+    echo -e "\033[31m$@\033[0m" 1>&2
+}
+
+function print_message
+{
+    # shellcheck disable=SC2145
+    echo -e "\033[32m$@\033[0m"
+}
+
+function print_verbose
+{
+    if [[ $VERBOSE -ne 0 ]]; then
+        # shellcheck disable=SC2145
+        echo -e "\033[32m$@\033[0m"
+    fi
+}
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+trap 'cancel_black' INT
+
+function cancel_black
+{
+    print_error "An interrupt signal was detected."
+    exit 1
+}
+
+function print_sources
+{
+    find "$BOILERPLATE_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%P\n'
+}
+
+function install_file
+{
+    local src=$1
+    local dest=$2
+    local src_filename=$3
+    shift 3
+
+    local dest_filename
+    dest_filename=$(echo "$src_filename" | sed "$@")
+
+    local lh="$working_dir/$src_filename"
+    local rh="$target_dir/$dest_filename"
+
+    sed "$@" "$lh" > "$rh"
+    chmod $(stat -c '%a' "$lh") "$rh"
+    print_verbose "Install file: '$lh' > '$rh'"
+}
+
+function install_dir
+{
+    local working_dir=$1
+    local target_dir=$2
+    shift 2
+
+    print_verbose "Change source directory: $working_dir"
+    print_verbose "Change target directory: $target_dir"
+
+    local dirs
+    local files
+    mapfile -t dirs < <(find "$working_dir" -mindepth 1 -maxdepth 1 -type d -printf '%P\n')
+    mapfile -t files < <(find "$working_dir" -mindepth 1 -maxdepth 1 -type f -printf '%P\n')
+
+    local dest_dir
+
+    for dir in "${dirs[@]}"; do
+        dest_dir=$(echo "$dir" | sed "$@")
+
+        mkdir -p "$target_dir/$dest_dir"
+        print_verbose "Make directory: $target_dir/$dest_dir"
+
+        install_dir "$working_dir/$dir" "$target_dir/$dest_dir" "$@"
+    done
+
+    for file in "${files[@]}"; do
+        install_file "$working_dir" "$target_dir" "$file" "$@"
+    done
+}
+
+function install_boilerplate
+{
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        -l|--list)
+            print_sources
+            exit 0
+            ;;
+        -v|--verbose)
+            VERBOSE=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ -z "$1" ]]; then
+        print_error "Empty 'src' argument"
+        exit 1
+    fi
+    if [[ -z "$2" ]]; then
+        print_error "Empty 'dest' argument"
+        exit 1
+    fi
+
+    local src=$1
+    local dest=$2
+    shift 2
+
+    local source_dir=$BOILERPLATE_DIR/$src
+    if [[ ! -d "$source_dir" ]]; then
+        print_error "Not found source directory: $src"
+        exit 1
+    fi
+
+    local project_name
+    local project_desc
+    local user_name
+    local user_email
+    local github_id
+    local project_lower
+    local year
+
+    read -r -p 'Project name? ' project_name
+    read -r -p 'Project description? (Do not use quotation marks) ' project_desc
+    read -r -p 'User name? ' user_name
+    read -r -p 'User e-mail? ' user_email
+    read -r -p 'Github ID? ' github_id
+    project_lower=$(echo "${project_name,,}" | sed -e 's/[^a-zA-Z0-9]/_/g')
+    year=$(date +%Y)
+
+    local dest_dir="$dest/$project_name"
+    if [[ -d "$dest_dir" ]]; then
+        if [[ $(ls -a "$dest_dir" 2> /dev/null | grep -v '^\.*$' | wc -l) -ne 0 ]]; then
+            print_error "Destination directory is not empty: $dest_dir"
+            exit 1
+        fi
+    fi
+
+    print_verbose "Year: $year"
+    print_verbose "Project lower: $project_lower"
+    print_verbose "Source directory: $source_dir"
+    print_verbose "Destination directory: $dest_dir"
+
+    local sed_args=(
+        -e "s/%PROJECT_NAME%/$project_name/g"
+        -e "s/%PROJECT_LOWER%/$project_lower/g"
+        -e "s/%PROJECT_DESC%/$project_desc/g"
+        -e "s/%USER_NAME%/$user_name/g"
+        -e "s/%USER_EMAIL%/$user_email/g"
+        -e "s/%GITHUB_ID%/$github_id/g"
+        -e "s/%YEAR%/$year/g"
+    )
+
+    read -r -p "Are you sure you want to continue with the installation? (y/n) " YN
+    if [[ "${YN,,}" != 'y' ]]; then
+        print_error "The job has been canceled"
+        exit 1
+    fi
+
+    if [[ ! -d "$dest_dir" ]]; then
+        mkdir -p -v "$dest_dir"
+    fi
+
+    install_dir "$source_dir" "$dest_dir" "${sed_args[@]}"
+    print_message "Installation is complete"
+}
+
+install_boilerplate "$@"
