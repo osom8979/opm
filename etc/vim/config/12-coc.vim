@@ -225,6 +225,20 @@ call coc#config('python', {
     \   },
     \})
 
+call coc#config('languageserver', {
+    \   'ccls': {
+    \       'command': 'ccls',
+    \       'trace.server': 'verbose',
+    \       'filetypes': ['c', 'cpp', 'objc', 'objcpp']
+    \   },
+    \   'csharp-ls': {
+    \       'command': 'csharp-ls',
+    \       'filetypes': ['cs'],
+    \       'rootPatterns': ['*.csproj', '.vim/', '.git/', '.hg/']
+    \   }
+    \})
+
+
 " ---------------------------------
 " CTRL+P - Show Function Parameters
 " ---------------------------------
