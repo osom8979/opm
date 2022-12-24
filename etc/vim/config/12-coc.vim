@@ -191,8 +191,12 @@ nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 
 " ----------
-" coc-python
+" coc config
 " ----------
+
+call coc#config('suggest', {
+    \   'noselect': v:true,
+    \})
 
 call coc#config('python', {
     \   'pythonPath': g:opy3_python_path,
