@@ -1,0 +1,16 @@
+{
+    "configurations": {
+        "Node.js Launch": {
+            "adapter": "vscode-node",
+            "filetypes": ["javascript"],
+            "default": true,
+            "configuration": {
+                "request": "launch",
+                "stopOnEntry": true,
+                "console": "integratedTerminal",
+                "cwd": "${workspaceRoot}",
+                "program": "${workspaceRoot}/main.js"
+            }
+        }
+    }
+}

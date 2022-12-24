@@ -36,13 +36,29 @@ endfunction
 
 function! s:TemplateMenus()
     let result = []
-    for template in glob(fnameescape(g:opm_vim_script_dir) . '/template/{,.}*', 1, 1)
-        if !isdirectory(template)
-            let filename = fnamemodify(template, ':t')
-            let name = 'Edit '.filename
-            let cmd = ':call CreateNewFileAsTemplate("'.filename.'","'.template.'")'
-            let result += [[name, cmd]]
+    let expr = fnameescape(g:opm_vim_script_dir) . '/template/{,.}*'
+    for dir in glob(expr, v:true, v:true)
+        if !isdirectory(dir)
+            continue
         endif
+
+        let dirname = fnamemodify(dir, ':h:t')
+        if dirname == '.' || dirname == '..'
+            continue
+        endif
+
+        let templateExpr = fnameescape(dir) . '{,.}*'
+        for template in glob(templateExpr, v:true, v:true)
+            if isdirectory(template)
+                continue
+            endif
+
+            let filename = fnamemodify(template, ':t')
+            let menuName = 'Edit '.dirname.' < '.filename
+            let menuCmd = ':call CreateNewFileAsTemplate("'.dirname.'","'.template.'")'
+            let result += [[menuName, menuCmd]]
+        endfor
+        let result += [['--', '']]
     endfor
     return result
 endfunction
@@ -54,24 +70,25 @@ endfunction
 call quickui#menu#switch(g:opm_default_quickui_namespace)
 call quickui#menu#reset()
 
-            "\ [ "Edit .tasks", ":call OpmEditTasksForDefault()" ],
-            "\ [ "Edit .vimspector.json", ":call OpmEditVimspectorForDefault()" ],
-
 call quickui#menu#install("&File", [
             \ [ "New &Horizontally Buffer\t:new", ":new", "Create a new window and start editing an empty file in it." ],
             \ [ "New &Vertically Buffer\t:vnew", ":vnew", "Create a new window and start editing an empty file in it. but split vertically." ],
             \ [ "--", "" ],
-            \ ] + s:TemplateMenus() + [
-            \ [ "--", "" ],
             \ [ "E&xit\t:qa", ":qa", "Exit Vim, unless there are some buffers which have been changed." ],
             \ [ "Exit Force\t:qa!", ":qa", "Exit Vim. Any changes to buffers are lost." ],
             \ ])
+
+call quickui#menu#install("&Template", s:TemplateMenus())
 
 call quickui#menu#install("&Edit", [
             \ [ "Remove &carriage return", ":call RemoveCr()" ],
             \ [ "Remove &trailing space", ":call RemoveTrailingSpace()" ],
             \ [ "Remove &blank lines", ":call RemoveBlankLines()" ],
             \ [ "--", "" ],
+            \ [ "&HEX mode", ":OpmHexMode" ],
+            \ [ "&TEXT mode", ":OpmTextMode" ],
+            \ [ "--", "" ],
+            \ [ "&Json formatting", ":OpmJsonFormat" ],
             \ ])
 
 call quickui#menu#install("&Grep", [
@@ -92,14 +109,7 @@ call quickui#menu#install("&Grep", [
             \ [ "Normal (pattern)", ":call AsyncRunGrepCurrentFile()" ],
             \ ])
 
-call quickui#menu#install("&Code", [
-            \ [ "&HEX mode", ":OpmHexMode" ],
-            \ [ "&TEXT mode", ":OpmTextMode" ],
-            \ [ "--", "" ],
-            \ [ "&Json formatting", ":OpmJsonFormat" ],
-            \ ])
-
-call quickui#menu#install("&Navigation", [
+call quickui#menu#install("&Coc", [
             \ [ "GoTo &definition\tgd", ':execute "normal \<Plug>(coc-definition)"' ],
             \ [ "GoTo &references\tgr", ':execute "normal \<Plug>(coc-references)"' ],
             \ [ "GoTo &type\tgy", ':execute "normal \<Plug>(coc-type-definition)"' ],
