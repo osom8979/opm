@@ -19,6 +19,34 @@ if !exists('g:opm_default_quickui_toggle_key')
     let g:opm_default_quickui_toggle_key = '<leader>`'
 endif
 
+let s:opm_vim_template_dir = g:opm_vim_script_dir . '/template/'
+
+function! CreateNewFileAsTemplate(file, template)
+    silent execute ':edit ' . a:file
+    if filereadable(a:file)
+        return
+    endif
+
+    let cursor = line('.')
+    for content in readfile(a:template)
+        call append(cursor, content)
+        let cursor = line('$')
+    endfor
+endfunction
+
+function! s:TemplateMenus()
+    let result = []
+    for template in glob(fnameescape(g:opm_vim_script_dir) . '/template/{,.}*', 1, 1)
+        if !isdirectory(template)
+            let filename = fnamemodify(template, ':t')
+            let name = 'Edit '.filename
+            let cmd = ':call CreateNewFileAsTemplate("'.filename.'","'.template.'")'
+            let result += [[name, cmd]]
+        endif
+    endfor
+    return result
+endfunction
+
 " -------------------------
 " OPM quickui configuration
 " -------------------------
@@ -26,12 +54,14 @@ endif
 call quickui#menu#switch(g:opm_default_quickui_namespace)
 call quickui#menu#reset()
 
+            "\ [ "Edit .tasks", ":call OpmEditTasksForDefault()" ],
+            "\ [ "Edit .vimspector.json", ":call OpmEditVimspectorForDefault()" ],
+
 call quickui#menu#install("&File", [
             \ [ "New &Horizontally Buffer\t:new", ":new", "Create a new window and start editing an empty file in it." ],
             \ [ "New &Vertically Buffer\t:vnew", ":vnew", "Create a new window and start editing an empty file in it. but split vertically." ],
             \ [ "--", "" ],
-            \ [ "Edit .tasks", ":call OpmEditTasksForDefault()" ],
-            \ [ "Edit .vimspector.json", ":call OpmEditVimspectorForDefault()" ],
+            \ ] + s:TemplateMenus() + [
             \ [ "--", "" ],
             \ [ "E&xit\t:qa", ":qa", "Exit Vim, unless there are some buffers which have been changed." ],
             \ [ "Exit Force\t:qa!", ":qa", "Exit Vim. Any changes to buffers are lost." ],
