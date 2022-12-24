@@ -63,6 +63,7 @@ set shortmess+=c
 " other plugin before putting this into your config.
 inoremap <silent><expr> <TAB>
             \ coc#pum#visible() ? coc#pum#next(1):
+            \ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
             \ CheckBackspace() ? "\<Tab>" :
             \ coc#refresh()
 inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
@@ -245,4 +246,29 @@ call coc#config('languageserver', {
 
 " inoremap <silent> <c-p> <ESC>:call CocActionAsync('showSignatureHelp')<CR>
 inoremap <C-P> <C-\><C-O>:call CocActionAsync('showSignatureHelp')<CR>
+
+" ------------
+" coc-snippets
+" ------------
+
+call coc#config('snippets', {
+    \   'ultisnips': {
+    \       'enable': v:false
+    \   },
+    \   'snipmate': {
+    \       'enable': v:true
+    \   }
+    \})
+
+" Use <C-l> for trigger snippet expand.
+imap <C-l> <Plug>(coc-snippets-expand)
+
+" Use <C-j> for select text for visual placeholder of snippet.
+vmap <C-j> <Plug>(coc-snippets-select)
+
+" Use <C-j> for jump to next placeholder, it's default of coc.nvim
+let g:coc_snippet_next = '<c-j>'
+
+" Use <C-k> for jump to previous placeholder, it's default of coc.nvim
+let g:coc_snippet_prev = '<c-k>'
 

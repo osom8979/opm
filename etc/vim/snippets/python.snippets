@@ -1,140 +1,105 @@
-snippet snip-unittest-default
-	import unittest
-	
-	
-	class TestArchive(unittest.TestCase):
-	
-	    @classmethod
-	    def setUpClass(cls):
-	        pass
-	
-	    @classmethod
-	    def tearDownClass(cls):
-	        pass
-	
-	    def setUp(self):
-	        pass
-	
-	    def tearDown(self):
-	        pass
-	
-	    def test_case(self):
-	        # self.assertEqual(a, b)
-	        # self.assertNotEqual(a, b)
-	        # self.assertTrue(x)
-	        # self.assertFalse(x)
-	        # self.assertIs(a, b)
-	        # self.assertIsNot(a, b)
-	        # self.assertIsNone(x)
-	        # self.assertIsNotNone(x)
-	        # self.assertIn(a, b)
-	        # self.assertNotIn(a, b)
-	        # self.assertIsInstance(a, b)
-	        # self.assertNotIsInstance(a, b)
+snippet snip-cv2-video-capture
+	# -*- coding: utf-8 -*-
 
-snippet snip-common-list-of-files
-	import os
-	import re
-	
-	def get_child_directories(path=os.curdir):
-	    result = []
-	    for parent, sub_dirs, files in os.walk(path):
-	        result.append(parent)
-	    return result
-	
-	
-	def get_children(path=os.curdir):
-	    result = []
-	    for parent, sub_dirs, files in os.walk(path):
-	        for name in files:
-	            # result.append(os.path.join(os.path.abspath(parent), name))
-	            result.append(os.path.join(parent, name))
-	    return result
-	
-	
-	def get_children_with_match(path=os.curdir, regexp='.*'):
-	    result = []
-	    for cursor in get_children(path):
-	        if not re.match(regexp, cursor) is None:
-	            result.append(cursor)
-	    return result
-	
-	
-	def get_files(path=os.curdir):
-	    return list(filter(os.path.isfile, os.listdir(path)))
-	
-	
-	def get_dirs(path=os.curdir):
-	    return list(filter(os.path.isdir, os.listdir(path)))
-
-snippet snip-cv2-VideoCapture
-	import numpy as np
 	import cv2
-	
-	cap = cv2.VideoCapture('sample.mp4')
-	
-	while(cap.isOpened()):
-	    ret, frame = cap.read()
-	    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-	    cv2.imshow('frame', gray)
-	    if cv2.waitKey(1) & 0xFF == ord('q'):
-	        break
-	
+
+	cap = cv2.VideoCapture("sample.mp4")
+
+	while cap.isOpened():
+		ret, frame = cap.read()
+		if not ret:
+			break
+
+		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+		cv2.imshow("frame", gray)
+
+		keycode = cv2.waitKey(1)
+		if keycode & 0xFF == ord("q"):
+			break
+
 	cap.release()
 	cv2.destroyAllWindows()
 
-snippet snip-cv2-selectROI
-	import numpy as np
+
+snippet snip-cv2-select-roi
+	# -*- coding: utf-8 -*-
+
 	import cv2
-	
-	empty_image = np.zeros((300, 300, 3), dtype=np.uint8)
+	import numpy as np
+
+	canvas = np.zeros((300, 300, 3), dtype=np.uint8)
 	color = (0, 0, 255)
 	thickness = 0
 	line_type = cv2.LINE_8
-	
+
 	while True:
-	    r = cv2.selectROI(empty_image)
-	    if r == (0, 0, 0, 0):
-	        break
-	
-	    img = empty_image.copy()
-	    cv2.rectangle(img, r, color, thickness, line_type)
-	    cv2.imshow('preview', img)
-	    if cv2.waitKey(1) & 0xFF == ord('q'):
-	        break
+		r = cv2.selectROI(canvas)
+		if r == (0, 0, 0, 0):
+			break
+
+		img = canvas.copy()
+		cv2.rectangle(img, r, color, thickness, line_type)
+		cv2.imshow("preview", img)
+
+		keycode = cv2.waitKey(1)
+		if keycode & 0xFF == ord("q"):
+			break
+
+
+snippet snip-unittest-default
+	# -*- coding: utf-8 -*-
+
+	from unittest import TestCase
+
+	class ${1:Name}TestCase(TestCase):
+		@classmethod
+		def setUpClass(cls):
+			pass
+
+		@classmethod
+		def tearDownClass(cls):
+			pass
+
+		def setUp(self):
+			pass
+
+		def tearDown(self):
+			pass
+
 
 snippet snip-av-rtsp-streaming
 	import av
 	import time
 	import numpy as np
 	import cv2
-	
+
 	video_src = 'sample.mp4'
 	video_index = 0
 	frame_format = 'bgr24'
 	options = { 'rtsp_transport': 'tcp' }
 	container_options = {}
 	stream_options = []
-	
+
 	container = av.open(video_src, options=options,
-	                    container_options=container_options,
-	                    stream_options=stream_options)
+						container_options=container_options,
+						stream_options=stream_options)
 	container.streams.video[video_index].thread_type = 'AUTO'  # Go faster!
 	frames = container.decode(video=video_index)
-	
+
 	while True:
-	    begin = time.time()
-	
-	    frame = next(frames)
-	    last_frame = frame.to_ndarray(format=frame_format)
-	    last_index = frame.index
-	    last_pts = frame.pts
-	
-	    end = time.time()
-	    elapsed = int((end-begin)*1000)
-	    print(f'index={last_index}, pts={last_pts}, shape={last_frame.shape}, elapsed={elapsed}ms')
-	
-	    cv2.imshow('frame', last_frame)
-	    if cv2.waitKey(1) & 0xFF == ord('q'):
-	        break
+		begin = time.time()
+
+		frame = next(frames)
+		last_frame = frame.to_ndarray(format=frame_format)
+		last_index = frame.index
+		last_pts = frame.pts
+
+		end = time.time()
+		elapsed = int((end-begin)*1000)
+		print(f'index={last_index}, pts={last_pts}, shape={last_frame.shape}, elapsed={elapsed}ms')
+
+		cv2.imshow('frame', last_frame)
+		if cv2.waitKey(1) & 0xFF == ord('q'):
+			break
+
 
