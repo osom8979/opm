@@ -84,10 +84,15 @@ let g:alternateExtensions_hh = "cpp,cc,cxx"
 let g:NERDTreeWinPos = "left"
 let g:NERDTreeWinSize = 32
 let g:NERDTreeShowBookmarks = 1
-let NERDTreeShowHidden = 1
-let NERDTreeIgnore  = ['^\..*', '^\.$', '^\.\.$', '\~$']
-let NERDTreeIgnore += ['.*\.[oO]$', '.*\.[eE][xX][eE]$']
-let NERDTreeIgnore += ['.*\.pyc']
+let g:NERDTreeShowHidden = 1
+let g:NERDTreeIgnore = [
+    \   '^\.$',
+    \   '^\.\.$',
+    \   '^\~$',
+    \   '.*\.[oO]$',
+    \   '.*\.[eE][xX][eE]$',
+    \   '.*\.pyc$'
+    \]
 
 " NERDCommenter
 let g:NERDDefaultAlign = 'left'
