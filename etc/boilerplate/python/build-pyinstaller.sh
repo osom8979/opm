@@ -13,6 +13,7 @@ if [[ ! -f "$ACTIVATE_PATH" ]]; then
     exit 1
 fi
 
+# shellcheck source=.venv/bin/activate
 source "$ACTIVATE_PATH"
 
 cd "$ROOT_DIR" && pyinstaller \
