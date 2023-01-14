@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from sys import exit as sys_exit
 from argparse import Namespace
 from typing import Callable, List, Optional
 
@@ -7,7 +8,7 @@ from %PROJECT_LOWER%.arguments import CMD1, CMD2, CMDS, get_default_arguments
 from %PROJECT_LOWER%.logging.logging import (
     SEVERITY_NAME_DEBUG,
     logger,
-    set_default_logging_config,
+    set_colored_formatter_logging_config,
     set_root_level,
     set_simple_logging_config,
 )
@@ -35,28 +36,28 @@ def main(
         printer("The command does not exist")
         return 1
 
-    if args.default_logging and args.simple_logging:
+    if args.colored_logging and args.simple_logging:
         printer(
-            "The 'default_logging' flag and the 'simple_logging' flag cannot coexist"
+            "The 'colored_logging' flag and the 'simple_logging' flag cannot coexist"
         )
         return 1
 
     cmd = args.cmd
-    default_logging = args.default_logging
+    colored_logging = args.colored_logging
     simple_logging = args.simple_logging
     severity = args.severity
     debug = args.debug
     verbose = args.verbose
 
     assert cmd in CMDS
-    assert isinstance(default_logging, bool)
+    assert isinstance(colored_logging, bool)
     assert isinstance(simple_logging, bool)
     assert isinstance(severity, str)
     assert isinstance(debug, bool)
     assert isinstance(verbose, int)
 
-    if default_logging:
-        set_default_logging_config()
+    if colored_logging:
+        set_colored_formatter_logging_config()
     elif simple_logging:
         set_simple_logging_config()
 
@@ -80,4 +81,4 @@ def main(
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys_exit(main())

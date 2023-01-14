@@ -13,4 +13,4 @@ sys.path.append(SOURCE_DIR)
 from %PROJECT_LOWER%.entrypoint import main  # noqa
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

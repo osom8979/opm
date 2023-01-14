@@ -110,11 +110,11 @@ def default_argument_parser() -> ArgumentParser:
         formatter_class=RawDescriptionHelpFormatter,
     )
     parser.add_argument(
-        "--default-logging",
-        "-l",
+        "--colored-logging",
+        "-c",
         action="store_true",
         default=False,
-        help="Use default logging",
+        help="Use colored logging",
     )
     parser.add_argument(
         "--simple-logging",

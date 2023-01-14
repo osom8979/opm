@@ -192,6 +192,27 @@ def set_default_logging_config() -> None:
     logging_config.dictConfig(DEFAULT_LOGGING_CONFIG)
 
 
+def set_colored_formatter_logging_config() -> None:
+    from logging import StreamHandler
+    from sys import stdout
+
+    from %PROJECT_LOWER%.logging.colored_formatter import ColoredFormatter
+
+    formatter = ColoredFormatter(
+        DEFAULT_FORMAT,
+        DEFAULT_DATEFMT,
+        DEFAULT_STYLE,  # noqa
+    )
+
+    handler = StreamHandler(stream=stdout)
+    handler.setFormatter(formatter)
+    handler.setLevel(DEBUG)
+
+    root_logger = getLogger()
+    root_logger.setLevel(DEBUG)
+    root_logger.addHandler(handler)
+
+
 def set_simple_logging_config() -> None:
     simple_formatter = Formatter(
         fmt=DEFAULT_SIMPLE_LOGGING_FORMAT,

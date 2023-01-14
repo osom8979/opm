@@ -2,7 +2,6 @@
 
 from contextlib import redirect_stdout
 from io import StringIO
-from typing import Optional
 from unittest import TestCase, main
 
 from %PROJECT_LOWER%.arguments import version
@@ -12,7 +11,7 @@ from %PROJECT_LOWER%.entrypoint import main as entrypoint_main
 class EntrypointTestCase(TestCase):
     def test_version(self):
         buffer = StringIO()
-        code: Optional[int] = None
+        code = -1
         with redirect_stdout(buffer):
             try:
                 entrypoint_main(["--version"])
