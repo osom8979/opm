@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import sys
 from logging import (
     CRITICAL,
     DEBUG,
@@ -15,6 +14,7 @@ from logging import (
 )
 from logging import config as logging_config
 from logging import getLogger
+from sys import stdout
 from typing import Final, Literal, Optional, Union
 
 SEVERITY_NAME_CRITICAL = "critical"
@@ -44,16 +44,16 @@ LoggingStyleLiteral = Literal["%", "{", "$"]
 DEFAULT_SIMPLE_LOGGING_FORMAT: Final[str] = "{levelname[0]} [{name}] {message}"
 DEFAULT_SIMPLE_LOGGING_STYLE: Final[LoggingStyleLiteral] = "{"
 
-FMT_TIME = "%(asctime)s.%(msecs)03d"
-FMT_THREAD = "%(process)d/%(thread)s"
+FMT_TIME: Final[str] = "%(asctime)s.%(msecs)03d"
+FMT_THREAD: Final[str] = "%(process)d/%(thread)s"
 
 DEFAULT_FORMAT = f"{FMT_TIME} {FMT_THREAD} %(name)s %(levelname)s %(message)s"
-DEFAULT_DATEFMT = "%Y-%m-%d %H:%M:%S"
-DEFAULT_STYLE = "%"
+DEFAULT_DATEFMT: Final[str] = "%Y-%m-%d %H:%M:%S"
+DEFAULT_STYLE: Final[LoggingStyleLiteral] = "%"
 
-SIMPLE_FORMAT = "{levelname[0]} {asctime} {name} {message}"
-SIMPLE_DATEFMT = "%Y%m%d %H%M%S"
-SIMPLE_STYLE = "{"
+SIMPLE_FORMAT: Final[str] = "{levelname[0]} {asctime} {name} {message}"
+SIMPLE_DATEFMT: Final[str] = "%Y%m%d %H%M%S"
+SIMPLE_STYLE: Final[LoggingStyleLiteral] = "{"
 
 DEFAULT_LOGGING_CONFIG = {
     "version": 1,
@@ -193,18 +193,11 @@ def set_default_logging_config() -> None:
 
 
 def set_colored_formatter_logging_config() -> None:
-    from logging import StreamHandler
-    from sys import stdout
-
     from %PROJECT_LOWER%.logging.colored_formatter import ColoredFormatter
 
-    formatter = ColoredFormatter(
-        DEFAULT_FORMAT,
-        DEFAULT_DATEFMT,
-        DEFAULT_STYLE,  # noqa
-    )
+    formatter = ColoredFormatter(DEFAULT_FORMAT, DEFAULT_DATEFMT, DEFAULT_STYLE)
 
-    handler = StreamHandler(stream=stdout)
+    handler = StreamHandler(stdout)
     handler.setFormatter(formatter)
     handler.setLevel(DEBUG)
 
@@ -218,6 +211,6 @@ def set_simple_logging_config() -> None:
         fmt=DEFAULT_SIMPLE_LOGGING_FORMAT,
         style=DEFAULT_SIMPLE_LOGGING_STYLE,
     )
-    stream_handler = StreamHandler(sys.stdout)
+    stream_handler = StreamHandler(stdout)
     stream_handler.setFormatter(simple_formatter)
     getLogger().addHandler(stream_handler)
