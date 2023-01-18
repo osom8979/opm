@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from sys import exit as sys_exit
 from argparse import Namespace
+from sys import exit as sys_exit
 from typing import Callable, List, Optional
 
 from %PROJECT_LOWER%.arguments import CMD1, CMD2, CMDS, get_default_arguments
