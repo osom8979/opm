@@ -58,6 +58,8 @@ NeoBundle 'arthurxavierx/vim-caser'         " easily change word casing
 NeoBundle 'doums/darcula'                   " jetbrains ide darcula theme
 NeoBundle 'shirk/vim-gas'                   " advanced syntax highlighting for gnu as
 NeoBundle 'rust-lang/rust.vim'              " vim configuration for rust
+NeoBundle 'ap/vim-css-color'                " preview css colours
+NeoBundle 'jakerobers/vim-hexrgba'          " toggle between hex color codes and rgba
 
 " Semantic highlighting for python in neovim.
 NeoBundle 'numirias/semshi', {

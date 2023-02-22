@@ -85,6 +85,8 @@ call quickui#menu#install("&Edit", [
             \ [ "Remove &trailing space", ":call RemoveTrailingSpace()" ],
             \ [ "Remove &blank lines", ":call RemoveBlankLines()" ],
             \ [ "--", "" ],
+            \ [ "HEX color to rgba", ":HexRgba" ],
+            \ [ "--", "" ],
             \ [ "&HEX mode", ":OpmHexMode" ],
             \ [ "&TEXT mode", ":OpmTextMode" ],
             \ [ "--", "" ],
