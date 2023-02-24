@@ -36,5 +36,16 @@ if [[ ! -x "$NODE_EXE" ]]; then
     N_PREFIX="$N_PREFIX" "$N_EXE" exec "$NODE_VERSION" npm install --global "yarn"
 fi
 
+# Read `.env` variables
+if [[ -f "$ROOT_DIR/.env" ]]; then
+    while read line; do
+        if [[ $(echo "$line" | grep -E '^[ \t]*export[ \t]*[_a-zA-Z0-9]+=.*$') ]]; then
+            eval "$line"
+        else
+            eval "export $line"
+        fi
+    done < "$ROOT_DIR/.env"
+fi
+
 export PATH="$N_PREFIX/bin:$PATH"
 N_PREFIX="$N_PREFIX" "$N_EXE" exec "$NODE_VERSION" yarn "$@"
