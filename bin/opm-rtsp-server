@@ -73,7 +73,7 @@ function opm_rtsp_server_main
         options+=(-e "RTSP_RESOLUTION=${size[0]}x${size[1]}")
     fi
 
-    echo docker run --rm "${options[@]}" ullaakut/rtspatt
+    docker run --rm "${options[@]}" ullaakut/rtspatt
 }
 
 opm_rtsp_server_main "$@"
