@@ -15,6 +15,8 @@ Start RTSP Server
 Available options are:
   -h, --help            Print this message.
   -p {n}, --port={n}    Host port number (default: $DEFAULT_HOST_PORT)
+  --size={w}x{h}        Video resolution.
+  -s {w}x{h}            Same '--size' flag
   --                    Skip handling options.
 "
 
@@ -26,6 +28,7 @@ function print_usage
 function opm_rtsp_server_main
 {
     local port=$DEFAULT_HOST_PORT
+    local size
 
     while [[ -n $1 ]]; do
         case $1 in
@@ -39,6 +42,14 @@ function opm_rtsp_server_main
             ;;
         -p)
             port=$2
+            shift 2
+            ;;
+        --size=*)
+            IFS="x" read -ra size <<< ${1:7}
+            shift
+            ;;
+        -s)
+            IFS="x" read -ra size <<< $2
             shift 2
             ;;
         --)
@@ -58,8 +69,11 @@ function opm_rtsp_server_main
         options+=(-e "INPUT=$GUEST_VIDEO_PATH")
         options+=(-v "$(realpath "$video_path"):$GUEST_VIDEO_PATH")
     fi
+    if [[ ${#size[@]} -eq 2 ]]; then
+        options+=(-e "RTSP_RESOLUTION=${size[0]}x${size[1]}")
+    fi
 
-    docker run --rm "${options[@]}" ullaakut/rtspatt
+    echo docker run --rm "${options[@]}" ullaakut/rtspatt
 }
 
 opm_rtsp_server_main "$@"
