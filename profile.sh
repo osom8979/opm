@@ -38,6 +38,20 @@ if [[ -z $LANG ]]; then
 export LANG=en_US.UTF-8
 fi
 
+WHICH_NVIM=$(command -v nvim &> /dev/null)
+WHICH_VIM=$(command -v vim &> /dev/null)
+WHICH_VI=$(command -v vi &> /dev/null)
+
+if [[ -z "$EDITOR" ]]; then
+    if [[ -n "$WHICH_NVIM" ]]; then
+        export EDITOR=$WHICH_NVIM
+    elif [[ -n "$WHICH_VIM" ]]; then
+        export EDITOR=$WHICH_VIM
+    elif [[ -n "$WHICH_VI" ]]; then
+        export EDITOR=$WHICH_VI
+    fi
+fi
+
 for cursor in "$OPM_HOME/etc/profile.d"/*.sh; do
     # shellcheck disable=SC1090
     source "$cursor"
