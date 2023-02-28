@@ -5,4 +5,3 @@ WHICH_CLANG=`which clang`
 WHICH_CLANGPP=`which clang++`
 
 CXX="$WHICH_CLANGPP" CC="$WHICH_CLANG" $WHICH_CMAKE $@
-

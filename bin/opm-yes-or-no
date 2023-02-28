@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} prompt
+
+Positional arguments:
+  prompt        A question prompt to print to the screen.
+
+Available options are:
+  -h, --help    Print this message.
+  --            Stop handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function opm_yes_or_no
+{
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local prompt=$1
+    local answer=n
+
+    read -r -p "$prompt (y/n) " answer
+
+    case "$answer" in
+    [yY]*)
+        return 0
+        ;;
+    *)
+        return 1
+        ;;
+    esac
+}
+
+opm_yes_or_no "$@"

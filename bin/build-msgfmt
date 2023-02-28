@@ -8,4 +8,3 @@ ARGS=`echo "$PO_MO" | awk -F':' '{print($1);print($2);print($3);}'`
 
 echo $ARGS | xargs -tn 3 msgfmt
 echo 'Done.'
-

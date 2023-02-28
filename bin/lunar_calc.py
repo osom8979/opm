@@ -54,7 +54,7 @@ class Trans(NamedTuple):
     ko: str
     ch: str
 
-    def as_list(self) -> str:
+    def as_list(self) -> List[str]:
         result = []
         for ch, ko in zip(self.ch, self.ko):
             result.append(f"{ch}({ko})")

@@ -1,26 +1,22 @@
 #!/usr/bin/env bash
 
 if [[ -z $OPM_HOME ]]; then
-    print_error 'Not defined OPM_HOME variable.'
-    exit 1
-fi
-if [[ $VIA_INSTALLATION_SCRIPT -ne 1 ]]; then
-    print_error 'You have to do it through the installation script.'
+    echo "Not defined OPM_HOME variable." 1>&2
     exit 1
 fi
 
-AUTOMATIC_YES_FLAG=${AUTOMATIC_YES_FLAG:-0}
+DEST=$HOME/.lldbinit
+SRC=$OPM_HOME/etc/lldb/lldbinit
 
-LLDBINIT_CONFIG=$HOME/.lldbinit
-SRC_LLDBINIT_CONFIG=$OPM_HOME/etc/lldb/lldbinit
+CONTENT="
+command source $SRC
+"
 
-## Backup the previous lldb config file.
-backup_file "$LLDBINIT_CONFIG"
+if [[ -x "$DEST" ]]; then
+    echo "The lldbinit file already exists" 1>&2
+    echo "Delete the file to continue installation" 1>&2
+    echo " $DEST" 1>&2
+    exit 1
+fi
 
-## Remove the previous lldb config file.
-remove_file "$LLDBINIT_CONFIG"
-
-## Install source-file config.
-echo -e "command source $SRC_LLDBINIT_CONFIG" >> $LLDBINIT_CONFIG
-print_information "Write lldb source config."
-
+echo "$CONTENT" >> "$DEST"

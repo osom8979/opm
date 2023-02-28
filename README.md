@@ -1,16 +1,12 @@
-# OPM
+# osom package manager
 
-## ABOUT
-
-OSOM PACKAGE MANAGER.
-
-## How to install
+## Install
 
 ```bash
 ./install.sh
 ```
 
-## LICENSE
+## License
 
-Compatible with zlib license.
-
+See the [LICENSE](./LICENSE) file for details. In summary,
+**opm** is licensed under the **MIT license**.

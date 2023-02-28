@@ -6,12 +6,9 @@ fi
 
 function install_yt_dlp_if_not_exist
 {
-    opy3-pip show yt_dlp &> /dev/null
-    local code=$?
-    if [[ $code -eq 0 ]]; then
+    if opy3-pip show yt-dlp &> /dev/null; then
         return 0
     fi
-
     opy3-pip install -U yt-dlp
 }
 

@@ -21,4 +21,3 @@ if [[ ! -z $BASE64_ONLY && $BASE64_ONLY -ne 0 ]]; then
 else
     echo "$CERTIFICATE_TEXT"
 fi
-

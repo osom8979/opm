@@ -36,4 +36,3 @@ FLAG[9]=--convert-links
 
 echo "Enable flags: ${FLAG[*]}"
 wget ${FLAG[*]} "$@"
-

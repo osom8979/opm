@@ -9,4 +9,3 @@ FLAGS=''
 FLAGS="$FLAGS --leak-check=yes"
 
 valgrind $FLAGS $@
-

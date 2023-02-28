@@ -4,34 +4,37 @@ if [[ -z $OPM_HOME ]]; then
     print_error 'Not defined OPM_HOME variable.'
     exit 1
 fi
-if [[ $VIA_INSTALLATION_SCRIPT -ne 1 ]]; then
-    print_error 'You have to do it through the installation script.'
-    exit 1
-fi
-
-AUTOMATIC_YES_FLAG=${AUTOMATIC_YES_FLAG:-0}
 
 XMONAD_DIR=$HOME/.xmonad
 XMONAD_LIB_DIR=$XMONAD_DIR/lib
 XMONAD_LIB_OPM_DIR=$XMONAD_LIB_DIR/Opm
 XMONAD_CONFIG=$XMONAD_DIR/xmonad.hs
-SRC_XMONAD_CONFIG=$OPM_HOME/etc/xmonad/xmonad.hs
-SRC_XMONAD_LIB_OPM_DIR=$OPM_HOME/etc/xmonad/lib/Opm
 
-mkdirs "$XMONAD_DIR"
-mkdirs "$XMONAD_LIB_DIR"
+SRC_CONFIG=$OPM_HOME/etc/xmonad/xmonad.hs
+SRC_OPM_DIR=$OPM_HOME/etc/xmonad/lib/Opm
 
-## Backup the previous xmonad config file.
-backup_file "$XMONAD_CONFIG"
-
-## Remove the previous xmonad config file.
-remove_file "$XMONAD_CONFIG"
-
-if [[ ! -e "$XMONAD_LIB_OPM_DIR" ]]; then
-    symbolic_link "$SRC_XMONAD_LIB_OPM_DIR" "$XMONAD_LIB_OPM_DIR"
+if [[ -x "$XMONAD_CONFIG" ]]; then
+    echo "The xmonad config file already exists" 1>&2
+    echo "Delete the file to continue installation" 1>&2
+    echo " $XMONAD_CONFIG" 1>&2
+    exit 1
+fi
+if [[ -x "$XMONAD_LIB_OPM_DIR" ]]; then
+    echo "The xmonad opm directory already exists" 1>&2
+    echo "Delete the directory to continue installation" 1>&2
+    echo " $XMONAD_LIB_OPM_DIR" 1>&2
+    exit 1
 fi
 
-## Install config file.
-copy_file "$SRC_XMONAD_CONFIG" "$XMONAD_CONFIG"
-print_information "Write config file."
+if [[ ! -d "$XMONAD_DIR" ]]; then
+    mkdir -vp "$XMONAD_DIR"
+fi
+if [[ ! -d "$XMONAD_LIB_DIR" ]]; then
+    mkdir -vp "$XMONAD_LIB_DIR"
+fi
 
+if [[ ! -e "$XMONAD_LIB_OPM_DIR" ]]; then
+    ln -s "$SRC_OPM_DIR" "$XMONAD_LIB_OPM_DIR"
+fi
+
+cp -v "$SRC_CONFIG" "$XMONAD_CONFIG"

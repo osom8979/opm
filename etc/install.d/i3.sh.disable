@@ -4,18 +4,20 @@ if [[ -z $OPM_HOME ]]; then
     print_error 'Not defined OPM_HOME variable.'
     exit 1
 fi
-if [[ $VIA_INSTALLATION_SCRIPT -ne 1 ]]; then
-    print_error 'You have to do it through the installation script.'
+
+INSTALL_DIR=$HOME/.i3
+DEST=$INSTALL_DIR/config
+SRC=$OPM_HOME/etc/i3/config
+
+if [[ ! -d "$INSTALL_DIR" ]]; then
+    mkdir -vp "$INSTALL_DIR"
+fi
+
+if [[ -x "$DEST" ]]; then
+    echo "The i3 config file already exists" 1>&2
+    echo "Delete the file to continue installation" 1>&2
+    echo " $DEST" 1>&2
     exit 1
 fi
 
-AUTOMATIC_YES_FLAG=${AUTOMATIC_YES_FLAG:-0}
-
-I3_DIR=$HOME/.i3
-I3_CONFIG=$I3_DIR/config
-SRC_I3_CONFIG=$OPM_HOME/etc/i3/config
-
-mkdirs "$I3_DIR"
-backup_file "$I3_CONFIG"
-symbolic_link "$SRC_I3_CONFIG" "$I3_CONFIG"
-
+ln -s "$SRC" "$DEST"

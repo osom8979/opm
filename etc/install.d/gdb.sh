@@ -1,26 +1,22 @@
 #!/usr/bin/env bash
 
 if [[ -z $OPM_HOME ]]; then
-    print_error 'Not defined OPM_HOME variable.'
-    exit 1
-fi
-if [[ $VIA_INSTALLATION_SCRIPT -ne 1 ]]; then
-    print_error 'You have to do it through the installation script.'
+    echo "Not defined OPM_HOME variable." 1>&2
     exit 1
 fi
 
-AUTOMATIC_YES_FLAG=${AUTOMATIC_YES_FLAG:-0}
+SRC=$OPM_HOME/etc/gdb/gdbinit
+DEST=$HOME/.gdbinit
 
-GDBINIT_CONFIG=$HOME/.gdbinit
-SRC_GDBINIT_CONFIG=$OPM_HOME/etc/gdb/gdbinit
+CONTENT="
+source $SRC
+"
 
-## Backup the previous gdb config file.
-backup_file "$GDBINIT_CONFIG"
+if [[ -x "$DEST" ]]; then
+    echo "The gdbinit file already exists" 1>&2
+    echo "Delete the file to continue installation" 1>&2
+    echo " $DEST" 1>&2
+    exit 1
+fi
 
-## Remove the previous gdb config file.
-remove_file "$GDBINIT_CONFIG"
-
-## Install source-file config.
-echo -e "source $SRC_GDBINIT_CONFIG" >> $GDBINIT_CONFIG
-print_information "Write gdb source config."
-
+echo "$CONTENT" >> "$DEST"

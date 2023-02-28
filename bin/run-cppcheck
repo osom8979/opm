@@ -11,4 +11,3 @@ FLAGS="$FLAGS --template=gcc"
 FLAGS="$FLAGS --platform=native"
 
 cppcheck $FLAGS $@
-

@@ -10,4 +10,3 @@ echo "DIR: $DOWNLOAD_DIR"
 docker run --rm -p $PORT:3000 -v $DOWNLOAD_DIR:/downloads jpillora/cloud-torrent
 
 echo "Done."
-

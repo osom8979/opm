@@ -1,78 +1,78 @@
 [core]
-	autocrlf = false
-	safecrlf = true
-	eol = lf
-	excludesfile = ~/.gitignore_global
-	#pager = less -FRSX
+    autocrlf = false
+    safecrlf = true
+    eol = lf
+    excludesfile = ~/.gitignore_global
+    #pager = less -FRSX
 
 [color]
-	ui = auto
-	diff = auto
-	status = auto
-	branch = auto
-	interactive = true
+    ui = auto
+    diff = auto
+    status = auto
+    branch = auto
+    interactive = true
 
 [alias]
-	log10   = log --graph --decorate --oneline -10
-	log20   = log --graph --decorate --oneline -20
-	log30   = log --graph --decorate --oneline -30
-	log40   = log --graph --decorate --oneline -40
-	log50   = log --graph --decorate --oneline -50
-	log10a  = log --graph --decorate --oneline --all -10
-	log20a  = log --graph --decorate --oneline --all -20
-	log30a  = log --graph --decorate --oneline --all -30
-	log40a  = log --graph --decorate --oneline --all -40
-	log50a  = log --graph --decorate --oneline --all -50
-	loga10  = log --graph --decorate --oneline --all -10
-	loga20  = log --graph --decorate --oneline --all -20
-	loga30  = log --graph --decorate --oneline --all -30
-	loga40  = log --graph --decorate --oneline --all -40
-	loga50  = log --graph --decorate --oneline --all -50
-	logc    = log --graph --decorate --oneline
-	logca   = log --graph --decorate --oneline --all
-	logac   = log --graph --decorate --oneline --all
-	logg    = log --graph --decorate --oneline --grep
-	logga   = log --graph --decorate --oneline --grep --all
-	logag   = log --graph --decorate --oneline --grep --all
-	logf    = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s'
-	logfdo  = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --author-date-order
-	logfa   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --all
-	logaf   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --all
-	logw    = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1weeks
-	logwa   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1weeks --all
-	logd    = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1days
-	logda   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1days --all
-	diffc   = diff --cached
-	diffcw  = diff --cached --word-diff
-	diffwc  = diff --cached --word-diff
-	diffw   = diff --word-diff
-	diff-1  = diff HEAD^..HEAD
-	diff-2  = diff HEAD^^..HEAD
-	diff-3  = diff HEAD^^^..HEAD
-	diff-4  = diff HEAD^^^^..HEAD
-	diff-5  = diff HEAD^^^^^..HEAD
-	diffw-1 = diff --word-diff HEAD^..HEAD
-	diffw-2 = diff --word-diff HEAD^^..HEAD
-	diffw-3 = diff --word-diff HEAD^^^..HEAD
-	diffw-4 = diff --word-diff HEAD^^^^..HEAD
-	diffw-5 = diff --word-diff HEAD^^^^^..HEAD
-	showf   = show --oneline --name-only
-	count   = rev-list --count HEAD
-	zip     = archive --format zip --output master.zip master
-	st      = status
-	reh     = reset HEAD
-	res     = restore --staged
+    log10   = log --graph --decorate --oneline -10
+    log20   = log --graph --decorate --oneline -20
+    log30   = log --graph --decorate --oneline -30
+    log40   = log --graph --decorate --oneline -40
+    log50   = log --graph --decorate --oneline -50
+    log10a  = log --graph --decorate --oneline --all -10
+    log20a  = log --graph --decorate --oneline --all -20
+    log30a  = log --graph --decorate --oneline --all -30
+    log40a  = log --graph --decorate --oneline --all -40
+    log50a  = log --graph --decorate --oneline --all -50
+    loga10  = log --graph --decorate --oneline --all -10
+    loga20  = log --graph --decorate --oneline --all -20
+    loga30  = log --graph --decorate --oneline --all -30
+    loga40  = log --graph --decorate --oneline --all -40
+    loga50  = log --graph --decorate --oneline --all -50
+    logc    = log --graph --decorate --oneline
+    logca   = log --graph --decorate --oneline --all
+    logac   = log --graph --decorate --oneline --all
+    logg    = log --graph --decorate --oneline --grep
+    logga   = log --graph --decorate --oneline --grep --all
+    logag   = log --graph --decorate --oneline --grep --all
+    logf    = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s'
+    logfdo  = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --author-date-order
+    logfa   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --all
+    logaf   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --all
+    logw    = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1weeks
+    logwa   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1weeks --all
+    logd    = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1days
+    logda   = log --graph --decorate --date=iso --pretty=format:'%C(auto) %h (%an) %ad : %d %s' --since=1days --all
+    diffc   = diff --cached
+    diffcw  = diff --cached --word-diff
+    diffwc  = diff --cached --word-diff
+    diffw   = diff --word-diff
+    diff-1  = diff HEAD^..HEAD
+    diff-2  = diff HEAD^^..HEAD
+    diff-3  = diff HEAD^^^..HEAD
+    diff-4  = diff HEAD^^^^..HEAD
+    diff-5  = diff HEAD^^^^^..HEAD
+    diffw-1 = diff --word-diff HEAD^..HEAD
+    diffw-2 = diff --word-diff HEAD^^..HEAD
+    diffw-3 = diff --word-diff HEAD^^^..HEAD
+    diffw-4 = diff --word-diff HEAD^^^^..HEAD
+    diffw-5 = diff --word-diff HEAD^^^^^..HEAD
+    showf   = show --oneline --name-only
+    count   = rev-list --count HEAD
+    zip     = archive --format zip --output master.zip master
+    st      = status
+    reh     = reset HEAD
+    res     = restore --staged
 
 [pull]
-	rebase = false  # merge (the default strategy)
-	# ff = only  # fast-forward only
+    rebase = false  # merge (the default strategy)
+    # ff = only  # fast-forward only
 
 [push]
-	default = simple
+    default = simple
 
 [http]
-	sslVerify = false
+    sslVerify = false
 
 #[credential]
-#	helper = store
+#    helper = store
 
