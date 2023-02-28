@@ -5,13 +5,13 @@ if ! command -v git &> /dev/null; then
     exit 1
 fi
 
-if ! command -v opn-yarn &> /dev/null; then
-    echo "Not found opn-yarn executable" 1>&2
-    exit 1
-fi
 
-# coc.vim build
-COC_DIR=$HOME/.vim/bundle/coc.nvim
+ARGS=(
+    -u "$HOME/.config/nvim/init.vim"
+    -c "try | UpdateRemotePlugins! | finally | qall! | endtry"
+    -V1
+    -es
+)
 
-opn-yarn --cwd "$COC_DIR" install
-opn-yarn --cwd "$COC_DIR" build
+nvim "${ARGS[@]}" 2>&1
+echo -n -e "\n"

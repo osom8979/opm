@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-if ! command -v git &> /dev/null; then
-    echo "not found git executable" 1>&2
-    exit 1
-fi
-
 if ! command -v opn-yarn &> /dev/null; then
     echo "Not found opn-yarn executable" 1>&2
     exit 1

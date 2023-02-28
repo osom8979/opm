@@ -11,4 +11,4 @@ if ! command -v apt-get &> /dev/null; then
 fi
 
 apt-get update
-pt-get -y upgrade
+apt-get -y upgrade
