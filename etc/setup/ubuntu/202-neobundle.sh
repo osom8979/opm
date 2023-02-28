@@ -33,5 +33,5 @@ ARGS=(
     -s  # Silent mode
 )
 
-vim "${ARGS[@]}" 2>&1 | grep -v "not found in runtime path"
+vim "${ARGS[@]}" 2>&1 | grep -v "^not found in"
 echo -n -e "\n"
