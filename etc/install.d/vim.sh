@@ -14,19 +14,19 @@ SRC_IDEAVIMRC=$OPM_HOME/etc/vim/ideavimrc
 NEOVIM_DIR=$HOME/.config/nvim
 NEOVIMRC=$NEOVIM_DIR/init.vim
 
-if [[ -x "$VIMRC" ]]; then
+if [[ -e "$VIMRC" ]]; then
     echo "The vimrc file already exists" 1>&2
     echo "Delete the file to continue installation" 1>&2
     echo " $VIMRC" 1>&2
     exit 1
 fi
-if [[ -x "$IDEAVIMRC" ]]; then
+if [[ -e "$IDEAVIMRC" ]]; then
     echo "The ideavimrc file already exists" 1>&2
     echo "Delete the file to continue installation" 1>&2
     echo " $IDEAVIMRC" 1>&2
     exit 1
 fi
-if [[ -x "$NEOVIMRC" ]]; then
+if [[ -e "$NEOVIMRC" ]]; then
     echo "The neovimrc file already exists" 1>&2
     echo "Delete the file to continue installation" 1>&2
     echo " $NEOVIMRC" 1>&2

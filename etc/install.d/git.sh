@@ -8,7 +8,7 @@ fi
 SRC=$OPM_HOME/etc/git/gitconfig
 DEST=$HOME/.gitconfig
 
-if [[ -x "$DEST" ]]; then
+if [[ -e "$DEST" ]]; then
     echo "The gitconfig file already exists" 1>&2
     echo "Delete the file to continue installation" 1>&2
     echo " $DEST" 1>&2

@@ -67,6 +67,11 @@ function print_component_names
     done
 }
 
+function print_sorted_component_names
+{
+    print_component_names | sort
+}
+
 function install_opm_profile_with_file
 {
     local file=$1
@@ -144,7 +149,7 @@ while [[ -n $1 ]]; do
         exit 0
         ;;
     -l|--list)
-        print_component_names
+        print_sorted_component_names
         exit 0
         ;;
     -y|--yes)
@@ -176,7 +181,7 @@ while [[ -n $1 ]]; do
         exit 1
         ;;
     *)
-        COMPONENTS+=("$INSTALL_DIR/$1.sh")
+        COMPONENTS+=("$1")
         shift
         ;;
     esac
@@ -187,10 +192,7 @@ done
 ## ----------------
 
 if [[ "${#COMPONENTS[*]}" -eq 0 ]]; then
-    for cursor in "$INSTALL_DIR"/*.sh; do
-        COMPONENTS+=("$cursor")
-    done
-    mapfile -t COMPONENTS < <(print_component_names)
+    mapfile -t COMPONENTS < <(print_sorted_component_names)
 fi
 
 size=${#COMPONENTS[*]}

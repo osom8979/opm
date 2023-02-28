@@ -4,6 +4,8 @@
 alacritty
 bestaudio
 bestvideo
+endtry
+fwupdmgr
 gdbinit
 gitattributes
 lldbinit
@@ -14,6 +16,7 @@ opgo
 opm
 opwm
 osom
+qall
 scriptencoding
 tparty
 xinitrc

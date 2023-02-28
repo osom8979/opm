@@ -14,7 +14,7 @@ import:
   - $SRC
 "
 
-if [[ -x "$DEST" ]]; then
+if [[ -e "$DEST" ]]; then
     echo "The alacritty configuration file already exists" 1>&2
     echo "Delete the file to continue installation" 1>&2
     echo " $DEST" 1>&2

@@ -13,13 +13,13 @@ XMONAD_CONFIG=$XMONAD_DIR/xmonad.hs
 SRC_CONFIG=$OPM_HOME/etc/xmonad/xmonad.hs
 SRC_OPM_DIR=$OPM_HOME/etc/xmonad/lib/Opm
 
-if [[ -x "$XMONAD_CONFIG" ]]; then
+if [[ -e "$XMONAD_CONFIG" ]]; then
     echo "The xmonad config file already exists" 1>&2
     echo "Delete the file to continue installation" 1>&2
     echo " $XMONAD_CONFIG" 1>&2
     exit 1
 fi
-if [[ -x "$XMONAD_LIB_OPM_DIR" ]]; then
+if [[ -e "$XMONAD_LIB_OPM_DIR" ]]; then
     echo "The xmonad opm directory already exists" 1>&2
     echo "Delete the directory to continue installation" 1>&2
     echo " $XMONAD_LIB_OPM_DIR" 1>&2
