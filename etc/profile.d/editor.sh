@@ -5,9 +5,9 @@ if [[ -z $OPM_HOME ]]; then
     exit 1
 fi
 
-WHICH_NVIM=$(command -v nvim &> /dev/null)
-WHICH_VIM=$(command -v vim &> /dev/null)
-WHICH_VI=$(command -v vi &> /dev/null)
+WHICH_NVIM=$(command -v nvim 2> /dev/null)
+WHICH_VIM=$(command -v vim 2> /dev/null)
+WHICH_VI=$(command -v vi 2> /dev/null)
 
 if [[ -z "$EDITOR" ]]; then
     if [[ -n "$WHICH_NVIM" ]]; then
