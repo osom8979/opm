@@ -10,26 +10,13 @@ Available options are:
   -l, --list     List of components
   -y, --yes      Automatic yes to prompts
   -n, --dry-run  Don't actually do anything, just show what would be done
-  -f, --force    Skip checking the OPM_HOME variable
-  --bash         Choose the default shell as bash (default)
-  --zsh          Choose the default shell as zsh
   --             Skip handling options
 "
 
 INSTALL_DIR=$ROOT_DIR/etc/install.d
-
 AUTOMATIC_YES=0
 DRY_RUN=0
-FORCE=0
-CURRENT_SHELL=bash
 COMPONENTS=()
-
-PROFILE_LOAD_SCRIPT="
-export OPM_HOME=\"$ROOT_DIR\"
-if [[ -f \"\$OPM_HOME/profile.sh\" ]]; then
-    source \"\$OPM_HOME/profile.sh\"
-fi
-"
 
 function print_error
 {
@@ -72,76 +59,6 @@ function print_sorted_component_names
     print_component_names | sort
 }
 
-function install_opm_profile_with_file
-{
-    local file=$1
-    if [[ -n "$OPM_HOME" ]]; then
-        print_error "The OPM_HOME variable is already set"
-        if [[ $FORCE -eq 0 ]]; then
-            exit 1
-        fi
-    fi
-
-    if grep -q "^export OPM_HOME=" "$file"; then
-        print_error "The OPM_HOME variable is already declared in the '$file'"
-        if [[ $FORCE -eq 0 ]]; then
-            exit 1
-        fi
-    fi
-
-    if [[ $DRY_RUN -eq 0 ]]; then
-        echo "$PROFILE_LOAD_SCRIPT" >> "$file"
-    fi
-
-    print_message "Update profile: '$file'"
-}
-
-function install_opm_profile_for_bash
-{
-    ## See INVOCATION in 'man bash'
-    if [[ $(uname -s) == "Darwin" ]]; then
-        install_opm_profile_with_file "$HOME/.profile"
-    else
-        install_opm_profile_with_file "$HOME/.bashrc"
-    fi
-}
-
-function install_opm_profile_for_zsh
-{
-    install_opm_profile_with_file "$HOME/.zshrc"
-}
-
-function install_opm_profile
-{
-    local shell=$1
-
-    if [[ -z "$shell" ]]; then
-        if [[ -n "$SHELL" ]]; then
-            shell=${SHELL##*/}
-        else
-            shell=bash
-        fi
-    fi
-
-    case $shell in
-        bash)
-            install_opm_profile_in_bash
-            ;;
-        zsh)
-            install_opm_profile_in_zsh
-            ;;
-        *)
-            print_error "Unsupported shell: $shell"
-            exit 1
-            ;;
-    esac
-}
-
-function install_opm_profile_by_current_shell
-{
-    install_opm_profile "$CURRENT_SHELL"
-}
-
 while [[ -n $1 ]]; do
     case $1 in
     -h|--help)
@@ -158,18 +75,6 @@ while [[ -n $1 ]]; do
         ;;
     -n|--dry-run)
         DRY_RUN=1
-        shift
-        ;;
-    -f|--force)
-        FORCE=1
-        shift
-        ;;
-    --bash)
-        CURRENT_SHELL=bash
-        shift
-        ;;
-    --zsh)
-        CURRENT_SHELL=zsh
         shift
         ;;
     --)
@@ -223,7 +128,7 @@ for cursor in "${COMPONENTS[@]}"; do
     if [[ $DRY_RUN -eq 0 ]]; then
         print_message "[$index/$size] Installing '$cursor' ..."
         # shellcheck disable=SC1090
-        OPM_HOME=$ROOT_DIR $CURRENT_SHELL "$script"
+        OPM_HOME=$ROOT_DIR "$SHELL" "$script"
     else
         print_message "[$index/$size] Dry-run installing '$cursor' ..."
     fi

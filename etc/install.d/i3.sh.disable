@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [[ -z $OPM_HOME ]]; then
-    print_error 'Not defined OPM_HOME variable.'
+    echo "Not defined OPM_HOME variable." 1>&2
     exit 1
 fi
 
