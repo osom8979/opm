@@ -10,5 +10,5 @@ PACKAGES=(
     numpy
 )
 
-opy-pip install -y --upgrade pip
-opy-pip install -y "${PACKAGES[@]}"
+opy-pip install --upgrade pip
+opy-pip install "${PACKAGES[@]}"
