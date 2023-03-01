@@ -1,12 +1,18 @@
 #!/usr/bin/env bash
 
-if [[ -z $(which opm-version 2> /dev/null) ]]; then
+if ! command opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-ARP_SCAN_CANDIDATE0=$(which arp-scan 2> /dev/null)
+if [[ $(id -u) -ne 0 ]]; then
+    echo "Please run as root" 1>&2
+    exit 1
+fi
+
+ARP_SCAN_CANDIDATE0=$(command -v arp-scan 2> /dev/null)
 ARP_SCAN_CANDIDATE1=/sbin/arp-scan
 ARP_SCAN_CANDIDATE2=/usr/sbin/arp-scan
+
 if [[ -n "$ARP_SCAN_CANDIDATE0" ]]; then
     ARP_SCAN_PATH="$ARP_SCAN_CANDIDATE0"
 elif [[ -f "$ARP_SCAN_CANDIDATE1" ]]; then
@@ -15,32 +21,33 @@ elif [[ -f "$ARP_SCAN_CANDIDATE2" ]]; then
     ARP_SCAN_PATH="$ARP_SCAN_CANDIDATE2"
 else
     opm-println-error "Not found arp-scan"
-    return 1
+    exit 1
 fi
 
-function restore_permission_trap
-{
-    sudo chmod -x "$ARP_SCAN_PATH"
-}
+MODIFIED_EXECUTE_PERMISSIONS=0
 
-function exit_on_error
+function restore_permission
 {
-    local code=$?
-    if [[ $code -ne 0 ]]; then
-        exit $code
+    if [[ $MODIFIED_EXECUTE_PERMISSIONS -ne 0 ]]; then
+        if chmod -x "$ARP_SCAN_PATH"; then
+            MODIFIED_EXECUTE_PERMISSIONS=0
+        fi
     fi
 }
 
-if [[ ! -x $ARP_SCAN_PATH ]]; then
-    trap restore_permission_trap INT
-    sudo chmod +x "$ARP_SCAN_PATH"
-    exit_on_error
+if [[ ! -x "$ARP_SCAN_PATH" ]]; then
+    if ! chmod +x "$ARP_SCAN_PATH"; then
+        exit $?
+    fi
+
+    MODIFIED_EXECUTE_PERMISSIONS=1
+    trap restore_permission INT
 fi
 
 if [[ ${#@} -eq 0 ]]; then
-    sudo arp-scan --localnet
+    arp-scan --localnet
 else
-    sudo arp-scan "$@"
+    arp-scan "$@"
 fi
 
-restore_permission_trap
+restore_permission

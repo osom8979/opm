@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-if [[ -z $(which opm-version 2> /dev/null) ]]; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+if ! command opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 BOILERPLATE_DIR=$(opm-root)/etc/boilerplate
@@ -69,7 +69,7 @@ function install_file
     local rh="$target_dir/$dest_filename"
 
     sed "$@" "$lh" > "$rh"
-    chmod $(stat -c '%a' "$lh") "$rh"
+    chmod "$(stat -c '%a' "$lh")" "$rh"
     print_verbose "Install file: '$lh' > '$rh'"
 }
 

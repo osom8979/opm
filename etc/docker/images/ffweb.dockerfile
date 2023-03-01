@@ -1,4 +1,5 @@
 FROM jlesage/firefox:latest
+MAINTAINER zer0 <osom8979@gmail.com>
 
 ENV FIREFOX_ROOT=/usr/lib/firefox
 

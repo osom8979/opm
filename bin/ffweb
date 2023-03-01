@@ -4,30 +4,45 @@ HOMEPAGE=${1:-https://duckduckgo.com}
 HOST_WEB_PORT=${2:-5800}
 HOST_VNC_PORT=${3:-5900}
 DOWNLOAD_DIR=$HOME/Downloads
-DWHELPER_DIR=$DOWNLOAD_DIR/.dwhelper
+DW_HELPER_DIR=$HOME/.dwhelper
+DISPLAY_WIDTH=1600
+DISPLAY_HEIGHT=900
+FF_PREF_TRR_URI="network.trr.uri=\"https://mozilla.cloudflare-dns.com/dns-query\""
+FF_PREF_TRR_BOOTSTRAP="network.trr.bootstrapAddress=\"1.1.1.1\""
+FF_PREF_TRR_MODE="network.trr.mode=2"
+FF_PREF_ESNI="network.security.esni.enabled=true"
+ENABLE_CJK_FONT=1
+TZ=Asia/Seoul
+SECURITY_OPT="seccomp=unconfined"
+SHM_SIZE=2g
 
 echo "Run Firefox Web"
 echo "Homepage: $HOMEPAGE"
 echo "Download directory: $DOWNLOAD_DIR"
+echo "DwHelper directory: $DW_HELPER_DIR"
 echo "Access URL: http://localhost:$HOST_WEB_PORT"
 echo "Or VNC: localhost:$HOST_VNC_PORT"
 
-mkdir -vp "$DWHELPER_DIR"
+if [[ ! -d "$DOWNLOAD_DIR" ]]; then
+    mkdir -vp "$DOWNLOAD_DIR"
+fi
+if [[ ! -d "$DW_HELPER_DIR" ]]; then
+    mkdir -vp "$DW_HELPER_DIR"
+fi
 
 docker run --rm -it \
-    --security-opt seccomp=unconfined \
-    --shm-size 2g \
-    -p $HOST_WEB_PORT:5800 \
-    -p $HOST_VNC_PORT:5900 \
+    --security-opt "$SECURITY_OPT" \
+    --shm-size "$SHM_SIZE" \
+    -p "$HOST_WEB_PORT:5800" \
+    -p "$HOST_VNC_PORT:5900" \
     -v "$DOWNLOAD_DIR:/config/downloads:rw" \
-    -v "$DWHELPER_DIR:/config/dwhelper:rw" \
-    -e "DISPLAY_WIDTH=1600" \
-    -e "DISPLAY_HEIGHT=900" \
-    -e "FF_PREF_TRR_URI=network.trr.uri=\"https://mozilla.cloudflare-dns.com/dns-query\"" \
-    -e "FF_PREF_TRR_BOOTSTRAP=network.trr.bootstrapAddress=\"1.1.1.1\"" \
-    -e "FF_PREF_TRR_MODE=network.trr.mode=2" \
-    -e "FF_PREF_ESNI=network.security.esni.enabled=true" \
-    -e ENABLE_CJK_FONT=1 \
-    -e TZ=Asia/Seoul \
+    -v "$DW_HELPER_DIR:/config/dwhelper:rw" \
+    -e "DISPLAY_WIDTH=$DISPLAY_WIDTH" \
+    -e "DISPLAY_HEIGHT=$DISPLAY_HEIGHT" \
+    -e "FF_PREF_TRR_URI=$FF_PREF_TRR_URI" \
+    -e "FF_PREF_TRR_BOOTSTRAP=$FF_PREF_TRR_BOOTSTRAP" \
+    -e "FF_PREF_TRR_MODE=$FF_PREF_TRR_MODE" \
+    -e "FF_PREF_ESNI=$FF_PREF_ESNI" \
+    -e "ENABLE_CJK_FONT=$ENABLE_CJK_FONT" \
+    -e "TZ=$TZ" \
     osom8979/ffweb:latest
-

@@ -17,6 +17,7 @@ let g:coc_global_extensions = [
     \ 'coc-omnisharp',
     \ 'coc-python',
     \ 'coc-rls',
+    \ 'coc-sh',
     \ 'coc-snippets',
     \ 'coc-tasks',
     \ 'coc-tsserver',

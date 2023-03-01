@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# - ref: https://github.com/tj/n
 
-if [[ -z $(which opm-version 2> /dev/null) ]]; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+if ! command opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
+# https://github.com/tj/n
 INSTALL_PREFIX="$HOME/.n"
 N_EXE="$(opm-root)/etc/n/n"
 RECOMMEND_PACKAGES=(yarn neovim)
@@ -13,7 +13,6 @@ if [[ ! -x "$N_EXE" ]]; then
     opm-println-error "Could not find executable n command on path '$N_EXE'"
     exit 1
 fi
-
 
 # -------------------
 # Install node with n
@@ -116,4 +115,3 @@ OPN_ENV=${OPN_ENV:-$OPN_DEFAULT_ENV}
 OPN_VERBOSE=${OPN_VERBOSE:-$(opm-variable OPN_VERBOSE)}
 
 opn_main "$OPN_VERSION" "$OPN_ENV" "$OPN_VERBOSE"
-

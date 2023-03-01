@@ -14,11 +14,12 @@ PACKAGES=(
     build-essential
     cmake
     curl
+    fzf
     git
     neovim
     net-tools
+    shellcheck
     tmux
-    fzf
 )
 
 apt-get -y install "${PACKAGES[@]}"
