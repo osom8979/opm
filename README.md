@@ -3,7 +3,9 @@
 ## Install
 
 ```bash
-./install.sh
+git clone https://github.com/osom8979/opm.git ~/.opm
+cd ~/.opm
+bash ./install.sh
 ```
 
 ## License

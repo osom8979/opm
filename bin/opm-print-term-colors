@@ -4,4 +4,7 @@ if ! command opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-source opy3.7-env && pip "$@"
+AWK_DIR=$(opm-root)/etc/awk
+AWK_PATH=$AWK_DIR/test-term-colors.awk
+
+awk -f "$AWK_PATH"

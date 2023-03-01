@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # - ref: https://github.com/pyenv/pyenv/wiki
 
-if [[ -z $(which opm-version 2> /dev/null) ]]; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")"; pwd):$PATH"
+if ! command opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 function get_pyenv_path
@@ -270,6 +270,10 @@ function enable_pyenv
     export PATH="$PYENV_ROOT/bin:$PATH"
 
     local platform_name=$(uname -s)
+
+    # [Important]
+    # It should not be run with the absolute path
+    # to pyenv retrieved with the `which` or `command` etc.
     case "$platform_name" in
         Darwin)
             eval "$(pyenv init -)"
@@ -308,14 +312,6 @@ function print_virtualenv_infos
     opm-println-info "- Pyenv version: $(pyenv version | awk '{print($1);}')"
 }
 
-function exit_on_error
-{
-    local code=$?
-    if [[ $code -ne 0 ]]; then
-        exit $code
-    fi
-}
-
 function opy_main
 {
     local python_version=$1
@@ -324,22 +320,27 @@ function opy_main
 
     # Installation ...
 
-    install_pyenv_if_not_exist
-    exit_on_error
+    if ! install_pyenv_if_not_exist; then
+        exit $?
+    fi
 
-    install_python_if_not_exist "$python_version"
-    exit_on_error
+    if ! install_python_if_not_exist "$python_version"; then
+        exit $?
+    fi
 
-    install_virtualenv_if_not_exist "$python_version" "$pyenv_name"
-    exit_on_error
+    if ! install_virtualenv_if_not_exist "$python_version" "$pyenv_name"; then
+        exit $?
+    fi
 
     # Activation ...
 
-    enable_pyenv
-    exit_on_error
+    if ! enable_pyenv; then
+        exit $?
+    fi
 
-    active_virtualenv "$pyenv_name"
-    exit_on_error
+    if ! active_virtualenv "$pyenv_name"; then
+        exit $?
+    fi
 
     # Information ...
 
@@ -348,16 +349,20 @@ function opy_main
     fi
 }
 
-CURRENT_USER_NAME=$(id -u -n)
+function opy_main_default
+{
+    CURRENT_USER_NAME=$(id -u -n)
 
-OPY_PREFIX=${OPY_PREFIX:-opy}
-OPY_USER=${OPY_USER:-$CURRENT_USER_NAME}
-OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY3_VERSION)}
-OPY_SUFFIX=${OPY_SUFFIX:-default}
-OPY_DEFAULT_ENV=$OPY_PREFIX-$OPY_USER-$OPY_VERSION-$OPY_SUFFIX
+    OPY_PREFIX=${OPY_PREFIX:-opy}
+    OPY_USER=${OPY_USER:-$CURRENT_USER_NAME}
+    OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY3_VERSION)}
+    OPY_SUFFIX=${OPY_SUFFIX:-default}
+    OPY_DEFAULT_ENV=$OPY_PREFIX-$OPY_USER-$OPY_VERSION-$OPY_SUFFIX
 
-OPY_ENV=${OPY_ENV:-$OPY_DEFAULT_ENV}
-OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
+    OPY_ENV=${OPY_ENV:-$OPY_DEFAULT_ENV}
+    OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
 
-opy_main "$OPY_VERSION" "$OPY_ENV" "$OPY_VERBOSE"
+    opy_main "$OPY_VERSION" "$OPY_ENV" "$OPY_VERBOSE"
+}
 
+opy_main_default

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [[ -z $(which opm-version 2> /dev/null) ]]; then
+if ! command opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
@@ -12,18 +12,11 @@ function install_yt_dlp_if_not_exist
     opy3-pip install -U yt-dlp
 }
 
-function exit_on_error
-{
-    local code=$?
-    if [[ $code -ne 0 ]]; then
-        exit $code
-    fi
-}
-
 function opy_yt_dlp_main
 {
-    install_yt_dlp_if_not_exist
-    exit_on_error
+    if ! install_yt_dlp_if_not_exist; then
+        return $?
+    fi
 
     opy3 -m yt_dlp "$@"
 }

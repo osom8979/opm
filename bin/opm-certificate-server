@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+
+if ! command opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v openssl &> /dev/null; then
+    opm-println-error "Not found openssl command"
+    exit 1
+fi
+
+BEGIN_COMMENT="-----BEGIN CERTIFICATE-----"
+END_COMMENT="-----END CERTIFICATE-----"
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} [options] host {port:443}
+
+Available options are:
+  -h, --help     Print this message
+  -s, --strip    Delete comments at the beginning and end.
+  --             Skip handling options
+"
+
+STRIP=0
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+while [[ -n $1 ]]; do
+    case $1 in
+    -h|--help)
+        print_usage
+        exit 0
+        ;;
+    -s|--strip)
+        STRIP=1
+        shift
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        break
+        ;;
+    esac
+done
+
+SERVER_HOST=$1
+SERVER_PORT=${2:-443}
+shift 2
+
+CERTIFICATE=$(
+    echo "QUIT" | \
+        openssl s_client -connect "$SERVER_HOST:$SERVER_PORT" 2>&1 | \
+        openssl x509 -inform PEM -text
+)
+
+if [[ "$STRIP" -eq 0 ]]; then
+    echo "$CERTIFICATE"
+else
+    echo "$CERTIFICATE" | sed -n "/$BEGIN_COMMENT/,/$END_COMMENT/p"
+fi
