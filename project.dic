@@ -10,6 +10,7 @@ esni
 fwupdmgr
 gdbinit
 gitattributes
+hostnamectl
 lldbinit
 lscolors
 neobundle
