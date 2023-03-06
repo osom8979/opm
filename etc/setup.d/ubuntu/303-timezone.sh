@@ -6,7 +6,7 @@ if ! command -v hostnamectl &> /dev/null; then
 fi
 
 if ! CURRENT_TIMEZONE=$(timedatectl -p Timezone --value show); then
-    echo "An unknown error occurred on 'timedatectl' command" 1>&2
+    echo "The 'timedatectl' command occurred error code $?" 1>&2
     exit 1
 fi
 

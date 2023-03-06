@@ -6,7 +6,7 @@ fi
 
 # https://github.com/tj/n
 INSTALL_PREFIX="$HOME/.n"
-N_EXE="$(opm-root)/etc/n/n"
+N_EXE="$(opm-home)/etc/n/n"
 RECOMMEND_PACKAGES=(yarn neovim)
 
 if [[ ! -x "$N_EXE" ]]; then

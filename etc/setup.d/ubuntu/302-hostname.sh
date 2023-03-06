@@ -16,7 +16,7 @@ if ! command -v hostnamectl &> /dev/null; then
 fi
 
 if ! CURRENT_HOSTNAME=$(hostname); then
-    echo "An unknown error occurred on 'hostname' command" 1>&2
+    echo "The 'hostname' command occurred error code $?" 1>&2
     exit 1
 fi
 

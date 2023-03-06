@@ -16,6 +16,7 @@ PACKAGES=(
     curl
     fzf
     git
+    libsecret-1-dev
     neovim
     net-tools
     shellcheck

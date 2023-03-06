@@ -3,7 +3,7 @@
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
 
 if ! "$ROOT_DIR/python" --version > /dev/null; then
-    echo "An error occurred in the Python script $?" 1>&2
+    echo "The 'python' script occurred error code $?" 1>&2
     exit 1
 fi
 

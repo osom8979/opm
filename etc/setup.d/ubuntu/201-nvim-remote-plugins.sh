@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if ! command -v nvim &> /dev/null; then
-    echo "not found nvim executable" 1>&2
+    echo "Not found nvim executable" 1>&2
     exit 1
 fi
 
