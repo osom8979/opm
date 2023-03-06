@@ -22,5 +22,6 @@ osom
 pythonpath
 qall
 scriptencoding
+timedatectl
 tparty
 xinitrc

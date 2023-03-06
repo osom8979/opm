@@ -23,7 +23,4 @@ fi
 echo "The current hostname is '$CURRENT_HOSTNAME'"
 read -r -p "Please enter the hostname to change: " NEXT_HOSTNAME
 
-if ! hostnamectl set-hostname "$NEXT_HOSTNAME"; then
-    echo "Hostname change failed" 1>&2
-    exit 1
-fi
+sudo hostnamectl set-hostname "$NEXT_HOSTNAME"
