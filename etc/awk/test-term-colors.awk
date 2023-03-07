@@ -1,3 +1,5 @@
+#!/usr/bin/env awk
+
 function print_term_colors(s, colnum, r, g, b) {
     s="/\\/\\/\\/\\/\\";
     s=s s s s s s s s;

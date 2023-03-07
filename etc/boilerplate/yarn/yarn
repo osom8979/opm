@@ -7,6 +7,7 @@ N_DIR="$ROOT_DIR/.n"
 N_EXE="$N_DIR/n"
 NODE_EXE="$N_PREFIX/bin/node"
 NODE_VERSION=18.12.0
+ENV_EXPORT_REGEX='^[ \t]*export[ \t]*[_a-zA-Z0-9]+=.*$'
 
 if [[ ! -d "$N_DIR" ]]; then
     mkdir -vp "$N_DIR"
@@ -38,8 +39,8 @@ fi
 
 # Read `.env` variables
 if [[ -f "$ROOT_DIR/.env" ]]; then
-    while read line; do
-        if [[ $(echo "$line" | grep -E '^[ \t]*export[ \t]*[_a-zA-Z0-9]+=.*$') ]]; then
+    while read -r line; do
+        if echo "$line" | grep -q -E "$ENV_EXPORT_REGEX"; then
             eval "$line"
         else
             eval "export $line"

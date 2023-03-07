@@ -18,14 +18,24 @@ fi
 SRC=/usr/share/doc/git/contrib/credential/libsecret/git-credential-libsecret.c
 DEST=$(opm-home)/var/bin/git-credential-libsecret
 
+if [[ -x "$DEST" ]]; then
+    echo "File '$DEST' already exists"
+    exit 0
+fi
+
 if [[ ! -f "$SRC" ]]; then
     echo "Not found '$SRC' file" 1>&2
     exit 1
 fi
 
-if [[ -x "$DEST" ]]; then
-    echo "File '$DEST' already exists"
-    exit 0
+if ! pkg-config --cflags libsecret-1 &> /dev/null; then
+    echo "Not found 'libsecret-1' library" 1>&2
+    exit 1
+fi
+
+if ! pkg-config --cflags glib-2.0 &> /dev/null; then
+    echo "Not found 'glib-2.0' library" 1>&2
+    exit 1
 fi
 
 read -ra CFLAGS < <(pkg-config --cflags libsecret-1 glib-2.0)

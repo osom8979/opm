@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-sudo usermod -aG docker $(whoami)
+sudo usermod -aG docker "$(whoami)"
 
-echo 'Group result:' $(cat /etc/group | grep docker)
-
+echo "Group result: $(grep docker /etc/group)"
