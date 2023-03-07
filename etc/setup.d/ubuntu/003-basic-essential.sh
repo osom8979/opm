@@ -16,6 +16,7 @@ PACKAGES=(
     curl
     fzf
     git
+    language-pack-ko
     libsecret-1-dev
     neovim
     net-tools

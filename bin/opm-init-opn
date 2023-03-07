@@ -5,7 +5,7 @@ PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 # https://github.com/tj/n
-INSTALL_PREFIX="$HOME/.n"
+INSTALL_PREFIX="$(opm-home)/var/n"
 N_EXE="$(opm-home)/etc/n/n"
 RECOMMEND_PACKAGES=(yarn neovim)
 
