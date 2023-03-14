@@ -25,9 +25,6 @@ CONTENT="
 [user]
     name = $USER_NAME
     email = $USER_EMAIL
-
-[credential]
-    helper = store
 "
 
 echo "$CONTENT" >> "$DEST"
