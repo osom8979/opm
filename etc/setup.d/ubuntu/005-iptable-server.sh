@@ -84,7 +84,7 @@ fi
 NOW=$(date "+%Y%m%d_%H%M%S")
 BACKUP_DIR=$(opm-home)/var/iptables/backups
 
-if [[ -d "$BACKUP_DIR" ]]; then
+if [[ ! -d "$BACKUP_DIR" ]]; then
     mkdir -vp "$BACKUP_DIR"
 fi
 
@@ -96,7 +96,7 @@ if ! "$IPTABLES_SAVE_CMD" > "$BACKUP_FILE"; then
     exit 1
 fi
 
-if ! ln -s "$BACKUP_FILE" "$BACKUP_FILE_LATEST"; then
+if ! ln -sf "$BACKUP_FILE" "$BACKUP_FILE_LATEST"; then
     echo "Failed to create latest symlink" 1>&2
     exit 1
 fi
