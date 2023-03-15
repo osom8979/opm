@@ -11,6 +11,13 @@ if ! command -v nmcli &> /dev/null; then
     exit 1
 fi
 
+IP_INSTALL=$(dpkg --get-selections iptables-persistent | awk '{print $2}')
+if [[ -z $IP_INSTALL || "$IP_INSTALL" != "install" ]]; then
+    DEBIAN_FRONTEND=noninteractive apt-get install -y iptables iptables-persistent
+    systemctl enable iptables.service
+    systemctl start iptables.service
+fi
+
 IPTABLES_CMD=$(command -v iptables 2> /dev/null)
 IPTABLES_SAVE_CMD=$(command -v iptables-save 2> /dev/null)
 IPTABLES_RESTORE_CMD=$(command -v iptables-restore 2> /dev/null)
@@ -165,6 +172,11 @@ if [[ ${ANSWER,,} != 'y' ]]; then
     echo "Job canceled" 1>&2
     exit 1
 fi
+
+# IPTABLES_V4_RULES=/etc/iptables/rules.v4
+# IPTABLES_V6_RULES=/etc/iptables/rules.v6
+# echo "$IPTABLES_SERVER_FILTER" > "$IPTABLES_V4_RULES"
+# echo "$IPTABLES_SERVER_FILTER" > "$IPTABLES_V6_RULES"
 
 if ! echo "$IPTABLES_SERVER_FILTER" | "$IPTABLES_RESTORE_CMD"; then
     echo "Filter application failed" 1>&2
