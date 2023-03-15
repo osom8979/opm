@@ -20,6 +20,7 @@ PACKAGES=(
     libsecret-1-dev
     neovim
     net-tools
+    network-manager
     shellcheck
     tmux
 )
