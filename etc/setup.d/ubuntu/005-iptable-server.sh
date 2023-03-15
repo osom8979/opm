@@ -69,24 +69,31 @@ if [[ -z $LOOPBACK_NAME ]]; then
     exit 1
 fi
 
-read -r -p "Your ethernet device name is '$ETHERNET_NAME' ? (y/n)" E_ANSWER
+read -r -p "Your ethernet device name is '$ETHERNET_NAME' ? (y/n) " E_ANSWER
 if [[ ${E_ANSWER,,} != 'y' ]]; then
     echo "Job canceled" 1>&2
     exit 1
 fi
 
-read -r -p "Your loopback device name is '$LOOPBACK_NAME' ? (y/n)" L_ANSWER
+read -r -p "Your loopback device name is '$LOOPBACK_NAME' ? (y/n) " L_ANSWER
 if [[ ${L_ANSWER,,} != 'y' ]]; then
     echo "Job canceled" 1>&2
     exit 1
 fi
 
 NOW=$(date "+%Y%m%d_%H%M%S")
-BACKUP_DIR=$(opm-home)/var/iptables/backups
+IPTABLES_DIR=$(opm-home)/var/iptables
+BACKUP_DIR=$IPTABLES_DIR/backups
+
+if [[ ! -d "$IPTABLES_DIR" ]]; then
+    mkdir -vp "$IPTABLES_DIR"
+    if [[ -n $SUDO_GID && -n $SUDO_UID ]]; then
+        chown "$SUDO_GID:$SUDO_UID" "$IPTABLES_DIR"
+    fi
+fi
 
 if [[ ! -d "$BACKUP_DIR" ]]; then
     mkdir -vp "$BACKUP_DIR"
-
     if [[ -n $SUDO_GID && -n $SUDO_UID ]]; then
         chown "$SUDO_GID:$SUDO_UID" "$BACKUP_DIR"
     fi
@@ -135,7 +142,7 @@ IPTABLES_SERVER_FILTER="
 -A INPUT -i $ETHERNET_NAME -p tcp -m tcp --dport 22 -m state --state NEW  -j ACCEPT
 
 # Allow outbound email
--A OUTPUT -i $ETHERNET_NAME -p tcp -m tcp --dport 25 -m state --state NEW  -j ACCEPT
+-A OUTPUT -o $ETHERNET_NAME -p tcp -m tcp --dport 25 -m state --state NEW  -j ACCEPT
 
 # Outbound DNS lookups
 -A OUTPUT -o $ETHERNET_NAME -p udp -m udp --dport 53 -j ACCEPT
