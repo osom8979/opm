@@ -58,14 +58,14 @@ if ! ln -s "$BACKUP_FILE" "$BACKUP_FILE_LATEST"; then
     exit 1
 fi
 
-IPTABLES_SERVER_CONFIG="# Set a default policy of DROP
+IPTABLES_SERVER_FILTER="# Set a default policy of DROP
 *filter
 :INPUT DROP [0:0]
 :FORWARD DROP [0:0]
 :OUTPUT DROP [0:0]
 
 # Accept any related or established connections
--I INPUT  1 -m state --state RELATED,ESTABLISHED -j ACCEPT
+-I INPUT 1 -m state --state RELATED,ESTABLISHED -j ACCEPT
 -I OUTPUT 1 -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # Allow all traffic on the loopback interface
@@ -96,4 +96,16 @@ IPTABLES_SERVER_CONFIG="# Set a default policy of DROP
 
 COMMIT
 "
-IPTABLES_CMD
+
+read -r -p "Do you really apply filters? (y/n) " ANSWER
+if [[ ${ANSWER,,} != 'y' ]]; then
+    echo "Job canceled" 1>&2
+    exit 1
+fi
+
+if ! echo "$IPTABLES_SERVER_FILTER" | "$IPTABLES_RESTORE_CMD"; then
+    echo "Filter application failed" 1>&2
+    exit 1
+fi
+
+"$IPTABLES_CMD" -L
