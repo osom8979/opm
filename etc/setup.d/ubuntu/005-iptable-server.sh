@@ -33,6 +33,15 @@ if [[ -z "$IPTABLES_RESTORE_CMD" ]]; then
     fi
 fi
 
+if ! command opm-home &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../bin" || exit; pwd):$PATH"
+fi
+
+if ! command opm-home &> /dev/null; then
+    echo "Not found opm-home command" 1>&2
+    exit 1
+fi
+
 NOW=$(date "+%Y%m%d_%H%M%S")
 BACKUP_DIR=$(opm-home)/var/iptables/backups
 
