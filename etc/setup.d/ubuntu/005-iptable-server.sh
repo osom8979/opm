@@ -49,7 +49,7 @@ if [[ -d "$BACKUP_DIR" ]]; then
     mkdir -vp "$BACKUP_DIR"
 fi
 
-BACKUP_FILE="$BACKUP_DIR-iptables-$NOW"
+BACKUP_FILE="$BACKUP_DIR/iptables-$NOW.rules"
 BACKUP_FILE_LATEST="$BACKUP_DIR/latest"
 
 if ! "$IPTABLES_SAVE_CMD" > "$BACKUP_FILE"; then
