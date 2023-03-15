@@ -86,6 +86,10 @@ BACKUP_DIR=$(opm-home)/var/iptables/backups
 
 if [[ ! -d "$BACKUP_DIR" ]]; then
     mkdir -vp "$BACKUP_DIR"
+
+    if [[ -n $SUDO_GID && -n $SUDO_UID ]]; then
+        chown "$SUDO_GID:$SUDO_UID" "$BACKUP_DIR"
+    fi
 fi
 
 BACKUP_FILE="$BACKUP_DIR/iptables-$NOW.rules"
@@ -96,9 +100,17 @@ if ! "$IPTABLES_SAVE_CMD" > "$BACKUP_FILE"; then
     exit 1
 fi
 
+if [[ -n $SUDO_GID && -n $SUDO_UID ]]; then
+    chown "$SUDO_GID:$SUDO_UID" "$BACKUP_FILE"
+fi
+
 if ! ln -sf "$BACKUP_FILE" "$BACKUP_FILE_LATEST"; then
     echo "Failed to create latest symlink" 1>&2
     exit 1
+fi
+
+if [[ -n $SUDO_GID && -n $SUDO_UID ]]; then
+    chown "$SUDO_GID:$SUDO_UID" "$BACKUP_FILE_LATEST"
 fi
 
 IPTABLES_SERVER_FILTER="
