@@ -203,6 +203,40 @@ IPTABLES_SERVER_FILTER="
 COMMIT
 "
 
+IP6TABLES_SERVER_FILTER="
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+COMMIT
+
+*raw
+:PREROUTING DROP [0:0]
+:OUTPUT DROP [0:0]
+COMMIT
+
+*nat
+:PREROUTING DROP [0:0]
+:INPUT DROP [0:0]
+:OUTPUT DROP [0:0]
+:POSTROUTING DROP [0:0]
+COMMIT
+
+*security
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+COMMIT
+
+*mangle
+:PREROUTING DROP [0:0]
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT DROP [0:0]
+:POSTROUTING DROP [0:0]
+COMMIT
+"
+
 read -r -p "Do you really apply filters? (y/n) " F_ANSWER
 if [[ ${F_ANSWER,,} != 'y' ]]; then
     echo "Job canceled" 1>&2
@@ -210,7 +244,7 @@ if [[ ${F_ANSWER,,} != 'y' ]]; then
 fi
 
 echo "$IPTABLES_SERVER_FILTER" > "$IPTABLES_V4_RULES"
-echo "$IPTABLES_SERVER_FILTER" > "$IPTABLES_V6_RULES"
+echo "$IP6TABLES_SERVER_FILTER" > "$IPTABLES_V6_RULES"
 
 systemctl restart iptables.service
 exit 0
