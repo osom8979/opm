@@ -106,15 +106,21 @@ if [[ ! -d "$BACKUP_DIR" ]]; then
     mkdir -vp "$BACKUP_DIR"
 fi
 
-BACKUP_ORIGINAL_V4_FILE="$BACKUP_DIR/iptables-file-$NOW.rules"
-BACKUP_ORIGINAL_V6_FILE="$BACKUP_DIR/ip6tables-file-$NOW.rules"
-cp -v "$IPTABLES_V4_RULES" "$BACKUP_ORIGINAL_V4_FILE"
-cp -v "$IPTABLES_V6_RULES" "$BACKUP_ORIGINAL_V6_FILE"
-
 if [[ -n $SUDO_GID && -n $SUDO_UID ]]; then
     HAS_SUDOER=1
 else
     HAS_SUDOER=0
+fi
+
+BACKUP_ORIGINAL_V4_FILE="$BACKUP_DIR/iptables-file-$NOW.rules"
+BACKUP_ORIGINAL_V6_FILE="$BACKUP_DIR/ip6tables-file-$NOW.rules"
+
+cp -v "$IPTABLES_V4_RULES" "$BACKUP_ORIGINAL_V4_FILE"
+cp -v "$IPTABLES_V6_RULES" "$BACKUP_ORIGINAL_V6_FILE"
+
+if [[ $HAS_SUDOER -eq 1 ]]; then
+    chown "$SUDO_GID:$SUDO_UID" "$BACKUP_ORIGINAL_V4_FILE"
+    chown "$SUDO_GID:$SUDO_UID" "$BACKUP_ORIGINAL_V6_FILE"
 fi
 
 BACKUP_V4_FILE="$BACKUP_DIR/iptables-save-$NOW.rules"
@@ -136,15 +142,15 @@ if [[ $HAS_SUDOER -eq 1 ]]; then
     chown "$SUDO_GID:$SUDO_UID" "$BACKUP_V6_FILE"
 fi
 
-BACKUP_V4_FILE_LATEST="$BACKUP_DIR/iptables-v4.latest"
-BACKUP_V6_FILE_LATEST="$BACKUP_DIR/iptables-v6.latest"
+BACKUP_V4_FILE_LATEST="$BACKUP_DIR/iptables.latest.rules"
+BACKUP_V6_FILE_LATEST="$BACKUP_DIR/ip6tables.latest.rules"
 
 if ! ln -sf "$BACKUP_V4_FILE" "$BACKUP_V4_FILE_LATEST"; then
     echo "Failed to create v4 latest symlink" 1>&2
     exit 1
 fi
 if [[ $HAS_SUDOER -eq 1 ]]; then
-    chown "$SUDO_GID:$SUDO_UID" "$BACKUP_V4_FILE_LATEST"
+    chown -h "$SUDO_GID:$SUDO_UID" "$BACKUP_V4_FILE_LATEST"
 fi
 
 if ! ln -sf "$BACKUP_V6_FILE" "$BACKUP_V6_FILE_LATEST"; then
@@ -152,7 +158,7 @@ if ! ln -sf "$BACKUP_V6_FILE" "$BACKUP_V6_FILE_LATEST"; then
     exit 1
 fi
 if [[ $HAS_SUDOER -eq 1 ]]; then
-    chown "$SUDO_GID:$SUDO_UID" "$BACKUP_V6_FILE_LATEST"
+    chown -h "$SUDO_GID:$SUDO_UID" "$BACKUP_V6_FILE_LATEST"
 fi
 
 IPTABLES_SERVER_FILTER="
@@ -197,8 +203,8 @@ IPTABLES_SERVER_FILTER="
 COMMIT
 "
 
-read -r -p "Do you really apply filters? (y/n) " ANSWER
-if [[ ${ANSWER,,} != 'y' ]]; then
+read -r -p "Do you really apply filters? (y/n) " F_ANSWER
+if [[ ${F_ANSWER,,} != 'y' ]]; then
     echo "Job canceled" 1>&2
     exit 1
 fi
@@ -207,3 +213,4 @@ echo "$IPTABLES_SERVER_FILTER" > "$IPTABLES_V4_RULES"
 echo "$IPTABLES_SERVER_FILTER" > "$IPTABLES_V6_RULES"
 
 systemctl restart iptables.service
+exit 0
