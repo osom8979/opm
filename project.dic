@@ -12,6 +12,7 @@ fwupdmgr
 gdbinit
 gitattributes
 hostnamectl
+keyrings
 lldbinit
 lscolors
 neobundle

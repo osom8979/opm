@@ -20,5 +20,6 @@ cd "$ROOT_DIR" && pyinstaller \
     --onefile \
     --clean \
     --noconsole \
+    --add-data "%PROJECT_LOWER%/assets:assets" \
     --add-data "%PROJECT_LOWER%/www:www" \
     "$ROOT_DIR/main.py"

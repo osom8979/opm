@@ -12,14 +12,16 @@ if ! command -v apt-get &> /dev/null; then
     exit 1
 fi
 
+echo "Uninstall old versions"
 apt-get remove -y \
     docker \
     docker-engine \
     docker.io \
     containerd \
     runc
-apt-get update -y
-apt-get install -y \
+
+echo "Install required packages"
+apt-get update && apt-get install -y \
     ca-certificates \
     curl \
     gnupg \
@@ -31,16 +33,18 @@ if [[ ! -d "$KEYRINGS_DIR" ]]; then
     chmod 0755 "$KEYRINGS_DIR"
 fi
 
+echo "Add Docker's official GPG key"
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
     gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 
+echo "Set up the repository"
 echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | \
-  tee /etc/apt/sources.list.d/docker.list > /dev/null
+    "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+    https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) stable" | \
+    tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-apt-get update
-apt-get install -y \
+apt-get update && apt-get install -y \
     docker-ce \
     docker-ce-cli \
     containerd.io \
@@ -48,7 +52,10 @@ apt-get install -y \
     docker-compose-plugin
 
 if [[ -n $SUDO_USER ]]; then
-    usermod -aG docker "$SUDO_USER"
+    read -r -p "Add user '${SUDO_USER}' to 'docker' group? (y/N)" ANSWER
+    if [[ "$ANSWER" =~ ^[yY]$ ]]; then
+        usermod -aG docker "$SUDO_USER"
+    fi
 fi
 
 echo "Group result: $(grep docker /etc/group)"
