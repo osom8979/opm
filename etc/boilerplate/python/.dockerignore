@@ -1,0 +1,22 @@
+# docker ignore file.
+build
+dist
+tester
+.*
+*.egg-info
+*.sh
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*$py.class
+Dockerfile
+flake8.ini
+fly.toml
+isort.cfg
+main.py
+mypy.ini
+project.dic
+pytest.ini
+python
+run
