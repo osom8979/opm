@@ -11,10 +11,10 @@ if ! command -v ssh-keygen &> /dev/null; then
 fi
 
 SSH_DIR=$HOME/.ssh
-PRIVATE_KEY=$SSH_DIR/.ssh/id_rsa
-PUBLIC_KEY=$SSH_DIR/.ssh/id_rsa.pub
+PRIVATE_KEY="$SSH_DIR/id_rsa"
+PUBLIC_KEY="$SSH_DIR/id_rsa.pub"
 KNOWN_HOSTS="$SSH_DIR/known_hosts"
-AUTHORIZED_KEYS=$SSH_DIR/authorized_keys
+AUTHORIZED_KEYS="$SSH_DIR/authorized_keys"
 
 if [[ ! -d "$SSH_DIR" ]]; then
     mkdir -vp "$SSH_DIR"

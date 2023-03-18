@@ -1,0 +1,156 @@
+#!/usr/bin/env bash
+
+if ! command opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command ssh-agent &> /dev/null; then
+    opm-println-error "Not found ssh-agent command"
+    exit 1
+fi
+
+if ! command ssh-add &> /dev/null; then
+    opm-println-error "Not found ssh-add command"
+    exit 1
+fi
+
+export OPY_SUFFIX=sagecipher
+export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY3_VERSION)}
+export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
+
+USAGE="
+Usage: opy-sagecipher [options] {encrypt|decrypt} {data}
+
+Available options are:
+  -h, --help     Print this message
+  --             Skip handling options
+  -              Just check the prerequisites.
+"
+
+PYTHON_ENCRYPT="
+from sys import argv
+from sagecipher import Cipher
+print(Cipher.encrypt_string(argv[1]).hex())
+"
+
+PYTHON_DECRYPT="
+from sys import argv
+from sagecipher import Cipher
+print(Cipher.decrypt_string(bytearray.fromhex(argv[1])))
+"
+
+LOAD_SSH_AGENT=0
+
+function install_sagecipher_package_if_not_exist
+{
+    if opy3-pip show sagecipher &> /dev/null; then
+        return 0
+    fi
+    opy3-pip install -U pip sagecipher
+}
+
+function kill_ssh_agent
+{
+    if [[ $LOAD_SSH_AGENT -eq 1 ]]; then
+        ssh-agent -k &> /dev/null
+    fi
+}
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function opy_sagecipher_encrypt
+{
+    opy3 -c "$PYTHON_ENCRYPT" "$1"
+}
+
+function opy_sagecipher_decrypt
+{
+    opy3 -c "$PYTHON_DECRYPT" "$1"
+}
+
+function opy_sagecipher_main
+{
+    if ! install_sagecipher_package_if_not_exist; then
+        return $?
+    fi
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -)
+            return 0
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local op=$1
+    local data=$2
+    shift 2
+
+    if [[ -z $op ]]; then
+        opm-println-error "Empty operation argument"
+        return 1
+    fi
+
+    case $op in
+    e|enc|encrypt)
+        # lazy evaluation
+        ;;
+    d|dec|decrypt)
+        # lazy evaluation
+        ;;
+    *)
+        opm-println-error "Unexpected operation '$op'"
+        return 1
+        ;;
+    esac
+
+    if [[ -z $data ]]; then
+        opm-println-error "Empty data argument"
+        return 1
+    fi
+
+    if [[ -z $SSH_AGENT_PID ]]; then
+        # shellcheck disable=SC1090
+        if ! source <(ssh-agent) &> /dev/null; then
+            opm-println-error "The ssh-agent command terminated abnormally: $?"
+            return 1
+        fi
+
+        LOAD_SSH_AGENT=1
+        trap 'kill_ssh_agent' HUP INT QUIT TERM
+
+        if ! ssh-add &> /dev/null; then
+            opm-println-error "The ssh-add command terminated abnormally: $?"
+            kill_ssh_agent
+            return 1
+        fi
+    fi
+
+    case $op in
+    e|enc|encrypt)
+        opy_sagecipher_encrypt "$data"
+        ;;
+    d|dec|decrypt)
+        opy_sagecipher_decrypt "$data"
+        ;;
+    esac
+
+    # Graceful shutdown
+    kill_ssh_agent
+}
+
+opy_sagecipher_main "$@"
