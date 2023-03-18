@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+if ! command opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+export OPY_SUFFIX=keyring
+export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY3_VERSION)}
+export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
+
+function install_keyring_if_not_exist
+{
+    if opy3-pip show keyring &> /dev/null; then
+        return 0
+    fi
+    opy3-pip install -U keyring
+}
+
+function install_sagecipher_if_not_exist
+{
+    if opy3-pip show sagecipher &> /dev/null; then
+        return 0
+    fi
+    opy3-pip install -U sagecipher
+}
+
+function opy_keyring_main
+{
+    if ! install_keyring_if_not_exist; then
+        return $?
+    fi
+    if ! install_sagecipher_if_not_exist; then
+        return $?
+    fi
+
+    opy3 -m keyring "$@"
+}
+
+opy_keyring_main "$@"
