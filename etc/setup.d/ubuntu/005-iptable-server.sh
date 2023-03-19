@@ -57,11 +57,11 @@ if [[ -z "$IP6TABLES_SAVE" ]]; then
     fi
 fi
 
-if ! command opm-home &> /dev/null; then
+if ! command -v opm-home &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../bin" || exit; pwd):$PATH"
 fi
 
-if ! command opm-home &> /dev/null; then
+if ! command -v opm-home &> /dev/null; then
     echo "Not found opm-home command" 1>&2
     exit 1
 fi
