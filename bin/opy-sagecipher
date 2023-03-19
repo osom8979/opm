@@ -42,7 +42,7 @@ from sagecipher import Cipher
 print(Cipher.decrypt_string(bytearray.fromhex(argv[1])))
 "
 
-LOAD_SSH_AGENT=0
+VERBOSE=0
 
 function install_sagecipher_package_if_not_exist
 {
@@ -54,8 +54,21 @@ function install_sagecipher_package_if_not_exist
 
 function kill_ssh_agent
 {
-    if [[ $LOAD_SSH_AGENT -eq 1 ]]; then
+    if [[ $VERBOSE -eq 1 ]]; then
+        ssh-agent -k
+    else
         ssh-agent -k &> /dev/null
+    fi
+}
+
+function exec_ssh_agent
+{
+    if [[ $VERBOSE -eq 1 ]]; then
+        # shellcheck disable=SC1090
+        source <(ssh-agent)
+    else
+        # shellcheck disable=SC1090
+        source <(ssh-agent) &> /dev/null
     fi
 }
 
@@ -88,7 +101,7 @@ function opy_sagecipher_main
             ;;
         -v|--verbose)
             export VERBOSE=1
-            return 0
+            shift
             ;;
         --)
             shift
@@ -131,14 +144,12 @@ function opy_sagecipher_main
     fi
 
     if [[ -z $SSH_AGENT_PID ]]; then
-        # shellcheck disable=SC1090
-        if ! source <(ssh-agent) &> /dev/null; then
+        if ! exec_ssh_agent; then
             opm-println-error -v "The ssh-agent command terminated abnormally: $?"
             return 1
         fi
 
-        LOAD_SSH_AGENT=1
-        trap 'kill_ssh_agent' HUP INT QUIT TERM
+        trap 'kill_ssh_agent' EXIT
 
         if ! ssh-add &> /dev/null; then
             opm-println-error -v "The ssh-add command terminated abnormally: $?"
@@ -155,9 +166,6 @@ function opy_sagecipher_main
         opy_sagecipher_decrypt "$data"
         ;;
     esac
-
-    # Graceful shutdown
-    kill_ssh_agent
 }
 
 opy_sagecipher_main "$@"
