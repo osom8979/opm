@@ -12,6 +12,7 @@ fi
 
 PACKAGES=(
     build-essential
+    ccls
     cmake
     curl
     fzf
