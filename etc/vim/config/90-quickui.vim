@@ -94,21 +94,21 @@ call quickui#menu#install("&Edit", [
             \ ])
 
 call quickui#menu#install("&Grep", [
-            \ [ "Recursive Ignore (<cword>,<cwd>)", ":call AsyncRunGrepCwordCwdRecursiveIgnoreCase()" ],
-            \ [ "Recursive Ignore (pattern,<cwd>)", ":call AsyncRunGrepCwdRecursiveIgnoreCase()" ],
-            \ [ "Recursive Ignore (<cword>,file)", ":call AsyncRunGrepCwordRecursiveIgnoreCase()" ],
-            \ [ "Recursive Ignore (pattern,file)", ":call AsyncRunGrepRecursiveIgnoreCase()" ],
+            \ [ "File (<cword>)", ":call AsyncRunGrepCwordCurrentFile()" ],
+            \ [ "File (pattern)", ":call AsyncRunGrepCurrentFile()" ],
             \ [ "--", "" ],
-            \ [ "Recursive (<cword>,<cwd>)", ":call AsyncRunGrepCwordCwdRecursive()" ],
-            \ [ "Recursive (pattern,<cwd>)", ":call AsyncRunGrepCwdRecursive()" ],
-            \ [ "Recursive (<cword>,file)", ":call AsyncRunGrepCwordRecursive()" ],
-            \ [ "Recursive (pattern,file)", ":call AsyncRunGrepRecursive()" ],
+            \ [ "File IC (<cword>)", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
+            \ [ "File IC (pattern)", ":call AsyncRunGrepCurrentFileIgnoreCase()" ],
             \ [ "--", "" ],
-            \ [ "Ignore (<cword>)", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
-            \ [ "Ignore (pattern)", ":call AsyncRunGrepCurrentFileIgnoreCase()" ],
+            \ [ "Project (<cword>,<cwd>)", ":call AsyncRunGrepCwordCwdRecursive()" ],
+            \ [ "Project (pattern,<cwd>)", ":call AsyncRunGrepCwdRecursive()" ],
+            \ [ "Project (<cword>,file)", ":call AsyncRunGrepCwordRecursive()" ],
+            \ [ "Project (pattern,file)", ":call AsyncRunGrepRecursive()" ],
             \ [ "--", "" ],
-            \ [ "Normal (<cword>)", ":call AsyncRunGrepCwordCurrentFile()" ],
-            \ [ "Normal (pattern)", ":call AsyncRunGrepCurrentFile()" ],
+            \ [ "Project IC (<cword>,<cwd>)", ":call AsyncRunGrepCwordCwdRecursiveIgnoreCase()" ],
+            \ [ "Project IC (pattern,<cwd>)", ":call AsyncRunGrepCwdRecursiveIgnoreCase()" ],
+            \ [ "Project IC (<cword>,file)", ":call AsyncRunGrepCwordRecursiveIgnoreCase()" ],
+            \ [ "Project IC (pattern,file)", ":call AsyncRunGrepRecursiveIgnoreCase()" ],
             \ ])
 
 call quickui#menu#install("&Coc", [
@@ -150,8 +150,10 @@ call quickui#menu#install("&Debug", [
 
 call quickui#menu#install("&View", [
             \ [ "&NERDTree\t\\\\1", ":NERDTreeToggle" ],
+            \ [ "T&agbar\t\\\\2", ":Tagbar" ],
             \ [ "&Quickfix\t\\\\3", ":call OpmToggleQuickfixBuffer()" ],
             \ [ "&Terminal\t\\\\4", ":call OpmToggleTerminalBuffer()" ],
+            \ [ "&Gundo\t\\\\5", ":GundoToggle" ],
             \ ])
 
 call quickui#menu#install("&Options", [
@@ -160,6 +162,11 @@ call quickui#menu#install("&Options", [
             \ ['Set &Cursor Line (%{&cursorline? "Off":"On"})', 'set cursorline!'],
             \ ['Set &Paste (%{&paste? "Off":"On"})', 'set paste!'],
             \ ['Set &Wrap (%{&wrap? "Off":"On"})', 'set wrap!'],
+            \ ])
+
+call quickui#menu#install("&Window", [
+            \ [ "E&xchange Next Window\t<C-w>x", ':call feedkeys("\<C-w>x")' ],
+            \ [ "--", "" ],
             \ ])
 
 call quickui#menu#install("&Info", [

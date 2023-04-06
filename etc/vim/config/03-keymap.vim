@@ -19,9 +19,9 @@ noremap  <leader><leader>5  <ESC>:GundoToggle<CR>
 " Jump window.
 noremap  <leader>1  <ESC>:NERDTreeFocus<CR>
 
-" Buffer settings.
-noremap <M-{> <ESC>:call OpmMoveNextBuffer()<CR>
-noremap <M-}> <ESC>:call OpmMovePrevBuffer()<CR>
+" Quick-fix settings.
+noremap  <F1>  <ESC>:cprevious<CR>
+noremap  <F2>  <ESC>:cnext<CR>
 
 " Tab settings.
 noremap <leader><F1>  <ESC>:tabprevious<CR>
@@ -37,10 +37,6 @@ inoremap <F4>  <ESC>"+gpa
 " Binding vimspector-debugging
 " noremap  <F5>
 " noremap  <F6>
-
-" Quick-fix settings.
-noremap  <F7>  <ESC>:cprevious<CR>
-noremap  <F8>  <ESC>:cnext<CR>
 
 " Binding vimspector-debugging
 " noremap  <F9>

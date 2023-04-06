@@ -12,10 +12,10 @@ if !exists('g:opm_terminal_height')
 endif
 
 if !exists('g:opm_move_next_buffer_key')
-    let g:opm_move_next_buffer_key = '<F1>'
+    let g:opm_move_next_buffer_key = '<M-{>'
 endif
 if !exists('g:opm_move_prev_buffer_key')
-    let g:opm_move_prev_buffer_key = '<F2>'
+    let g:opm_move_prev_buffer_key = '<M-}>'
 endif
 if !exists('g:opm_close_buffer_key')
     let g:opm_close_buffer_key = '<leader>w'

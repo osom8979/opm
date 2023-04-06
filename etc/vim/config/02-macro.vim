@@ -1,7 +1,7 @@
 " global macros.
 
 function! RemoveCr()
-    silent execute '%s/$//g'
+    silent execute '%s///g'
 endfunction
 
 function! RemoveTrailingSpace()

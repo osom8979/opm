@@ -3,14 +3,18 @@
 | VisIncr           | :II & :II -1            | Increasing/Decreasing columns       |
 | SnipMate          | <C-J>                   | Textual snippets                    |
 | AsyncRun          | :AsyncRun[!] {args}     | Run Async Shell Commands            |
-| Easymotion        | <leader><leader>f       | Vim motions on speed                |
+| Easymotion        | <leader><leader>f       | Vim motions: Next char              |
+| Easymotion        | <leader><leader>F       | Vim motions: Prev char              |
+| Easymotion        | <leader><leader>w       | Vim motions: Next word              |
+| Easymotion        | <leader><leader>b       | Vim motions: Prev word              |
 | NERDCommenter     | <leader>cc & <leader>cu | commenting/uncommenting             |
+| NERDCommenter     | <leader>c<space>        | Toggle commenting                   |
 +-------------------+-------------------------+-------------------------------------+
-| Tabs              | <leader><F1>            | Prev tab                            |
-| Tabs              | <leader><F2>            | Next tab                            |
+| Tabs              | <M-{>                   | Prev tab                            |
+| Tabs              | <M-}>                   | Next tab                            |
 | Quick Fix         | :cc                     | Current quick-fix                   |
-| Quick Fix         | <F5>                    | Prev quick-fix                      |
-| Quick Fix         | <F6>                    | Next quick-fix                      |
+| Quick Fix         | <F1>                    | Prev quick-fix                      |
+| Quick Fix         | <F2>                    | Next quick-fix                      |
 | Visual Mode       | <C-v> or <C-q>          | Change Visual Mode                  |
 | Insert Char       | <C-v><C-m>              | Insert CR(^M)                       |
 | JumpList          | :jumps                  | List of jumps                       |
