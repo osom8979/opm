@@ -112,6 +112,8 @@ call quickui#menu#install("&Grep", [
             \ ])
 
 call quickui#menu#install("&Coc", [
+            \ [ "&Find references", ':execute "normal \<Plug>(coc-references)"' ],
+            \ [ "--", "" ],
             \ [ "GoTo &definition\tgd", ':execute "normal \<Plug>(coc-definition)"' ],
             \ [ "GoTo &references\tgr", ':execute "normal \<Plug>(coc-references)"' ],
             \ [ "GoTo &type\tgy", ':execute "normal \<Plug>(coc-type-definition)"' ],
@@ -149,6 +151,8 @@ call quickui#menu#install("&Debug", [
             \ ])
 
 call quickui#menu#install("&View", [
+            \ [ "E&xchange Next Window\t<C-w>x", ':call feedkeys("\<C-w>x")' ],
+            \ [ "--", "" ],
             \ [ "&NERDTree\t\\\\1", ":NERDTreeToggle" ],
             \ [ "T&agbar\t\\\\2", ":Tagbar" ],
             \ [ "&Quickfix\t\\\\3", ":call OpmToggleQuickfixBuffer()" ],
@@ -164,22 +168,15 @@ call quickui#menu#install("&Options", [
             \ ['Set &Wrap (%{&wrap? "Off":"On"})', 'set wrap!'],
             \ ])
 
-call quickui#menu#install("&Window", [
-            \ [ "E&xchange Next Window\t<C-w>x", ':call feedkeys("\<C-w>x")' ],
-            \ [ "--", "" ],
-            \ ])
-
-call quickui#menu#install("&Info", [
-            \ [ "Print file path (relative)", ":echo @%" ],
-            \ [ "Print file path (absolute)", ":echo expand('%:p')" ],
-            \ [ "--", "" ],
-            \ ])
-
-call quickui#menu#install("H&elp", [
+call quickui#menu#install("&Help", [
             \ ["Vim &Cheatsheet", "help index"],
             \ ["Vim T&ips", "help tips"],
             \ ["Vim &Tutorial", "help tutor"],
             \ ["Vim &Quick Reference", "help quickref"],
+            \ ["Vim Config", "help config"],
+            \ ["--", ""],
+            \ [ "Print file path (relative)", ":echo @%" ],
+            \ [ "Print file path (absolute)", ":echo expand('%:p')" ],
             \ ["--", ""],
             \ ["&Loaded Scripts", ":OpmLoadedScripts"],
             \ ["Healthcheck", ":checkhealth"],

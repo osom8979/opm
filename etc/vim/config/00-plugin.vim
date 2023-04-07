@@ -61,6 +61,7 @@ NeoBundle 'rust-lang/rust.vim'              " vim configuration for rust
 NeoBundle 'ap/vim-css-color'                " preview css colours
 NeoBundle 'jakerobers/vim-hexrgba'          " toggle between hex color codes and rgba
 
+
 " Semantic highlighting for python in neovim.
 NeoBundle 'numirias/semshi', {
     \   'do': ':UpdateRemotePlugins'
@@ -77,7 +78,7 @@ NeoBundle 'yuki-yano/fzf-preview.vim', {
     \   'do': ':UpdateRemotePlugins'
     \}
 
-" Interactive command execution in Vim.
+" Interactive command execution in vim.
 NeoBundle 'Shougo/vimproc.vim', {
     \   'build': {
     \       'windows': 'tools\\update-dll-mingw',
@@ -88,12 +89,17 @@ NeoBundle 'Shougo/vimproc.vim', {
     \   },
     \}
 
-" intellisense engine.
+" Intellisense engine.
 NeoBundle 'neoclide/coc.nvim', {
     \   'branch': 'master',
     \   'do': {
     \       -> coc#util#install()
     \   }
+    \}
+
+" Nvim treesitter configurations and abstraction layer
+NeoBundle 'nvim-treesitter/nvim-treesitter', {
+    \   'do': ':TSUpdate'
     \}
 
 " opm-vim
