@@ -47,8 +47,12 @@ function install_pyenv
         exit 1
     fi
 
-    git clone https://github.com/pyenv/pyenv.git ~/.pyenv
-    cd ~/.pyenv && ./src/configure && make -C src
+    local pyenv_home="$HOM/.pyenv"
+    git clone https://github.com/pyenv/pyenv.git "$pyenv_home"
+    cd "$pyenv_home" && ./src/configure && make -C src
+
+    local pyenv_virtualenv_home="$pyenv_home/plugins/pyenv-virtualenv"
+    git clone https://github.com/pyenv/pyenv-virtualenv.git "$pyenv_virtualenv_home"
 }
 
 function find_pyenv_exe
@@ -319,7 +323,9 @@ if [[ ! -x "$PYTHON_EXE" ]]; then
     run_base_python -m venv "$VENV_HOME"
     if [[ -x "$VENV_PYTHON" ]]; then
         "$VENV_PYTHON" -m pip install -U pip
-        "$VENV_PYTHON" -m pip install -r "$REQUIREMENTS"
+        if [[ -f "$REQUIREMENTS" ]]; then
+            "$VENV_PYTHON" -m pip install -r "$REQUIREMENTS"
+        fi
     fi
     PYTHON_EXE=$VENV_PYTHON
 fi
