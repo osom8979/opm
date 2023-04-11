@@ -35,6 +35,22 @@ function cancel_black
     exit 1
 }
 
+function install_pyenv
+{
+    if command -v git &> /dev/null; then
+        print_error "Not found git executable"
+        exit 1
+    fi
+
+    if command -v make &> /dev/null; then
+        print_error "Not found make executable"
+        exit 1
+    fi
+
+    git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+    cd ~/.pyenv && ./src/configure && make -C src
+}
+
 function find_pyenv_exe
 {
     local base_python_version
@@ -45,7 +61,7 @@ function find_pyenv_exe
     local available_install_version
     local default_pyenv_exe="$HOME/.pyenv/bin/pyenv"
 
-    pyenv_exe=$(which pyenv 2> /dev/null)
+    pyenv_exe=$(command -v pyenv 2> /dev/null)
     if [[ -z "$pyenv_exe" ]]; then
         if [[ -x "$default_pyenv_exe" ]]; then
             pyenv_exe=$default_pyenv_exe
@@ -230,6 +246,10 @@ function run_base_python
     local base_python_version=$BASE_PYTHON_VERSION
     local virtualenv_name=$VIRTUALENV_NAME
 
+    if [[ ! -d "$HOME/.pyenv" ]]; then
+        (install_pyenv)
+    fi
+
     pyenv_exe=$(find_pyenv_exe "$base_python_version")
     exit_on_error
 
@@ -275,13 +295,13 @@ if [[ -n $PYTHON_EXE ]]; then
     fi
 elif [[ -n $USE_SYSTEM_PYTHON ]]; then
     if [[ $USE_SYSTEM_PYTHON -eq 3 ]]; then
-        PYTHON_EXE=$(which python3 2> /dev/null)
+        PYTHON_EXE=$(command -v python3 2> /dev/null)
     elif [[ $USE_SYSTEM_PYTHON -eq 2 ]]; then
         print_warning "python2 is deprecated. do you really use it?"
-        PYTHON_EXE=$(which python2 2> /dev/null)
+        PYTHON_EXE=$(command -v python2 2> /dev/null)
     elif [[ $USE_SYSTEM_PYTHON -eq 1 ]]; then
         print_warning "Please specify the system python version as '3'"
-        PYTHON_EXE=$(which python 2> /dev/null)
+        PYTHON_EXE=$(command -v python 2> /dev/null)
     else
         print_error "{USE_SYSTEM_PYTHON} must be 1, 2, or 3"
         exit 1
