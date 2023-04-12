@@ -2,7 +2,8 @@
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
 BASE_PYTHON_VERSION=3.9.13
-VIRTUALENV_NAME=%PROJECT_LOWER%-$USER-$BASE_PYTHON_VERSION
+VIRTUALENV_PREFIX=%PROJECT_LOWER%
+VIRTUALENV_NAME=$VIRTUALENV_PREFIX-$USER-$BASE_PYTHON_VERSION
 VENV_HOME=$ROOT_DIR/.venv
 VENV_PYTHON=$VENV_HOME/bin/python3
 REQUIREMENTS=$ROOT_DIR/requirements.txt
@@ -27,26 +28,32 @@ function print_message
     echo -e "\033[32m$@\033[0m"
 }
 
-trap 'cancel_black' INT
-
-function cancel_black
+function on_interrupt_trap
 {
-    print_error "An interrupt signal was detected."
+    print_error "An interrupt signal was detected"
     exit 1
 }
 
+trap 'on_interrupt_trap' INT
+
+if [[ "${VIRTUALENV_PREFIX:0:1}" == "%" ]]; then
+    print_error "First, you must enter the virtualenv prefix"
+    print_error "Or prefixes starting with '%' are not allowed"
+    exit 1
+fi
+
+if command -v git &> /dev/null; then
+    print_error "Not found git executable"
+    exit 1
+fi
+
+if command -v make &> /dev/null; then
+    print_error "Not found make executable"
+    exit 1
+fi
+
 function install_pyenv
 {
-    if command -v git &> /dev/null; then
-        print_error "Not found git executable"
-        exit 1
-    fi
-
-    if command -v make &> /dev/null; then
-        print_error "Not found make executable"
-        exit 1
-    fi
-
     local pyenv_home="$HOM/.pyenv"
     git clone https://github.com/pyenv/pyenv.git "$pyenv_home"
     cd "$pyenv_home" && ./src/configure && make -C src
