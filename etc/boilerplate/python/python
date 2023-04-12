@@ -42,12 +42,12 @@ if [[ "${VIRTUALENV_PREFIX:0:1}" == "%" ]]; then
     exit 1
 fi
 
-if command -v git &> /dev/null; then
+if ! command -v git &> /dev/null; then
     print_error "Not found git executable"
     exit 1
 fi
 
-if command -v make &> /dev/null; then
+if ! command -v make &> /dev/null; then
     print_error "Not found make executable"
     exit 1
 fi
