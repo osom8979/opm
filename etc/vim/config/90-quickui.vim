@@ -119,9 +119,14 @@ call quickui#menu#install("&Coc", [
             \ [ "GoTo &type\tgy", ':execute "normal \<Plug>(coc-type-definition)"' ],
             \ [ "GoTo &implementation\tgi", ':execute "normal \<Plug>(coc-implementation)"' ],
             \ [ "--", "" ],
+            \ [ "Symbol Renaming\t<leader>rn", ':execute "normal \<Plug>(coc-rename)"' ],
+            \ [ "Auto QuickFix\t<leader>qf", ':execute "normal \<Plug>(coc-fix-current)"' ],
+            \ [ "Code Lens\t<leader>cl", ':execute "normal \<Plug>(coc-codelens-action)"' ],
+            \ [ "--", "" ],
             \ [ "Diagnostic &prev\t[g", ':execute "normal \<Plug>(coc-diagnostic-prev)"' ],
             \ [ "Diagnostic &next\t]g", ':execute "normal \<Plug>(coc-diagnostic-next)"' ],
             \ [ "--", "" ],
+            \ [ "Code Actions\t<leader>ac", ':execute "normal \<Plug>(coc-codeaction)"' ],
             \ ])
 
 call quickui#menu#install("&Debug", [
@@ -153,11 +158,11 @@ call quickui#menu#install("&Debug", [
 call quickui#menu#install("&View", [
             \ [ "E&xchange Next Window\t<C-w>x", ':call feedkeys("\<C-w>x")' ],
             \ [ "--", "" ],
-            \ [ "&NERDTree\t\\\\1", ":NERDTreeToggle" ],
-            \ [ "T&agbar\t\\\\2", ":Tagbar" ],
-            \ [ "&Quickfix\t\\\\3", ":call OpmToggleQuickfixBuffer()" ],
-            \ [ "&Terminal\t\\\\4", ":call OpmToggleTerminalBuffer()" ],
-            \ [ "&Gundo\t\\\\5", ":GundoToggle" ],
+            \ [ "&NERDTree\t<leader><leader>1", ":NERDTreeToggle" ],
+            \ [ "T&agbar\t<leader><leader>2", ":Tagbar" ],
+            \ [ "&Quickfix\t<leader><leader>3", ":call OpmToggleQuickfixBuffer()" ],
+            \ [ "&Terminal\t<leader><leader>4", ":call OpmToggleTerminalBuffer()" ],
+            \ [ "&Gundo\t<leader><leader>5", ":GundoToggle" ],
             \ ])
 
 call quickui#menu#install("&Options", [

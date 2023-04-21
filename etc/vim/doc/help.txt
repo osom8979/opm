@@ -21,10 +21,17 @@
 | JumpList          | <C-i>                   | Goes forward in jump list           |
 | JumpList          | <C-o>                   | Goes back in jump list              |
 +-------------------+-------------------------+-------------------------------------+
-| GoTo              | gd                      | Local declaration                   |
-| GoTo              | gD                      | Global declaration                  |
-| GoTo              | gf                      | File under the cursor               |
-| GoTo              | g]                      | Jump to a tag definition            |
+| Coc               | gd                      | (GoTo) Local declaration            |
+| Coc               | gD                      | (GoTo) Global declaration           |
+| Coc               | gf                      | (GoTo) File under the cursor        |
+| Coc               | g]                      | (GoTo) Jump to a tag definition     |
+| Coc               | <leader>rn              | Symbol renaming                     |
+| Coc               | <leader>ac              | Actions current buffer              |
+| Coc               | <leader>qf              | Auto QuickFix current line          |
+| Coc               | <leader>cl              | Code Lens current line              |
++-------------------+-------------------------+-------------------------------------+
+| Coc (Visual Mode) | <leader>f               | Formatting selected code            |
+| Coc (Visual Mode) | <leader>a               | Actions selected code               |
 +-------------------+-------------------------+-------------------------------------+
 | Regex             | :g/^\s*$/d              | Remove blank lines                  |
 +-------------------+-------------------------+-------------------------------------+
