@@ -8,5 +8,15 @@ if !neobundle#is_installed(s:plugin_name)
     finish
 endif
 
+if !exists('g:opm_default_asyncrun_key')
+    let g:opm_default_asyncrun_key = '<leader><leader>`'
+endif
+
 let g:asyncrun_rootmarks = ['.git', '.svn', '.root', '.project', '.hg']
+
+" -----------
+" Key mapping
+" -----------
+
+silent execute 'noremap '.g:opm_default_asyncrun_key.' <ESC>:AsyncRun '
 

@@ -54,11 +54,10 @@ function! s:TemplateMenus()
             endif
 
             let filename = fnamemodify(template, ':t')
-            let menuName = 'Edit '.dirname.' < '.filename
+            let menuName = 'Open '.dirname.' < '.filename
             let menuCmd = ':call CreateNewFileAsTemplate("'.dirname.'","'.template.'")'
             let result += [[menuName, menuCmd]]
         endfor
-        let result += [['--', '']]
     endfor
     return result
 endfunction
@@ -74,41 +73,50 @@ call quickui#menu#install("&File", [
             \ [ "New &Horizontally Buffer\t:new", ":new", "Create a new window and start editing an empty file in it." ],
             \ [ "New &Vertically Buffer\t:vnew", ":vnew", "Create a new window and start editing an empty file in it. but split vertically." ],
             \ [ "--", "" ],
+            \ ] + s:TemplateMenus() + [
+            \ [ "--", "" ],
             \ [ "E&xit\t:qa", ":qa", "Exit Vim, unless there are some buffers which have been changed." ],
             \ [ "Exit Force\t:qa!", ":qa", "Exit Vim. Any changes to buffers are lost." ],
             \ ])
-
-call quickui#menu#install("&Template", s:TemplateMenus())
 
 call quickui#menu#install("&Edit", [
             \ [ "Remove &carriage return", ":call RemoveCr()" ],
             \ [ "Remove &trailing space", ":call RemoveTrailingSpace()" ],
             \ [ "Remove &blank lines", ":call RemoveBlankLines()" ],
             \ [ "--", "" ],
-            \ [ "HEX color to rgba", ":HexRgba" ],
+            \ [ "&Json formatting", ":OpmJsonFormat" ],
             \ [ "--", "" ],
             \ [ "&HEX mode", ":OpmHexMode" ],
             \ [ "&TEXT mode", ":OpmTextMode" ],
             \ [ "--", "" ],
-            \ [ "&Json formatting", ":OpmJsonFormat" ],
+            \ [ "HEX color to rgba", ":HexRgba" ],
+            \ [ "--", "" ],
+            \ [ "PascalCase\tgsp", ':execute "normal \<Plug>CaserMixedCase"' ],
+            \ [ "camelCase\tgsc", ':execute "normal \<Plug>CaserCamelCase"' ],
+            \ [ "snake_case\tgs_", ':execute "normal \<Plug>CaserSnakeCase"' ],
+            \ [ "UPPER_CASE\tgsu", ':execute "normal \<Plug>CaserUpperCase"' ],
+            \ [ "Title Case\tgst", ':execute "normal \<Plug>CaserTitleCase"' ],
+            \ [ "Sentence case\tgss", ':execute "normal \<Plug>CaserSentenceCase"' ],
+            \ [ "space case\tgs<space>", ':execute "normal \<Plug>CaserSpaceCase"' ],
+            \ [ "kebab-case\tgsk", ':execute "normal \<Plug>CaserKebabCase"' ],
+            \ [ "Title-Dash-Case\tgsK", ':execute "normal \<Plug>CaserTitleKebabCase"' ],
+            \ [ "dot.case\tgs.", ':execute "normal \<Plug>CaserDotCase"' ],
             \ ])
 
 call quickui#menu#install("&Grep", [
             \ [ "File (<cword>)", ":call AsyncRunGrepCwordCurrentFile()" ],
-            \ [ "File (pattern)", ":call AsyncRunGrepCurrentFile()" ],
-            \ [ "--", "" ],
-            \ [ "File IC (<cword>)", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
-            \ [ "File IC (pattern)", ":call AsyncRunGrepCurrentFileIgnoreCase()" ],
+            \ [ "File (pattern?)", ":call AsyncRunGrepCurrentFile()" ],
+            \ [ "File IgnoreCase (<cword>)", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
+            \ [ "File IgnoreCase (pattern?)", ":call AsyncRunGrepCurrentFileIgnoreCase()" ],
             \ [ "--", "" ],
             \ [ "Project (<cword>,<cwd>)", ":call AsyncRunGrepCwordCwdRecursive()" ],
-            \ [ "Project (pattern,<cwd>)", ":call AsyncRunGrepCwdRecursive()" ],
-            \ [ "Project (<cword>,file)", ":call AsyncRunGrepCwordRecursive()" ],
-            \ [ "Project (pattern,file)", ":call AsyncRunGrepRecursive()" ],
-            \ [ "--", "" ],
-            \ [ "Project IC (<cword>,<cwd>)", ":call AsyncRunGrepCwordCwdRecursiveIgnoreCase()" ],
-            \ [ "Project IC (pattern,<cwd>)", ":call AsyncRunGrepCwdRecursiveIgnoreCase()" ],
-            \ [ "Project IC (<cword>,file)", ":call AsyncRunGrepCwordRecursiveIgnoreCase()" ],
-            \ [ "Project IC (pattern,file)", ":call AsyncRunGrepRecursiveIgnoreCase()" ],
+            \ [ "Project (pattern?,<cwd>)", ":call AsyncRunGrepCwdRecursive()" ],
+            \ [ "Project (<cword>,file?)", ":call AsyncRunGrepCwordRecursive()" ],
+            \ [ "Project (pattern?,file?)", ":call AsyncRunGrepRecursive()" ],
+            \ [ "Project IgnoreCase (<cword>,<cwd>)", ":call AsyncRunGrepCwordCwdRecursiveIgnoreCase()" ],
+            \ [ "Project IgnoreCase (pattern?,<cwd>)", ":call AsyncRunGrepCwdRecursiveIgnoreCase()" ],
+            \ [ "Project IgnoreCase (<cword>,file?)", ":call AsyncRunGrepCwordRecursiveIgnoreCase()" ],
+            \ [ "Project IgnoreCase (pattern?,file?)", ":call AsyncRunGrepRecursiveIgnoreCase()" ],
             \ ])
 
 call quickui#menu#install("&Coc", [
@@ -163,22 +171,27 @@ call quickui#menu#install("&View", [
             \ [ "&Quickfix\t<leader><leader>3", ":call OpmToggleQuickfixBuffer()" ],
             \ [ "&Terminal\t<leader><leader>4", ":call OpmToggleTerminalBuffer()" ],
             \ [ "&Gundo\t<leader><leader>5", ":GundoToggle" ],
+            \ [ "--", "" ],
+            \ [ "Quickfix Prev\t<F1>", ":cprevious" ],
+            \ [ "Quickfix Next\t<F2>", ":cnext" ],
+            \ [ "--", "" ],
+            \ [ "Buffer Prev\t:bp", ":bp" ],
+            \ [ "Buffer Next\t:bn", ":bn" ],
             \ ])
 
-call quickui#menu#install("&Options", [
+call quickui#menu#install("&Help", [
             \ ['Set &Spell (%{&spell? "Off":"On"})', 'set spell!'],
             \ ['Set Scroll&bind (%{&scrollbind? "Off":"On"})', 'set scrollbind!'],
             \ ['Set &Cursor Line (%{&cursorline? "Off":"On"})', 'set cursorline!'],
             \ ['Set &Paste (%{&paste? "Off":"On"})', 'set paste!'],
             \ ['Set &Wrap (%{&wrap? "Off":"On"})', 'set wrap!'],
-            \ ])
-
-call quickui#menu#install("&Help", [
+            \ ["--", ""],
             \ ["Vim &Cheatsheet", "help index"],
             \ ["Vim T&ips", "help tips"],
             \ ["Vim &Tutorial", "help tutor"],
             \ ["Vim &Quick Reference", "help quickref"],
             \ ["Vim Config", "help config"],
+            \ ["Opm Help", ":OpmHelp"],
             \ ["--", ""],
             \ [ "Print file path (relative)", ":echo @%" ],
             \ [ "Print file path (absolute)", ":echo expand('%:p')" ],

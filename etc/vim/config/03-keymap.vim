@@ -7,7 +7,30 @@ if has('nvim')
 tnoremap <ESC> <C-\><C-n>
 endif
 
+" ----------------
+" COMMAND SETTING.
+" ----------------
+
+command! OpmReload         execute 'source ~/.vimrc'
+command! OpmHexMode        execute '%!xxd'
+command! OpmTextMode       execute '%!xxd -r'
+command! OpmLoadedScripts  execute ':scriptnames'
+command! OpmJsonFormat     execute ':%!python -m json.tool'
+command! OpmAsyncRunOpen   execute 'call OpmAsyncRunAutoScrollQuickInput()'
+
+" --------------
+" GREP SETTINGS.
+" --------------
+
+command! -nargs=* GrepRecursive execute ':AsyncRun grep -Iirn ' . <q-args> . ' <cwd>'
+cnoreabbrev grepr GrepRecursive
+
+" -------
+" Mapping
+" -------
+
 " Open window.
+noremap  <leader><leader>`  <ESC>:OpmAsyncRunOpen<CR>
 noremap  <leader><leader>1  <ESC>:NERDTreeToggle<CR>
 noremap  <leader><leader>2  <ESC>:Tagbar<CR>
 "noremap <leader><leader>2  <ESC>:Vista!!<CR>
@@ -53,21 +76,4 @@ noremap  <leader>] <ESC>:tnext<CR>
 " https://github.com/Valloric/YouCompleteMe/issues/47
 imap <C-J> <ESC>a<Plug>snipMateNextOrTrigger
 smap <C-J> <Plug>snipMateNextOrTrigger
-
-" ----------------
-" COMMAND SETTING.
-" ----------------
-
-command! OpmReload         execute 'source ~/.vimrc'
-command! OpmHexMode        execute '%!xxd'
-command! OpmTextMode       execute '%!xxd -r'
-command! OpmLoadedScripts  execute ':scriptnames'
-command! OpmJsonFormat     execute ':%!python -m json.tool'
-
-" --------------
-" GREP SETTINGS.
-" --------------
-
-command! -nargs=* GrepRecursive execute ':AsyncRun grep -Iirn ' . <q-args> . ' <cwd>'
-cnoreabbrev grepr GrepRecursive
 
