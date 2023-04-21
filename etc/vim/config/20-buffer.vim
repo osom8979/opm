@@ -8,7 +8,7 @@ if !exists('g:opm_quickfix_height')
     let g:opm_quickfix_height = 12
 endif
 if !exists('g:opm_terminal_height')
-    let g:opm_terminal_height = 12
+    let g:opm_terminal_height = 24
 endif
 
 if !exists('g:opm_move_next_buffer_key')
@@ -261,7 +261,7 @@ function! s:ToggleQuickfixBuffer(...)
             silent execute 'cclose'
         endif
     else
-        silent execute 'belowright ' . g:opm_quickfix_height . 'copen | wincmd p'
+        silent execute 'botright ' . g:opm_quickfix_height . 'copen | wincmd p'
     endif
 endfunction
 
