@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+PORT=19000
+DOWNLOAD_DIR=$HOME/Downloads
+
+echo "Run Cloud-Torrent"
+echo "URL: http://localhost:$PORT"
+echo "DIR: $DOWNLOAD_DIR"
+
+docker run --rm -p $PORT:3000 -v $DOWNLOAD_DIR:/downloads jpillora/cloud-torrent
+
+echo "Done."
+
