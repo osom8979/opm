@@ -112,8 +112,12 @@ function ps_space
 if [[ "${SHELL##*/}" == "bash" ]]; then
     BUF="$(ps_prev_error)$(ps_timestamp)"
     BUF="$BUF$(ps_space)$(ps_user_host):$(ps_path)"
-    BUF="$BUF$(ps_space)$(ps_git_branch_name)$(ps_newline)$(ps_has_root)"
-    BUF="$BUF$(ps_space)"
+
+    if command -v git &> /dev/null; then
+        BUF="$BUF$(ps_space)$(ps_git_branch_name)"
+    fi
+
+    BUF="$BUF$(ps_newline)$(ps_has_root)$(ps_space)"
 fi
 
 if [[ -n $PS1 && -n $BUF ]]; then

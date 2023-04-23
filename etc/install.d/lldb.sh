@@ -5,18 +5,42 @@ if [[ -z $OPM_HOME ]]; then
     exit 1
 fi
 
+OPCODE=${1:-install}
+FORCE=${FORCE:-0}
+AUTOMATIC_YES=${AUTOMATIC_YES:-0}
+VFI_FLAGS=${VFI_FLAGS:--v}
+
 DEST=$HOME/.lldbinit
 SRC=$OPM_HOME/etc/lldb/lldbinit
 
-CONTENT="
-command source $SRC
-"
+function install
+{
+    if [[ $FORCE -eq 0 && ! -f "$SRC" ]]; then
+        echo "Not found source file: '$SRC'" 1>&2
+        exit 1
+    fi
 
-if [[ -e "$DEST" ]]; then
-    echo "The lldbinit file already exists" 1>&2
-    echo "Delete the file to continue installation" 1>&2
-    echo " $DEST" 1>&2
-    exit 1
+    if [[ $FORCE -eq 0 && -e "$DEST" ]]; then
+        echo "The lldbinit file already exists" 1>&2
+        echo "Delete the file to continue installation" 1>&2
+        echo " $DEST" 1>&2
+        exit 1
+    fi
+
+    {
+        echo "## OSOM PACKAGE MANAGER"
+        echo "command source $SRC"
+    } >> "$DEST"
+    echo "lldbinit installation successful: $DEST"
+}
+
+function uninstall
+{
+    rm "$VFI_FLAGS" "$DEST"
+}
+
+if [[ $OPCODE == "install" ]]; then
+    install
+elif [[ $OPCODE == "uninstall" ]]; then
+    uninstall
 fi
-
-echo "$CONTENT" >> "$DEST"

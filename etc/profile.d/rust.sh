@@ -5,4 +5,7 @@ if [[ -z $OPM_HOME ]]; then
     exit 1
 fi
 
-export PATH="$HOME/.cargo/bin:$PATH"
+if [[ -d "$HOME/.cargo" ]]; then
+    export CARGO_HOME="$HOME/.cargo"
+    export PATH="$CARGO_HOME/bin:$PATH"
+fi

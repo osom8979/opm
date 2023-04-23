@@ -9,7 +9,8 @@ OPM_VAR=$OPM_HOME/var
 OPM_VAR_BIN=$OPM_VAR/bin
 
 if [[ ! -d "$OPM_VAR_BIN" ]]; then
-    mkdir -p "$OPM_VAR_BIN"
+    echo "Not found '$OPM_VAR_BIN' directory" 1>&2
+    mkdir -vp "$OPM_VAR_BIN"
 fi
 
-export PATH="$PATH:$OPM_VAR_BIN"
+export PATH="$OPM_VAR_BIN:$PATH"

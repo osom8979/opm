@@ -5,6 +5,11 @@ if [[ -z $OPM_HOME ]]; then
     exit 1
 fi
 
+OPCODE=${1:-install}
+FORCE=${FORCE:-0}
+AUTOMATIC_YES=${AUTOMATIC_YES:-0}
+VFI_FLAGS=${VFI_FLAGS:--v}
+
 VIMRC=$HOME/.vimrc
 IDEAVIMRC=$HOME/.ideavimrc
 
@@ -14,33 +19,27 @@ SRC_IDEAVIMRC=$OPM_HOME/etc/vim/ideavimrc
 NEOVIM_DIR=$HOME/.config/nvim
 NEOVIMRC=$NEOVIM_DIR/init.vim
 
-if [[ -e "$VIMRC" ]]; then
-    echo "The vimrc file already exists" 1>&2
-    echo "Delete the file to continue installation" 1>&2
-    echo " $VIMRC" 1>&2
-    exit 1
-fi
-if [[ -e "$IDEAVIMRC" ]]; then
-    echo "The ideavimrc file already exists" 1>&2
-    echo "Delete the file to continue installation" 1>&2
-    echo " $IDEAVIMRC" 1>&2
-    exit 1
-fi
-if [[ -e "$NEOVIMRC" ]]; then
-    echo "The neovimrc file already exists" 1>&2
-    echo "Delete the file to continue installation" 1>&2
-    echo " $NEOVIMRC" 1>&2
-    exit 1
-fi
-
-if [[ ! -d "$NEOVIM_DIR" ]]; then
-    mkdir -vp "$NEOVIM_DIR"
-fi
-
 function install_vimrc
 {
-    local src=$1
-    local dest=$2
+    local name=$1
+    local src=$2
+    local dest=$3
+
+    if [[ $FORCE -eq 0 && -e "$dest" ]]; then
+        echo "The $name file already exists" 1>&2
+        echo "Delete the file to continue installation" 1>&2
+        echo " $dest" 1>&2
+        exit 1
+    fi
+
+    local install_dir
+    if ! install_dir="$(dirname "$dest")"; then
+        install_dir=${dest%/*}
+    fi
+
+    if [[ ! -d "$install_dir" ]]; then
+        mkdir -vp "$install_dir"
+    fi
 
     {
         echo "\"== BEGIN OSOM VIM SETTING =="
@@ -50,6 +49,22 @@ function install_vimrc
     } >> "$dest"
 }
 
-install_vimrc "$SRC_VIMRC" "$VIMRC"
-install_vimrc "$SRC_IDEAVIMRC" "$IDEAVIMRC"
-install_vimrc "$SRC_VIMRC" "$NEOVIMRC"
+function install
+{
+    install_vimrc "vimrc" "$SRC_VIMRC" "$VIMRC"
+    install_vimrc "ideavimrc" "$SRC_IDEAVIMRC" "$IDEAVIMRC"
+    install_vimrc "neovimrc" "$SRC_VIMRC" "$NEOVIMRC"
+}
+
+function uninstall
+{
+    rm "$VFI_FLAGS" "$VIMRC"
+    rm "$VFI_FLAGS" "$IDEAVIMRC"
+    rm "$VFI_FLAGS" "$NEOVIMRC"
+}
+
+if [[ $OPCODE == "install" ]]; then
+    install
+elif [[ $OPCODE == "uninstall" ]]; then
+    uninstall
+fi

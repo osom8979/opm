@@ -5,6 +5,11 @@ if [[ -z $OPM_HOME ]]; then
     exit 1
 fi
 
+OPCODE=${1:-install}
+FORCE=${FORCE:-0}
+AUTOMATIC_YES=${AUTOMATIC_YES:-0}
+VFI_FLAGS=${VFI_FLAGS:--v}
+
 DEST=$HOME/.tmux.conf
 SRC=$OPM_HOME/etc/tmux/config
 
@@ -20,3 +25,17 @@ if [[ -e "$DEST" ]]; then
 fi
 
 echo "$CONTENT" >> "$DEST"
+function install
+{
+}
+
+function uninstall
+{
+    rm "$VFI_FLAGS" "$DEST"
+}
+
+if [[ $OPCODE == "install" ]]; then
+    install
+elif [[ $OPCODE == "uninstall" ]]; then
+    uninstall
+fi

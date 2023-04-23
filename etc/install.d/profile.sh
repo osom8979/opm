@@ -5,6 +5,11 @@ if [[ -z $OPM_HOME ]]; then
     exit 1
 fi
 
+OPCODE=${1:-install}
+FORCE=${FORCE:-0}
+AUTOMATIC_YES=${AUTOMATIC_YES:-0}
+VFI_FLAGS=${VFI_FLAGS:--v}
+
 CONTENT="
 ## OSOM PACKAGE MANAGER
 export OPM_HOME=\"$OPM_HOME\"
@@ -42,11 +47,34 @@ function find_profile_path
     esac
 }
 
-PROFILE=$(find_profile_path)
+function install
+{
+    PROFILE=$(find_profile_path)
 
-if grep -q "^export OPM_HOME=" "$PROFILE"; then
-    echo "The OPM_HOME variable is already declared in the '$PROFILE'" 1>&2
-    exit 1
+    if [[ $FORCE -eq 0 ]]; then
+        if grep -q "^export OPM_HOME=" "$PROFILE"; then
+            echo "The OPM_HOME variable is already declared in the '$PROFILE'" 1>&2
+            exit 1
+        fi
+    fi
+
+    {
+        echo "## OSOM PACKAGE MANAGER"
+        echo "export OPM_HOME=\"$OPM_HOME\""
+        echo "if [[ -n \$OPM_HOME && -f \"\$OPM_HOME/profile.sh\" ]]; then"
+        echo "    source \"\$OPM_HOME/profile.sh\""
+        echo "fi"
+    } >> "$PROFILE"
+}
+
+function uninstall
+{
+    PROFILE=$(find_profile_path)
+    sed -i.back 's/^(export OPM_HOME=)/#\1/' "$PROFILE"
+}
+
+if [[ $OPCODE == "install" ]]; then
+    install
+elif [[ $OPCODE == "uninstall" ]]; then
+    uninstall
 fi
-
-echo "$CONTENT" >> "$PROFILE"
