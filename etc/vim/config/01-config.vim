@@ -82,7 +82,7 @@ let g:alternateExtensions_hh = "cpp,cc,cxx"
 
 " NERDTree
 let g:NERDTreeWinPos = "left"
-let g:NERDTreeWinSize = 32
+let g:NERDTreeWinSize = 34
 let g:NERDTreeShowBookmarks = 1
 let g:NERDTreeShowHidden = 1
 let g:NERDTreeIgnore = [
@@ -109,7 +109,7 @@ let g:showmarks_enable = 1
 
 " tagbar
 let g:tagbar_left = 0
-let g:tagbar_width = 25
+let g:tagbar_width = 50
 
 " YouCompleteMe
 let g:ycm_confirm_extra_conf = 1
