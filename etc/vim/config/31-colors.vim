@@ -34,3 +34,5 @@ hi! link CocWarningHighlight CodeWarning
 hi! link CocInfoHighlight CodeInfo
 hi! link CocHintHighlight CodeHint
 
+" QuickFix
+hi! QuickFixLine cterm=None ctermbg=256 guibg=#444411
