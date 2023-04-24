@@ -11,6 +11,9 @@ if !exists('g:opm_terminal_height')
     let g:opm_terminal_height = 24
 endif
 
+if !exists('g:opm_buffer_wipe_out')
+    let g:opm_buffer_wipe_out = 1
+endif
 if !exists('g:opm_move_next_buffer_key')
     let g:opm_move_next_buffer_key = '<M-{>'
 endif
@@ -261,7 +264,7 @@ function! s:ToggleQuickfixBuffer(...)
             silent execute 'cclose'
         endif
     else
-        silent execute 'botright ' . g:opm_quickfix_height . 'copen | wincmd p'
+        silent execute 'belowright ' . g:opm_quickfix_height . 'copen | wincmd p'
     endif
 endfunction
 
@@ -333,7 +336,12 @@ function! s:CloseAndMoveNextBuffer()
     if next != -1
         silent execute 'buffer ' . buffers[next][s:BUFFER_NUM]
     endif
+
     silent execute 'bdelete! ' . buffers[index][s:BUFFER_NUM]
+
+    if g:opm_buffer_wipe_out != 0
+        silent execute 'bwipeout! ' . buffers[index][s:BUFFER_NUM]
+    endif
 endfunction
 
 function! s:CloseAnotherBuffer()
