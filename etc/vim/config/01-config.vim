@@ -80,20 +80,6 @@ let g:load_doxygen_syntax = 1
 let g:alternateExtensions_cpp = "h,hpp,hh"
 let g:alternateExtensions_hh = "cpp,cc,cxx"
 
-" NERDTree
-let g:NERDTreeWinPos = "left"
-let g:NERDTreeWinSize = 34
-let g:NERDTreeShowBookmarks = 1
-let g:NERDTreeShowHidden = 1
-let g:NERDTreeIgnore = [
-    \   '^\.$',
-    \   '^\.\.$',
-    \   '^\~$',
-    \   '.*\.[oO]$',
-    \   '.*\.[eE][xX][eE]$',
-    \   '.*\.pyc$'
-    \]
-
 " NERDCommenter
 let g:NERDDefaultAlign = 'left'
 let g:NERDCommentEmptyLines = 1
