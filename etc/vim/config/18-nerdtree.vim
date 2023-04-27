@@ -10,7 +10,7 @@ endif
 
 " NERDTree
 let g:NERDTreeWinPos = "left"
-let g:NERDTreeWinSize = 34
+let g:NERDTreeWinSize = 42
 let g:NERDTreeShowBookmarks = 1
 let g:NERDTreeShowHidden = 1
 let g:NERDTreeIgnore = [

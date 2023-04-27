@@ -74,10 +74,18 @@ NeoBundle 'junegunn/fzf', {
     \       -> fzf#install()
     \   }
     \}
+NeoBundle 'junegunn/fzf.vim'
 NeoBundle 'yuki-yano/fzf-preview.vim', {
     \   'branch': 'release/remote',
     \   'do': ':UpdateRemotePlugins'
     \}
+
+" [Warning]
+" This plug-in function is good,
+" but the editing speed is 'very' slow.
+" NeoBundle 'antoinemadec/coc-fzf', {
+"     \   'branch': 'release'
+"     \}
 
 " Interactive command execution in vim.
 NeoBundle 'Shougo/vimproc.vim', {
