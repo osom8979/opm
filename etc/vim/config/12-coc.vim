@@ -12,7 +12,6 @@ endif
 let g:coc_global_extensions = [
     \ 'coc-clangd',
     \ 'coc-go',
-    \ 'coc-lists',
     \ 'coc-metals',
     \ 'coc-omnisharp',
     \ 'coc-python',
@@ -23,6 +22,10 @@ let g:coc_global_extensions = [
     \ 'coc-tsserver',
     \ 'coc-vetur',
     \]
+
+" [WARN]
+" Extension "coc-lists" registered synchronized autocmd "VimLeavePre",
+" which could be slow.
 
 let g:coc_disable_startup_warning = 1
 let g:coc_node_path = g:opn_node_path
