@@ -29,7 +29,7 @@ set  tabstop=4                  " tab size.
 set  expandtab                  " tab to space.
 set  autoindent                 " auto indent.
 "set smartindent                " auto indent.
-set  shiftwidth=4               " indent size.
+set  shiftwidth=4               " indent size in '>>' or '<<'
 set  nofoldenable               " no folding.
 set  noswapfile                 " no swap file.
 "set nobackup                   " no backup.
