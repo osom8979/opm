@@ -7,4 +7,4 @@ if ! command -v shellcheck &> /dev/null; then
     exit 1
 fi
 
-shellcheck "$@" "$ROOT_DIR"/bin/*
+shellcheck --source-path="$ROOT_DIR/bin" "$@" "$ROOT_DIR"/bin/*
