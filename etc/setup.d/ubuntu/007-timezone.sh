@@ -15,7 +15,9 @@ if ! CURRENT_TIMEZONE=$(timedatectl -p Timezone --value show); then
     exit 1
 fi
 
+DEFAULT_TIMEZONE="Asia/Seoul"
+
 echo "The current timezone is '$CURRENT_TIMEZONE'"
-read -r -p "Please enter the timezone to change: " NEXT_TIMEZONE
+read -r -i "$DEFAULT_TIMEZONE" -p "Please enter the timezone to change: " NEXT_TIMEZONE
 
 timedatectl set-timezone "$NEXT_TIMEZONE"
