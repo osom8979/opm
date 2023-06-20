@@ -44,7 +44,11 @@ function update_font_cache
     case $KERNEL in
     Linux)
         if ! command -v fc-cache &> /dev/null; then
-            echo "Not found 'fc-cache' command" 1>&2
+            (
+                echo "Not found 'fc-cache' command"
+                echo "Please run the following command:"
+                echo "  sudo apt install fontconfig"
+            ) 1>&2
             exit 1
         fi
         fc-cache --force --verbose
