@@ -8,15 +8,7 @@ fi
 OPCODE=${1:-install}
 FORCE=${FORCE:-0}
 AUTOMATIC_YES=${AUTOMATIC_YES:-0}
-VFI_FLAGS=${VFI_FLAGS:--v}
-
-CONTENT="
-## OSOM PACKAGE MANAGER
-export OPM_HOME=\"$OPM_HOME\"
-if [[ -f \"\$OPM_HOME/profile.sh\" ]]; then
-    source \"\$OPM_HOME/profile.sh\"
-fi
-"
+IFS=" " read -r -a VFI_FLAGS <<< "${VFI_FLAGS:--v}"
 
 function find_profile_path
 {

@@ -8,7 +8,7 @@ fi
 OPCODE=${1:-install}
 FORCE=${FORCE:-0}
 AUTOMATIC_YES=${AUTOMATIC_YES:-0}
-VFI_FLAGS=${VFI_FLAGS:--v}
+IFS=" " read -r -a VFI_FLAGS <<< "${VFI_FLAGS:--v}"
 
 DEST=$HOME/.lldbinit
 SRC=$OPM_HOME/etc/lldb/lldbinit
@@ -36,7 +36,7 @@ function install
 
 function uninstall
 {
-    rm "$VFI_FLAGS" "$DEST"
+    rm "${VFI_FLAGS[@]}" "$DEST"
 }
 
 if [[ $OPCODE == "install" ]]; then

@@ -8,7 +8,7 @@ fi
 OPCODE=${1:-install}
 FORCE=${FORCE:-0}
 AUTOMATIC_YES=${AUTOMATIC_YES:-0}
-VFI_FLAGS=${VFI_FLAGS:--v}
+IFS=" " read -r -a VFI_FLAGS <<< "${VFI_FLAGS:--v}"
 
 VIMRC=$HOME/.vimrc
 IDEAVIMRC=$HOME/.ideavimrc
@@ -58,9 +58,9 @@ function install
 
 function uninstall
 {
-    rm "$VFI_FLAGS" "$VIMRC"
-    rm "$VFI_FLAGS" "$IDEAVIMRC"
-    rm "$VFI_FLAGS" "$NEOVIMRC"
+    rm "${VFI_FLAGS[@]}" "$VIMRC"
+    rm "${VFI_FLAGS[@]}" "$IDEAVIMRC"
+    rm "${VFI_FLAGS[@]}" "$NEOVIMRC"
 }
 
 if [[ $OPCODE == "install" ]]; then

@@ -8,7 +8,7 @@ fi
 OPCODE=${1:-install}
 FORCE=${FORCE:-0}
 AUTOMATIC_YES=${AUTOMATIC_YES:-0}
-VFI_FLAGS=${VFI_FLAGS:--v}
+IFS=" " read -r -a VFI_FLAGS <<< "${VFI_FLAGS:--v}"
 
 # https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/DroidSansMono/complete/Droid%20Sans%20Mono%20Nerd%20Font%20Complete.otf
 FONT_NAME="DroidSansMono Nerd Font"
@@ -70,7 +70,7 @@ function install
         mkdir -vp "$INSTALL_DIR"
     fi
 
-    cp "$VFI_FLAGS" "$SRC" "$DEST"
+    cp "${VFI_FLAGS[@]}" "$SRC" "$DEST"
     echo "NERD font installation successful: $DEST"
 
     update_font_cache
@@ -78,7 +78,7 @@ function install
 
 function uninstall
 {
-    rm "$VFI_FLAGS" "$DEST"
+    rm "${VFI_FLAGS[@]}" "$DEST"
 }
 
 if [[ $OPCODE == "install" ]]; then
