@@ -18,6 +18,8 @@ fi
 DEFAULT_TIMEZONE="Asia/Seoul"
 
 echo "The current timezone is '$CURRENT_TIMEZONE'"
-read -r -i "$DEFAULT_TIMEZONE" -p "Please enter the timezone to change: " NEXT_TIMEZONE
+read -r -e -i "$DEFAULT_TIMEZONE" \
+    -p "Please enter the timezone to change (Default: $DEFAULT_TIMEZONE): " \
+    NEXT_TIMEZONE
 
 timedatectl set-timezone "$NEXT_TIMEZONE"
