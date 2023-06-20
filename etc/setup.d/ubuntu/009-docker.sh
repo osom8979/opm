@@ -52,7 +52,7 @@ apt-get update && apt-get install -y \
     docker-compose-plugin
 
 if [[ -n $SUDO_USER ]]; then
-    read -r -p "Add user '${SUDO_USER}' to 'docker' group? (y/N)" ANSWER
+    read -r -p "Add user '${SUDO_USER}' to 'docker' group? (y/N) " ANSWER
     if [[ "$ANSWER" =~ ^[yY]$ ]]; then
         usermod -aG docker "$SUDO_USER"
     fi

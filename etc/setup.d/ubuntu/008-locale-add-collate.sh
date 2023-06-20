@@ -16,10 +16,8 @@ if grep -q -E 'LC_COLLATE=' /etc/default/locale; then
 fi
 
 DEFAULT_COLLATE=ko_KR.UTF-8
-read -r -p "Please enter the LC_COLLATE (Default: $DEFAULT_COLLATE) " COLLATE
-
-if [[ -z "$COLLATE" ]]; then
-    COLLATE=$DEFAULT_COLLATE
-fi
+read -r -e -i "$DEFAULT_COLLATE" \
+    -p "Please enter the LC_COLLATE " \
+    COLLATE
 
 update-locale "LC_COLLATE=$COLLATE"
