@@ -27,7 +27,7 @@ function install
         exit 1
     fi
 
-    read -r -p -i "$USER" "User name? " USER_NAME
+    read -r -p "User name? " -i "$USER" USER_NAME
     read -r -p "User email? " USER_EMAIL
 
     {
