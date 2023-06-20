@@ -240,6 +240,11 @@ call coc#config('languageserver', {
     \       'command': 'csharp-ls',
     \       'filetypes': ['cs'],
     \       'rootPatterns': ['*.csproj', '.vim/', '.git/', '.hg/']
+    \   },
+    \   'godot': {
+    \       'host': '127.0.0.1',
+    \       'filetypes': ['gdscript'],
+    \       'port': 6005
     \   }
     \})
 
