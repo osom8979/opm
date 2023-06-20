@@ -99,9 +99,7 @@ NeoBundle 'neoclide/coc.nvim', {
     \}
 
 " Nvim treesitter configurations and abstraction layer
-NeoBundle 'nvim-treesitter/nvim-treesitter', {
-    \   'do': ':TSUpdate'
-    \}
+"NeoBundle 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 
 " opm-vim
 NeoBundle g:opm_vim_script_dir.'/opvim', {

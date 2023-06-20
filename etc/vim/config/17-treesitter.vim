@@ -1,3 +1,5 @@
+finish
+
 let s:plugin_name = 'nvim-treesitter'
 let s:plugin_homepage = 'https://github.com/nvim-treesitter/nvim-treesitter'
 if !neobundle#is_installed(s:plugin_name)
