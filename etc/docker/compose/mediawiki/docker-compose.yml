@@ -3,6 +3,7 @@ version: "3.3"
 services:
   traefik:
     image: "traefik:v2.10"
+    restart: always
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -21,6 +22,7 @@ services:
 
   mariadb:
     image: "mariadb:11.0.2"
+    restart: always
     environment:
       - "MYSQL_DATABASE=my_wiki"
       - "MYSQL_USER=wikiuser"
@@ -31,6 +33,7 @@ services:
 
   mediawiki:
     image: "mediawiki:1.39.3"
+    restart: always
     container_name: "mediawiki"
     depends_on:
       - mariadb
