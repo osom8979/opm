@@ -1,0 +1,51 @@
+version: "3.3"
+
+services:
+  traefik:
+    image: "traefik:v2.10"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL:?err}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+      #-"--log.level=DEBUG"
+    ports:
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+
+  mariadb:
+    image: "mariadb:11.0.2"
+    environment:
+      - "MYSQL_DATABASE=my_wiki"
+      - "MYSQL_USER=wikiuser"
+      - "MYSQL_PASSWORD=${MYSQL_PASSWORD:?err}"
+      - "MYSQL_RANDOM_ROOT_PASSWORD=yes"
+    volumes:
+      - "./mysql:/var/lib/mysql"
+
+  mediawiki:
+    image: "mediawiki:1.39.3"
+    container_name: "mediawiki"
+    depends_on:
+      - mariadb
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mediawiki.rule=Host(`${MEDIAWIKI_HOST:?err}`)"
+      - "traefik.http.routers.mediawiki.entrypoints=websecure"
+      - "traefik.http.routers.mediawiki.tls.certresolver=myresolver"
+    volumes:
+      - "./phpconfig.ini:/usr/local/etc/php/conf.d/mediawiki-phpconfig.ini:ro"
+      - "./logo.png:/var/www/html/resources/assets/logo.png:ro"
+      - "./ExtraSettings.php:/var/www/html/ExtraSettings.php:ro"
+      - "./LocalSettings.php:/var/www/html/LocalSettings.php:ro"
+      - "./backup.sh:/backup.sh:ro"
+      - "./import.sh:/import.sh:ro"
+      - "./images:/var/www/html/images"
+      - "./backup:/backup"

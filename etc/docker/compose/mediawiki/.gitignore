@@ -1,0 +1,7 @@
+/backup
+/images
+/letsencrypt
+/mysql
+
+.env
+LocalSettings.php
