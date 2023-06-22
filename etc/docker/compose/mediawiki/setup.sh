@@ -21,8 +21,14 @@ read -r -p "Do you want to manually enter your database password? (y/n) " YN
 if [[ "$YN" == y ]]; then
     read -r -p "Enter the database password: " MYSQL_PASSWORD
 else
-    MYSQL_PASSWORD=$(date '+%Y%m%d_%H%M%S' | sha256sum | awk '{print $1}')
+    MYSQL_PASSWORD=$(date '+%Y%m%d_%H%M%S' | sha256sum | awk '{print($1)}')
 fi
+
+DEFAULT_LANGUAGE_CODE=ko
+DEFAULT_LOCAL_TIMEZONE=Asia/Seoul
+
+read -r -e -i "$DEFAULT_LANGUAGE_CODE" -p "Enter the language code: " LANGUAGE_CODE
+read -r -e -i "$DEFAULT_LOCAL_TIMEZONE" -p "Enter the local timezone: " LOCAL_TIMEZONE
 
 ENV="
 MEDIAWIKI_HOST=$MEDIAWIKI_HOST
@@ -30,85 +36,56 @@ ACME_EMAIL=$ACME_EMAIL
 MYSQL_PASSWORD=$MYSQL_PASSWORD
 "
 
+SECRETKEY=$(date '+%Y%m%d_%H%M%S' | sha256sum | awk '{print($1)}')
+UPGRADE_KEY=$(date '+%Y%m%d_%H%M%S' | sha256sum | awk '{print(substr($1,0,16))}')
+
+LOCAL_SETTINGS="<?php
+require_once \"\$IP/ExtraSettings.php\";
+
+\$wgServer = \"https://$MEDIAWIKI_HOST\";
+\$wgDBpassword = \"$MYSQL_PASSWORD\";
+\$wgSecretKey = \"$SECRETKEY\";
+\$wgUpgradeKey = \"$UPGRADE_KEY\";
+\$wgLanguageCode = \"$LANGUAGE_CODE\";
+\$wgLocaltimezone = \"$LOCAL_TIMEZONE\";
+"
+
 REPORT="
 Go to page https://$MEDIAWIKI_HOST/mw-config/index.php and continue setting:
 
 Connect to database:
  - Database type: MariaDB, MySQL, or compatible
- - Database host: mariadb
+ - Database host: mediawiki_mariadb
  - Database name: my_wiki
  - Database table prefix: wiki
  - Database username: wikiuser
  - Database password: $MYSQL_PASSWORD
-Name:
- - Name of wiki: osom
- - Project namespace: Select 'Same as the wiki name:'
- Administrator account:
-  - Your username: $USER
-  - Password: ****
-  - Password again: ****
-  - Email address: $ACME_EMAIL
- - Select 'Ask me more questions.'
 Options:
  - User rights profile: 'Private wiki'
  - Copyright and license: 'No license footer'
- Email settings:
-  - Enable outbound email: disable
- Skins:
-  - [v] MinervaNeue
-  - [v] MonoBook
-  - [v] Timeless
-  - [v] Vector - Select 'Use this skin as default'
- Extensions:
-  Special pages:
-   - [ ] CiteThisPage
-   - [ ] Interwiki
-   - [ ] Nuke
-   - [v] Renameuser
-   - [ ] ReplaceText
-  Editors:
-   - [v] CodeEditor (requires WikiEditor)
-   - [ ] VisualEditor
-   - [v] WikiEditor
-  Parser hooks:
-   - [ ] CategoryTree
-   - [v] Cite
-   - [ ] ImageMap
-   - [ ] InputBox
-   - [v] Math
-   - [ ] ParserFunctions
-   - [ ] Poem
-   - [ ] Scribunto
-   - [v] SyntaxHighlight_GeSHi
-   - [ ] TemplateData
-  Media handlers:
-   - [v] PdfHandler
-  Spam prevention:
-   - [ ] AbuseFilter
-   - [v] ConfirmEdit
-   - [ ] SpamBlacklist
-   - [ ] TitleBlacklist
-  API:
-   - [ ] PageImages
-  Other:
-   - [ ] Gadgets
-   - [v] MultimediaViewer
-   - [ ] OATHAuth
-   - [ ] SecureLinkFixer
-   - [ ] TextExtracts
- Images and file uploads:
-  - [v] Enable file uploads
-  - [ ] Enable Instant Commons
- Personalization:
-  - Logo (icon): \$wgResourceBasePath/resources/assets/logo.png
-  - Sidebar logo (optional): \$wgResourceBasePath/resources/assets/logo.png
- Advanced configuration:
-  - Select 'PHP object caching (APC, APCu or WinCache)'
-
-Add the following PHP code manually:
-  require_once \"\$IP/ExtraSettings.php\";
+Email settings:
+ - Enable outbound email: disable
+Skins:
+ - Vector
+Extensions:
+ - Renameuser
+ - CodeEditor (requires WikiEditor)
+ - WikiEditor
+ - Cite
+ - Math
+ - SyntaxHighlight_GeSHi
+ - PdfHandler
+ - ConfirmEdit
+ - MultimediaViewer
+Images and file uploads:
+ - Enable file uploads
+Personalization:
+ - Logo (icon): \$wgResourceBasePath/resources/assets/logo.png
+ - Sidebar logo (optional): \$wgResourceBasePath/resources/assets/logo.png
+Advanced configuration:
+ - Select 'PHP object caching (APC, APCu or WinCache)'
 "
 
 echo "$ENV" > "$ENV_PATH"
-echo "<?php" > "$LOCAL_SETTINGS_PATH"
+echo "$LOCAL_SETTINGS" > "$LOCAL_SETTINGS_PATH"
 echo "$REPORT"
