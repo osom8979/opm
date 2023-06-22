@@ -43,7 +43,6 @@ services:
     volumes:
       - "./phpconfig.ini:/usr/local/etc/php/conf.d/mediawiki-phpconfig.ini:ro"
       - "./logo.png:/var/www/html/resources/assets/logo.png:ro"
-      - "./ExtraSettings.php:/var/www/html/ExtraSettings.php:ro"
       - "./LocalSettings.php:/var/www/html/LocalSettings.php:ro"
       - "./backup.sh:/backup.sh:ro"
       - "./import.sh:/import.sh:ro"

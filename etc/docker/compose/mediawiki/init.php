@@ -1,5 +1,7 @@
+<?php
+
 # Protect against web entry
-if ( !defined( 'MEDIAWIKI' ) ) {
+if (!defined('MEDIAWIKI')) {
     exit;
 }
 
@@ -43,7 +45,7 @@ $wgEmailAuthentication = true;
 
 ## Database settings
 $wgDBtype = "mysql";
-$wgDBserver = "mediawiki_mariadb";
+$wgDBserver = "mariadb";
 $wgDBname = "my_wiki";
 $wgDBuser = "wikiuser";
 # $wgDBpassword = "****";
@@ -83,10 +85,10 @@ $wgShellLocale = "C.UTF-8";
 # $wgCacheDirectory = "$IP/cache";
 
 # Site language code, should be one of the list in ./languages/data/Names.php
-$wgLanguageCode = "en";
+# $wgLanguageCode = "en";
 
 # Time zone
-$wgLocaltimezone = "UTC";
+# $wgLocaltimezone = "UTC";
 
 # Changing this will log out all existing sessions.
 $wgAuthenticationTokenVersion = "1";
@@ -113,25 +115,24 @@ $wgDefaultSkin = "vector";
 
 # Enabled skins.
 # The following skins were automatically enabled:
-wfLoadSkin( 'MinervaNeue' );
-wfLoadSkin( 'MonoBook' );
-wfLoadSkin( 'Timeless' );
-wfLoadSkin( 'Vector' );
+wfLoadSkin('MinervaNeue');
+wfLoadSkin('MonoBook');
+wfLoadSkin('Timeless');
+wfLoadSkin('Vector');
 
 # Enabled extensions. Most of the extensions are enabled by adding
 # wfLoadExtensions('ExtensionName');
 # to LocalSettings.php. Check specific extension documentation for more details.
 # The following extensions were automatically enabled:
-wfLoadExtension( 'Cite' );
-wfLoadExtension( 'CodeEditor' );
-wfLoadExtension( 'ConfirmEdit' );
-wfLoadExtension( 'Math' )
-wfLoadExtension( 'MultimediaViewer' );
-wfLoadExtension( 'PdfHandler' )
-wfLoadExtension( 'Renameuser' );
-wfLoadExtension( 'SimpleMathJax' );
-wfLoadExtension( 'SyntaxHighlight_GeSHi' );
-wfLoadExtension( 'WikiEditor' );
+wfLoadExtension('Cite');
+wfLoadExtension('CodeEditor');
+wfLoadExtension('ConfirmEdit');
+wfLoadExtension('Math');
+wfLoadExtension('MultimediaViewer');
+wfLoadExtension('PdfHandler');
+wfLoadExtension('Renameuser');
+wfLoadExtension('SyntaxHighlight_GeSHi');
+wfLoadExtension('WikiEditor');
 
 ## Maximum size of uploaded files (in bytes)
 $wgMaxUploadSize = 256 * 1024 * 1024;

@@ -2,6 +2,7 @@
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
 ENV_PATH=$ROOT_DIR/.env
+INIT_PHP_PATH=$ROOT_DIR/init.php
 LOCAL_SETTINGS_PATH=$ROOT_DIR/LocalSettings.php
 
 if [[ -f $ENV_PATH ]]; then
@@ -14,6 +15,11 @@ if [[ -f $LOCAL_SETTINGS_PATH ]]; then
     exit 1
 fi
 
+function random_hex
+{
+    tr -dc "a-f0-9" < /dev/urandom | head -c "${1:-64}"
+}
+
 read -r -p "Enter the host (e.g. wiki.example.com): " MEDIAWIKI_HOST
 read -r -p "Enter the ACME email: " ACME_EMAIL
 
@@ -21,7 +27,7 @@ read -r -p "Do you want to manually enter your database password? (y/n) " YN
 if [[ "$YN" == y ]]; then
     read -r -p "Enter the database password: " MYSQL_PASSWORD
 else
-    MYSQL_PASSWORD=$(date '+%Y%m%d_%H%M%S' | sha256sum | awk '{print($1)}')
+    MYSQL_PASSWORD=$(random_hex 64)
 fi
 
 DEFAULT_LANGUAGE_CODE=ko
@@ -36,16 +42,11 @@ ACME_EMAIL=$ACME_EMAIL
 MYSQL_PASSWORD=$MYSQL_PASSWORD
 "
 
-SECRETKEY=$(date '+%Y%m%d_%H%M%S' | sha256sum | awk '{print($1)}')
-UPGRADE_KEY=$(date '+%Y%m%d_%H%M%S' | sha256sum | awk '{print(substr($1,0,16))}')
-
-LOCAL_SETTINGS="<?php
-require_once \"\$IP/ExtraSettings.php\";
-
+LOCAL_SETTINGS="
 \$wgServer = \"https://$MEDIAWIKI_HOST\";
 \$wgDBpassword = \"$MYSQL_PASSWORD\";
-\$wgSecretKey = \"$SECRETKEY\";
-\$wgUpgradeKey = \"$UPGRADE_KEY\";
+\$wgSecretKey = \"$(random_hex 64)\";
+\$wgUpgradeKey = \"$(random_hex 16)\";
 \$wgLanguageCode = \"$LANGUAGE_CODE\";
 \$wgLocaltimezone = \"$LOCAL_TIMEZONE\";
 "
@@ -86,6 +87,7 @@ Advanced configuration:
  - Select 'PHP object caching (APC, APCu or WinCache)'
 "
 
-echo "$ENV" > "$ENV_PATH"
-echo "$LOCAL_SETTINGS" > "$LOCAL_SETTINGS_PATH"
+echo "$ENV" | sed '/^$/d' > "$ENV_PATH"
+cp -f "$INIT_PHP_PATH" "$LOCAL_SETTINGS_PATH"
+echo "$LOCAL_SETTINGS" >> "$LOCAL_SETTINGS_PATH"
 echo "$REPORT"
