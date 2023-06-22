@@ -36,6 +36,11 @@ DEFAULT_LOCAL_TIMEZONE=Asia/Seoul
 read -r -e -i "$DEFAULT_LANGUAGE_CODE" -p "Enter the language code: " LANGUAGE_CODE
 read -r -e -i "$DEFAULT_LOCAL_TIMEZONE" -p "Enter the local timezone: " LOCAL_TIMEZONE
 
+MEDIAWIKI_SECRET_KEY=$(random_hex 64)
+MEDIAWIKI_UPGRADE_KEY=$(random_hex 16)
+MEDIAWIKI_NAME="Open Source Open Mind"
+MEDIAWIKI_NAMESPACE="Osom"
+
 ENV="
 MEDIAWIKI_HOST=$MEDIAWIKI_HOST
 ACME_EMAIL=$ACME_EMAIL
@@ -45,8 +50,8 @@ MYSQL_PASSWORD=$MYSQL_PASSWORD
 LOCAL_SETTINGS="
 \$wgServer = \"https://$MEDIAWIKI_HOST\";
 \$wgDBpassword = \"$MYSQL_PASSWORD\";
-\$wgSecretKey = \"$(random_hex 64)\";
-\$wgUpgradeKey = \"$(random_hex 16)\";
+\$wgSecretKey = \"$MEDIAWIKI_SECRET_KEY\";
+\$wgUpgradeKey = \"$MEDIAWIKI_UPGRADE_KEY\";
 \$wgLanguageCode = \"$LANGUAGE_CODE\";
 \$wgLocaltimezone = \"$LOCAL_TIMEZONE\";
 "
@@ -54,37 +59,52 @@ LOCAL_SETTINGS="
 REPORT="
 Go to page https://$MEDIAWIKI_HOST/mw-config/index.php and continue setting:
 
+Language:
+ - Your language: $LANGUAGE_CODE
+ - Wiki language: $LANGUAGE_CODE
+
+Existing wiki:
+ - Upgrade key: $MEDIAWIKI_UPGRADE_KEY
+
 Connect to database:
  - Database type: MariaDB, MySQL, or compatible
- - Database host: mediawiki_mariadb
+ - Database host: mariadb
  - Database name: my_wiki
  - Database table prefix: wiki
  - Database username: wikiuser
  - Database password: $MYSQL_PASSWORD
+
+Name
+ - Name of wiki: $MEDIAWIKI_NAME
+ - Project namespace: 'Other (specify)' - $MEDIAWIKI_NAMESPACE
+
 Options:
  - User rights profile: 'Private wiki'
  - Copyright and license: 'No license footer'
-Email settings:
- - Enable outbound email: disable
-Skins:
- - Vector
-Extensions:
- - Renameuser
- - CodeEditor (requires WikiEditor)
- - WikiEditor
- - Cite
- - Math
- - SyntaxHighlight_GeSHi
- - PdfHandler
- - ConfirmEdit
- - MultimediaViewer
-Images and file uploads:
- - Enable file uploads
-Personalization:
- - Logo (icon): \$wgResourceBasePath/resources/assets/logo.png
- - Sidebar logo (optional): \$wgResourceBasePath/resources/assets/logo.png
-Advanced configuration:
- - Select 'PHP object caching (APC, APCu or WinCache)'
+ Email settings:
+  - Enable outbound email: Disable
+ Skins:
+  - MinervaNeue
+  - MonoBook
+  - Timeless
+  - Vector - 'Use this skin as default'
+ Extensions:
+  - Renameuser
+  - CodeEditor (requires WikiEditor)
+  - WikiEditor
+  - Cite
+  - Math
+  - SyntaxHighlight_GeSHi
+  - PdfHandler
+  - ConfirmEdit
+  - MultimediaViewer
+ Images and file uploads:
+  - Enable file uploads
+ Personalization:
+  - Logo (icon): \$wgResourceBasePath/resources/assets/logo.png
+  - Sidebar logo (optional): \$wgResourceBasePath/resources/assets/logo.png
+ Advanced configuration:
+  - Select 'PHP object caching (APC, APCu or WinCache)'
 "
 
 echo "$ENV" | sed '/^$/d' > "$ENV_PATH"
