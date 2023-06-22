@@ -55,7 +55,7 @@ if [[ $CODE -ne 0 ]]; then
 fi
 
 print_message "Compress the images dir ..."
-tar czf "$IMAGES_TAR_NAME" -C "$IMAGES_DIR" "$IMAGES_DIR"
+tar czf "$IMAGES_TAR_NAME" "$IMAGES_DIR"
 CODE=$?
 
 if [[ $CODE -ne 0 ]]; then
@@ -69,6 +69,6 @@ if [[ $CLEANUP -ne 0 ]]; then
     rm -f "$DB_XML_NAME"
 fi
 
-print_message "Backup complete!"
+print_message "Backup complete"
 print_message " Database: '$DB_TAR_NAME'"
 print_message " Images: '$IMAGES_TAR_NAME'"

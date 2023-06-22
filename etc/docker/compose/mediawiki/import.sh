@@ -14,18 +14,19 @@ function print_message
 
 BACKUP_DATE=$1
 
-if [[ -z $BACKUP_DATE ]]; then
-    print_error "Usage: ${BASH_SOURCE[0]} {date}"
-    exit 1
-fi
-
-CLEANUP=1
-
 MEDIAWIKI_ROOT=/var/www/html
 MAINTENANCE_DIR=$MEDIAWIKI_ROOT/maintenance
 IMAGES_DIR=$MEDIAWIKI_ROOT/images
 BACKUP_ROOT=/backup
 BACKUP_DIR=$BACKUP_ROOT/$BACKUP_DATE
+CLEANUP=1
+
+if [[ -z $BACKUP_DATE ]]; then
+    print_error "Usage: ${BASH_SOURCE[0]} {key}"
+    echo 'List of kyes:'
+    find /backup -maxdepth 1 -mindepth 1 -type d -printf ' - %f\n'
+    exit 1
+fi
 
 if [[ ! -d $BACKUP_DIR ]]; then
     print_error "Not found '$BACKUP_DIR' directory"
@@ -40,7 +41,7 @@ if [[ ! -f $DB_TAR_NAME ]]; then
     exit 1
 fi
 
-if [[ ! -f $BACKUP_DIR ]]; then
+if [[ ! -f $IMAGES_TAR_NAME ]]; then
     print_error "Not found '$IMAGES_TAR_NAME' file"
     exit 1
 fi
@@ -55,7 +56,7 @@ print_message "Create temp directory: '$TEMP_DIR'"
 mkdir -pv "$TEMP_DIR"
 
 print_message "Extract the backup file: '$DB_TAR_NAME'"
-tar xzf "$DB_TAR_NAME" -C "$TEMP_DIR"
+tar xzf "$DB_TAR_NAME" --strip-components=2 -C "$TEMP_DIR"
 CODE=$?
 
 if [[ $CODE -ne 0 ]]; then
@@ -82,7 +83,7 @@ print_message "Remove unnecessary file: '$DB_XML'"
 rm "$DB_XML"
 
 print_message "Extract the images: '$IMAGES_TAR_NAME'"
-tar xzf "$IMAGES_TAR_NAME" -C "$TEMP_DIR"
+tar xzf "$IMAGES_TAR_NAME" --strip-components=4 -C "$TEMP_DIR"
 CODE=$?
 
 if [[ $CODE -ne 0 ]]; then
