@@ -1,0 +1,3 @@
+[submodule "etc/docker/compose/mediawiki/SimpleMathJax"]
+	path = etc/docker/compose/mediawiki/SimpleMathJax
+	url = https://github.com/jmnote/SimpleMathJax.git
