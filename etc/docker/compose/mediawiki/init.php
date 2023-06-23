@@ -127,12 +127,14 @@ wfLoadSkin('Vector');
 wfLoadExtension('Cite');
 wfLoadExtension('CodeEditor');
 wfLoadExtension('ConfirmEdit');
-wfLoadExtension('Math');
 wfLoadExtension('MultimediaViewer');
 wfLoadExtension('PdfHandler');
 wfLoadExtension('Renameuser');
 wfLoadExtension('SyntaxHighlight_GeSHi');
 wfLoadExtension('WikiEditor');
+
+# Custom Extensions
+# wfLoadExtension('SimpleMathJax');
 
 ## Maximum size of uploaded files (in bytes)
 $wgMaxUploadSize = 256 * 1024 * 1024;

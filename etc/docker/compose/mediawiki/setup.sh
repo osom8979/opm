@@ -93,7 +93,6 @@ Options:
   - CodeEditor (requires WikiEditor)
   - WikiEditor
   - Cite
-  - Math
   - SyntaxHighlight_GeSHi
   - PdfHandler
   - ConfirmEdit
