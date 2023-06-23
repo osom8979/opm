@@ -46,5 +46,6 @@ services:
     volumes:
       - "./phpconfig.ini:/usr/local/etc/php/conf.d/mediawiki-phpconfig.ini:ro"
       - "./logo.png:/var/www/html/resources/assets/logo.png:ro"
+      - "./SimpleMathJax:/var/www/html/extensions/SimpleMathJax:ro"
       - "./LocalSettings.php:/var/www/html/LocalSettings.php:ro"
       - "./images:/var/www/html/images"

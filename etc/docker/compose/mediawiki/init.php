@@ -134,7 +134,7 @@ wfLoadExtension('SyntaxHighlight_GeSHi');
 wfLoadExtension('WikiEditor');
 
 # Custom Extensions
-# wfLoadExtension('SimpleMathJax');
+wfLoadExtension('SimpleMathJax');
 
 ## Maximum size of uploaded files (in bytes)
 $wgMaxUploadSize = 256 * 1024 * 1024;
