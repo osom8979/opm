@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
+
+N_PREFIX="$ROOT_DIR/.node"
+N_DIR="$ROOT_DIR/.n"
+N_EXE="$N_DIR/n"
+NODE_EXE="$N_PREFIX/bin/node"
+NODE_VERSION=18.16.1
+ENV_EXPORT_REGEX='^[ \t]*export[ \t]*[_a-zA-Z0-9]+=.*$'
+
+if [[ ! -d "$N_DIR" ]]; then
+    mkdir -vp "$N_DIR"
+fi
+if [[ ! -x "$N_EXE" ]]; then
+    curl -L "https://raw.githubusercontent.com/tj/n/master/bin/n" -o "$N_EXE"
+    chmod +x "$N_EXE"
+fi
+if [[ ! -x "$N_EXE" ]]; then
+    echo "Could not find executable n command on path '$N_EXE'"
+    exit 1
+fi
+
+if [[ ! -x "$NODE_EXE" ]]; then
+    echo "Could not find executable node command on path '$NODE_EXE'"
+    echo "Install node $NODE_VERSION ..."
+
+    N_PREFIX="$N_PREFIX" "$N_EXE" install "$NODE_VERSION"
+
+    CODE=$?
+    if [[ $CODE -ne 0 ]]; then
+        echo "Node $NODE_VERSION installation failed: $CODE"
+        exit $CODE
+    fi
+
+    echo "Install yarn ..."
+    N_PREFIX="$N_PREFIX" "$N_EXE" exec "$NODE_VERSION" npm install --global "yarn"
+fi
+
+# Read `.env` variables
+if [[ -f "$ROOT_DIR/.env" ]]; then
+    while read -r line; do
+        if echo "$line" | grep -q -E "$ENV_EXPORT_REGEX"; then
+            eval "$line"
+        else
+            eval "export $line"
+        fi
+    done < "$ROOT_DIR/.env"
+fi
+
+export PATH="$N_PREFIX/bin:$PATH"
+N_PREFIX="$N_PREFIX" "$N_EXE" exec "$NODE_VERSION" yarn "$@"
