@@ -37,9 +37,7 @@ def main(
         return 1
 
     if args.colored_logging and args.simple_logging:
-        printer(
-            "The 'colored_logging' flag and the 'simple_logging' flag cannot coexist"
-        )
+        printer("The 'colored_logging' and 'simple_logging' flags cannot coexist")
         return 1
 
     cmd = args.cmd
