@@ -27,13 +27,13 @@ services:
       - traefik
     deploy:
       mode: replicated
-      replicas: 2
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.osom_master.rule=Host(`${FRONTEND_HOST:?err}`)"
-        - "traefik.http.routers.osom_master.entrypoints=websecure"
-        - "traefik.http.routers.osom_master.tls.certresolver=osom_resolver"
-        - "traefik.http.services.osom_master.loadbalancer.server.port=80"
+      replicas: 4
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.osom_master.rule=Host(`${FRONTEND_HOST:?err}`)"
+      - "traefik.http.routers.osom_master.entrypoints=websecure"
+      - "traefik.http.routers.osom_master.tls.certresolver=osom_resolver"
+      - "traefik.http.services.osom_master.loadbalancer.server.port=80"
     command:
       - "master"
       - "--port=80"
