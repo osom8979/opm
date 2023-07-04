@@ -34,7 +34,6 @@ services:
   mediawiki:
     image: "mediawiki:1.39.3"
     restart: always
-    container_name: "mediawiki"
     depends_on:
       - mariadb
       - traefik

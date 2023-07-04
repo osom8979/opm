@@ -1,0 +1,40 @@
+version: "3.3"
+
+services:
+  traefik:
+    image: "traefik:v2.10"
+    restart: always
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.osom_resolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.osom_resolver.acme.email=${ACME_EMAIL:?err}"
+      - "--certificatesresolvers.osom_resolver.acme.storage=/letsencrypt/acme.json"
+      #-"--log.level=DEBUG"
+    ports:
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+
+  master:
+    image: "ghcr.io/osom8979/osom-work:master"
+    restart: always
+    depends_on:
+      - traefik
+    deploy:
+      mode: replicated
+      replicas: 2
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.osom_master.rule=Host(`${FRONTEND_HOST:?err}`)"
+        - "traefik.http.routers.osom_master.entrypoints=websecure"
+        - "traefik.http.routers.osom_master.tls.certresolver=osom_resolver"
+        - "traefik.http.services.osom_master.loadbalancer.server.port=80"
+    command:
+      - "master"
+      - "--port=80"
+      - "--broker=${BROKER_URL:?err}"
