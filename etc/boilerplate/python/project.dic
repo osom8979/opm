@@ -4,5 +4,6 @@
 asctime
 datefmt
 levelname
+meipass
 nocov
 pythonpath
