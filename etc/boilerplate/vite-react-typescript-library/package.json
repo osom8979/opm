@@ -1,0 +1,146 @@
+{
+  "name": "osom-ui",
+  "version": "0.0.12",
+  "description": "osom ui",
+  "repository": "https://github.com/osom8979/osom-ui",
+  "author": "zer0",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/osom-ui.umd.js",
+  "module": "./dist/osom-ui.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/osom-ui.es.js",
+      "require": "./dist/osom-ui.umd.js"
+    }
+  },
+  "files": [
+    "dist",
+    "tailwind.plugin.osomui.js"
+  ],
+  "keywords": [
+    "osom",
+    "react",
+    "ui"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:pages": "tsc && vite build -c vite.config.pages.ts",
+    "style": "prettier src -w",
+    "lint": "eslint src --ext jsx,js,tsx,ts --report-unused-disable-directives --max-warnings 0",
+    "test": "jest",
+    "preview": "vite preview -c vite.config.pages.ts",
+    "zip": "node archive.js"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^14.0.0",
+    "@types/jest": "^29.5.2",
+    "@types/react": "^18.2.14",
+    "@types/react-dom": "^18.2.6",
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "@typescript-eslint/parser": "^5.60.1",
+    "@vitejs/plugin-react-swc": "^3.0.0",
+    "adm-zip": "^0.5.10",
+    "autoprefixer": "^10.4.14",
+    "eslint": "^8.43.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.3.4",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0",
+    "jest-svg-transformer": "^1.0.0",
+    "postcss": "^8.4.24",
+    "prettier": "^2.8.8",
+    "sass": "^1.63.6",
+    "tailwindcss": "^3.3.2",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.1.5",
+    "vite": "^4.3.9",
+    "vite-plugin-dts": "^3.0.3"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "browser": true,
+      "es2021": true,
+      "node": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:prettier/recommended",
+      "plugin:react-hooks/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },
+    "plugins": [
+      "@typescript-eslint",
+      "prettier",
+      "react-refresh"
+    ],
+    "rules": {
+      "prettier/prettier": "error",
+      "indent": [
+        "error",
+        2,
+        {
+          "SwitchCase": 1
+        }
+      ],
+      "linebreak-style": [
+        "error",
+        "unix"
+      ],
+      "quotes": [
+        "error",
+        "single"
+      ],
+      "semi": [
+        "error",
+        "always"
+      ],
+      "react-refresh/only-export-components": "warn"
+    },
+    "ignorePatterns": [
+      "node_modules",
+      "dist",
+      "pages"
+    ]
+  },
+  "prettier": {
+    "printWidth": 88,
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": true,
+    "quoteProps": "as-needed",
+    "trailingComma": "all",
+    "bracketSpacing": false,
+    "bracketSameLine": false,
+    "arrowParens": "avoid",
+    "htmlWhitespaceSensitivity": "ignore",
+    "vueIndentScriptAndStyle": false,
+    "endOfLine": "lf"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "moduleNameMapper": {
+      "\\.(css|sass|scss)$": "identity-obj-proxy",
+      "\\.svg": "jest-svg-transformer"
+    }
+  },
+  "packageManager": "yarn@3.6.0"
+}

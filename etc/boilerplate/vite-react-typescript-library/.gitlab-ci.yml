@@ -1,0 +1,60 @@
+image: node:18
+
+cache:
+  paths:
+    - .yarn
+
+stages:
+  - analysis
+  - build
+  - deploy
+
+lint:
+  stage: analysis
+  cache:
+    paths:
+      - .yarn
+  before_script:
+    - yarn install
+  script:
+    - yarn lint
+
+build:
+  stage: build
+  cache:
+    paths:
+      - .yarn
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "release"
+  before_script:
+    - yarn install
+  script:
+    - yarn build
+    - yarn zip
+    - echo "BUILD_JOB_ID=$CI_JOB_ID" > build.env
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - archive.zip
+      - build.env
+
+amplify:
+  stage: deploy
+  image:
+    name: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
+  needs:
+    - build
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "release"
+  variables:
+    APP_ID: d3hmwa8f0z10dn
+    BRANCH_NAME: production
+    SOURCE_PREFIX: $CI_API_V4_URL/projects/$CI_PROJECT_ID/jobs/
+    SOURCE_SUFFIX: /artifacts/archive.zip?private_token=$PRIVATE_TOKEN
+  before_script:
+    - source build.env
+  script:
+    - aws amplify start-deployment --app-id "$APP_ID" --branch-name "$BRANCH_NAME" --source-url "$SOURCE_PREFIX$BUILD_JOB_ID$SOURCE_SUFFIX"
+  artifacts:
+    paths:
+      - archive.zip
