@@ -58,3 +58,25 @@ amplify:
   artifacts:
     paths:
       - archive.zip
+
+gitlab_build_and_deploy:
+  stage: build
+  cache:
+    paths:
+      - .yarn
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "release"
+  variables:
+    REGISTRY_URL: $CI_API_V4_URL/projects/$CI_PROJECT_ID/packages/npm/
+  before_script:
+    - yarn install
+    - echo "" >> .yarnrc.yml
+    - echo "npmScopes:" >> .yarnrc.yml
+    - echo "  bogonets-steel:" >> .yarnrc.yml
+    - echo "    npmPublishRegistry: \"$REGISTRY_URL\"" >> .yarnrc.yml
+    - echo "    npmAlwaysAuth: true" >> .yarnrc.yml
+    - echo "    npmAuthToken: \"${CI_JOB_TOKEN}\"" >> .yarnrc.yml
+    - echo "" >> .yarnrc.yml
+  script:
+    - yarn build
+    - yarn npm publish
