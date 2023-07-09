@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} {woff|woff2} src dest
+
+Available options are:
+  -h, --help        Print this message.
+"
+
+GLYPHS_PATH="$OPM_HOME/etc/pyftsubset/KS_X_1001_ex-glyphs.txt"
+
+function print_error
+{
+    # shellcheck disable=SC2145
+    echo -e "\033[31m$@\033[0m" 1>&2
+}
+
+function print_message
+{
+    # shellcheck disable=SC2145
+    echo -e "\033[32m$@\033[0m"
+}
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+trap 'cancel_black' INT
+
+function cancel_black
+{
+    print_error "An interrupt signal was detected."
+    exit 1
+}
+
+function opy_pyftsubset_krx1001_main
+{
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ -z "$1" ]]; then
+        print_error "Empty 'flavor' argument"
+        exit 1
+    fi
+    if [[ -z "$2" ]]; then
+        print_error "Empty 'src' argument"
+        exit 1
+    fi
+    if [[ -z "$3" ]]; then
+        print_error "Empty 'dest' argument"
+        exit 1
+    fi
+
+    local flavor=$1
+    local src=$2
+    local dest=$3
+    shift 3
+
+    print_message "Run pyftsubset $flavor : '$src' -> '$dest'"
+
+    local flavor_args
+    case $flavor in
+    woff)
+        flavor_args=(--flavor=woff --with-zopfli)
+        ;;
+    woff2)
+        flavor_args=(--flavor=woff2)
+        ;;
+    *)
+        print_error "Unsupported flavor argument: $flavor"
+        exit 1
+        ;;
+    esac
+
+    opy-pyftsubset "$src" \
+        "${flavor_args[@]}" \
+        --output-file="$dest" \
+        --text-file="$GLYPHS_PATH" \
+        --layout-features='*' \
+        --glyph-names \
+        --symbol-cmap \
+        --legacy-cmap \
+        --notdef-glyph \
+        --notdef-outline \
+        --recommended-glyphs \
+        --name-legacy \
+        --drop-tables= \
+        --name-IDs='*' \
+        --name-languages='*'
+}
+
+opy_pyftsubset_krx1001_main "$@"

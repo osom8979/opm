@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} {src_ext:ttf} {dest_ext:woff|woff2}
+
+Available options are:
+  -h, --help        Print this message.
+"
+
+function print_error
+{
+    # shellcheck disable=SC2145
+    echo -e "\033[31m$@\033[0m" 1>&2
+}
+
+function print_message
+{
+    # shellcheck disable=SC2145
+    echo -e "\033[32m$@\033[0m"
+}
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+trap 'cancel_black' INT
+
+function cancel_black
+{
+    print_error "An interrupt signal was detected."
+    exit 1
+}
+
+SRC_EXT=${1:-ttf}
+DEST_EXT=${2:-woff}
+
+mapfile -t SRCS < <(find . -name "*.$SRC_EXT")
+
+for f in "${SRCS[@]}"; do
+    opy-pyftsubset-krx1001 "${DEST_EXT}" "$f" "${f%%.$SRC_EXT}.$DEST_EXT"
+done
