@@ -11,8 +11,10 @@ if ! command -v opy-pip &> /dev/null; then
 fi
 
 PACKAGES=(
+    flake8
     neovim
     numpy
+    pudb
 )
 
 opy-pip install --upgrade pip
