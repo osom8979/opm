@@ -20,21 +20,49 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./letsencrypt:/letsencrypt"
 
+  watchtower:
+    image: "containrrr/watchtower:1.5"
+    restart: always
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    command:
+      - "--label-enable"
+
+  redis:
+    image: "redis:7"
+    restart: always
+    environment:
+      - TZ=Asia/Seoul
+    command:
+      - "redis-server"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   master:
     image: "ghcr.io/osom8979/osom-work:master"
     restart: always
     depends_on:
       - traefik
+      - redis
     deploy:
       mode: replicated
-      replicas: 4
+      replicas: 2
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.osom_master.rule=Host(`${FRONTEND_HOST:?err}`)"
       - "traefik.http.routers.osom_master.entrypoints=websecure"
       - "traefik.http.routers.osom_master.tls.certresolver=osom_resolver"
-      - "traefik.http.services.osom_master.loadbalancer.server.port=80"
+      - "traefik.http.services.osom_master.loadbalancer.server.port=8080"
+      - "com.centurylinklabs.watchtower.enable=true"
+    environment:
+      - TZ=Asia/Seoul
     command:
       - "master"
-      - "--port=80"
-      - "--broker=${BROKER_URL:?err}"
+    healthcheck:
+      test: ["CMD", "python3", "-m", "osom-work", "health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
