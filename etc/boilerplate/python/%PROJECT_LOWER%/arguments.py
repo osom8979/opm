@@ -109,20 +109,23 @@ def default_argument_parser() -> ArgumentParser:
         epilog=EPILOG,
         formatter_class=RawDescriptionHelpFormatter,
     )
-    parser.add_argument(
+
+    logging_group = parser.add_mutually_exclusive_group()
+    logging_group.add_argument(
         "--colored-logging",
         "-c",
         action="store_true",
         default=False,
         help="Use colored logging",
     )
-    parser.add_argument(
+    logging_group.add_argument(
         "--simple-logging",
         "-s",
         action="store_true",
         default=False,
         help="Use simple logging",
     )
+
     parser.add_argument(
         "--severity",
         choices=SEVERITIES,

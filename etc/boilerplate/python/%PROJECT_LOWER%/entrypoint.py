@@ -36,10 +36,6 @@ def main(
         printer("The command does not exist")
         return 1
 
-    if args.colored_logging and args.simple_logging:
-        printer("The 'colored_logging' and 'simple_logging' flags cannot coexist")
-        return 1
-
     cmd = args.cmd
     colored_logging = args.colored_logging
     simple_logging = args.simple_logging
