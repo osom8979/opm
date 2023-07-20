@@ -63,7 +63,7 @@ function opm_rtsp_server_main
     done
 
     local video_path=$1
-    local options=(-e "ENABLE_TIME_OVERLAY=true" -p "$port:8554")
+    local options=(-e "ENABLE_TIME_OVERLAY=true" -e "RTSP_PORT=$port" -p "$port:$port")
 
     if [[ -n "$video_path" ]]; then
         options+=(-e "INPUT=$GUEST_VIDEO_PATH")
