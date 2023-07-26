@@ -127,6 +127,13 @@ def default_argument_parser() -> ArgumentParser:
     )
 
     parser.add_argument(
+        "--use-uvloop",
+        action="store_true",
+        default=False,
+        help="Replace the event loop with uvloop",
+    )
+
+    parser.add_argument(
         "--severity",
         choices=SEVERITIES,
         default=DEFAULT_SEVERITY,
