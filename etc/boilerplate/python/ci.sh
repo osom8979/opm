@@ -138,13 +138,13 @@ function run_build
     exit_on_error
 }
 
-function run_deploy
+function run_deploy_pypi
 {
-    local repository_url
+    local repository
     local username
     local password
 
-    repository_url="${PYPI_REPOSITORY_URL:-$CI_PYPI_REPOSITORY_URL}"
+    repository="${PYPI_REPOSITORY_URL:-$CI_PYPI_REPOSITORY_URL}"
 
     # GitLab > User Settings > Personal Access Tokens
     # Name is {PYPI_USERNAME}
@@ -162,9 +162,24 @@ function run_deploy
         exit 1
     fi
 
-    print_message "Deploy to '${repository_url}'"
+    print_message "Deploy to '${repository}'"
     bash "$ROOT_DIR/python" -m twine upload \
-        --repository-url "${repository_url}" \
+        --repository-url "${repository}" \
+        --username "${username}" \
+        --password "${password}" \
+        "$ROOT_DIR/dist/*"
+    exit_on_error
+}
+
+function run_deploy_gitlab_package
+{
+    local repository="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi"
+    local username="gitlab-ci-token"
+    local password="${CI_JOB_TOKEN}"
+
+    print_message "Deploy to '${repository}'"
+    bash "$ROOT_DIR/python" -m twine upload \
+        --repository-url "${repository}" \
         --username "${username}" \
         --password "${password}" \
         "$ROOT_DIR/dist/*"
@@ -212,7 +227,8 @@ case "$COMMAND" in
         run_build
         ;;
     deploy)
-        run_deploy
+        # run_deploy_pypi
+        run_deploy_gitlab_package
         ;;
     *)
         print_error "Unknown command '$COMMAND'"
