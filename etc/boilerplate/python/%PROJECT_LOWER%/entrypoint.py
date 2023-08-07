@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from argparse import Namespace
 from sys import exit as sys_exit
 from typing import Callable, List, Optional
 
-from %PROJECT_LOWER%.arguments import CMDS, get_default_arguments
 from %PROJECT_LOWER%.apps import run_app
+from %PROJECT_LOWER%.arguments import CMDS, get_default_arguments
 from %PROJECT_LOWER%.logging.logging import (
     SEVERITY_NAME_DEBUG,
     logger,

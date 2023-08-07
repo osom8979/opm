@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from argparse import Namespace
-from typing import Callable, Optional, Tuple
+from typing import Callable
 
 
 class AppBase:

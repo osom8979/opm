@@ -85,6 +85,7 @@ def add_client_parser(subparsers) -> None:
         help="Arguments of module",
     )
 
+
 def add_server_parser(subparsers) -> None:
     # noinspection SpellCheckingInspection
     parser = subparsers.add_parser(

@@ -2,6 +2,7 @@
 
 from argparse import Namespace
 from asyncio.exceptions import CancelledError
+from typing import Callable
 
 from %PROJECT_LOWER%.apps.client.main import client_main
 from %PROJECT_LOWER%.apps.server.main import server_main

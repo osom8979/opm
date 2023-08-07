@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from argparse import Namespace
-from asyncio import Task, create_task
+from asyncio import Task, create_task, shield
 from contextlib import asynccontextmanager
-from typing import Callable, Optional, Tuple
+from typing import Callable
 
 from fastapi import APIRouter, FastAPI
 from uvicorn import run as uvicorn_run
@@ -29,7 +29,7 @@ class ServerApp(AppBase):
         assert self._app == app
         self._subtask = create_task(self.subtask_main(), name="subtask")
         yield
-        await self._subtask
+        await shield(self._subtask)
 
     async def subtask_main(self) -> None:
         pass
