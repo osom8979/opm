@@ -6,26 +6,22 @@ from typing import Final, List, Optional
 
 from %PROJECT_LOWER%.logging.logging import SEVERITIES, SEVERITY_NAME_INFO
 
-CMD_CLIENT: Final[str] = "client"
-CMD_MODULES: Final[str] = "modules"
-CMD_SERVER: Final[str] = "server"
-
 PROG: Final[str] = "%PROJECT_LOWER%"
 DESCRIPTION: Final[str] = "%PROJECT_DESC%"
 EPILOG: Final[str] = ""
 
+CMD_CLIENT: Final[str] = "client"
+CMD_CLIENT_HELP: Final[str] = ""
+CMD_CLIENT_EPILOG: Final[str] = ""
+
+CMD_SERVER: Final[str] = "server"
+CMD_SERVER_HELP: Final[str] = ""
+CMD_SERVER_EPILOG: Final[str] = ""
+
+CMDS = (CMD_CLIENT, CMD_SERVER)
+
 DEFAULT_SEVERITY: Final[str] = SEVERITY_NAME_INFO
-
-CMD1 = "cmd1"
-CMD2 = "cmd2"
-CMDS = (CMD1, CMD2)
-
-CMD1_HELP: Final[str] = ""
-CMD1_EPILOG: Final[str] = ""
-
-CMD2_HELP: Final[str] = ""
-CMD2_EPILOG: Final[str] = ""
-
+DEFAULT_HOST: Final[str] = "localhost"
 DEFAULT_BIND: Final[str] = "0.0.0.0"
 DEFAULT_PORT: Final[int] = 8080
 DEFAULT_TIMEOUT: Final[float] = 1.0
@@ -34,18 +30,68 @@ DEFAULT_TIMEOUT: Final[float] = 1.0
 @lru_cache
 def version() -> str:
     # [IMPORTANT] Avoid 'circular import' issues
-    from %PROJECT_LOWER% import __version__
+    from scot import __version__
 
     return __version__
 
 
-def add_cmd1_parser(subparsers) -> None:
+def add_client_parser(subparsers) -> None:
     # noinspection SpellCheckingInspection
     parser = subparsers.add_parser(
-        name=CMD1,
-        help=CMD1_HELP,
+        name=CMD_CLIENT,
+        help=CMD_CLIENT_HELP,
         formatter_class=RawDescriptionHelpFormatter,
-        epilog=CMD1_EPILOG,
+        epilog=CMD_CLIENT_EPILOG,
+    )
+    assert isinstance(parser, ArgumentParser)
+
+    parser.add_argument(
+        "--config",
+        "-c",
+        default=None,
+        metavar="file",
+        help="Configuration file path",
+    )
+    parser.add_argument(
+        "--host",
+        "-H",
+        default=DEFAULT_HOST,
+        metavar="host",
+        help=f"Host address (default: '{DEFAULT_HOST}')",
+    )
+    parser.add_argument(
+        "--port",
+        "-p",
+        default=DEFAULT_PORT,
+        metavar="port",
+        help=f"Port number (default: '{DEFAULT_PORT}')",
+    )
+    parser.add_argument(
+        "--timeout",
+        "-t",
+        default=DEFAULT_TIMEOUT,
+        type=float,
+        help=f"Request timeout in seconds (default: {DEFAULT_TIMEOUT})",
+    )
+    parser.add_argument(
+        "module",
+        default=None,
+        nargs="?",
+        help="Module name",
+    )
+    parser.add_argument(
+        "opts",
+        nargs=REMAINDER,
+        help="Arguments of module",
+    )
+
+def add_server_parser(subparsers) -> None:
+    # noinspection SpellCheckingInspection
+    parser = subparsers.add_parser(
+        name=CMD_SERVER,
+        help=CMD_SERVER_HELP,
+        formatter_class=RawDescriptionHelpFormatter,
+        epilog=CMD_SERVER_EPILOG,
     )
     assert isinstance(parser, ArgumentParser)
 
@@ -69,36 +115,6 @@ def add_cmd1_parser(subparsers) -> None:
         default=DEFAULT_TIMEOUT,
         type=float,
         help=f"Request timeout in seconds (default: {DEFAULT_TIMEOUT})",
-    )
-
-
-def add_cmd2_parser(subparsers) -> None:
-    # noinspection SpellCheckingInspection
-    parser = subparsers.add_parser(
-        name=CMD2,
-        help=CMD2_HELP,
-        formatter_class=RawDescriptionHelpFormatter,
-        epilog=CMD2_EPILOG,
-    )
-    assert isinstance(parser, ArgumentParser)
-
-    parser.add_argument(
-        "--config",
-        "-c",
-        default=None,
-        metavar="file",
-        help="Configuration file path",
-    )
-    parser.add_argument(
-        "module",
-        default=None,
-        nargs="?",
-        help="Module name",
-    )
-    parser.add_argument(
-        "opts",
-        nargs=REMAINDER,
-        help="Arguments of module",
     )
 
 
@@ -161,8 +177,8 @@ def default_argument_parser() -> ArgumentParser:
     )
 
     subparsers = parser.add_subparsers(dest="cmd")
-    add_cmd1_parser(subparsers)
-    add_cmd2_parser(subparsers)
+    add_client_parser(subparsers)
+    add_server_parser(subparsers)
     return parser
 
 

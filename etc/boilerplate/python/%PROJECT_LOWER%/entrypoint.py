@@ -4,7 +4,8 @@ from argparse import Namespace
 from sys import exit as sys_exit
 from typing import Callable, List, Optional
 
-from %PROJECT_LOWER%.arguments import CMD1, CMD2, CMDS, get_default_arguments
+from %PROJECT_LOWER%.arguments import CMDS, get_default_arguments
+from %PROJECT_LOWER%.apps import run_app
 from %PROJECT_LOWER%.logging.logging import (
     SEVERITY_NAME_DEBUG,
     logger,
@@ -12,18 +13,6 @@ from %PROJECT_LOWER%.logging.logging import (
     set_root_level,
     set_simple_logging_config,
 )
-
-
-def cmd1_main(args: Namespace, printer: Callable[..., None] = print) -> int:
-    assert args is not None
-    assert printer is not None
-    raise NotImplementedError
-
-
-def cmd2_main(args: Namespace, printer: Callable[..., None] = print) -> int:
-    assert args is not None
-    assert printer is not None
-    raise NotImplementedError
 
 
 def main(
@@ -60,18 +49,8 @@ def main(
     else:
         set_root_level(severity)
 
-    logger.debug(f"Arguments: {args}")
-
-    try:
-        if cmd == CMD1:
-            return cmd1_main(args, printer=printer)
-        elif cmd == CMD2:
-            return cmd2_main(args, printer=printer)
-        else:
-            assert False, "Inaccessible section"
-    except BaseException as e:
-        logger.exception(e)
-        return 1
+    logger.debug(f"Parsed arguments: {args}")
+    return run_app(cmd, args, printer)
 
 
 if __name__ == "__main__":
