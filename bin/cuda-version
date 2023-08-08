@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if ! command -v nvidia-smi &> /dev/null; then
+    opm-println-error "Not found nvidia-smi command"
+    exit 1
+fi
+
+nvidia-smi -q | grep 'CUDA Version' | awk -F: '{print $2}' | tr -d ' '
