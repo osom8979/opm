@@ -1,4 +1,5 @@
 coloredlogs
 fastapi[all]
+orjson
 overrides
 uvloop

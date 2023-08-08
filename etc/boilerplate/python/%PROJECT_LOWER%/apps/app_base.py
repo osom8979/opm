@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from argparse import Namespace
-from typing import Callable
+from typing import Any, Callable, OPtional, Tuple
+
+from %PROJECT_LOWER%.variables import PRINTER_NAMESPACE_ATTR_KEY
 
 
 class AppBase:
-    def __init__(self, args: Namespace, printer: Callable[..., None] = print):
+    def __init__(self, args: Namespace):
         self._args = args
-        self._printer = printer
 
         assert isinstance(args.debug, bool)
         assert isinstance(args.verbose, int)
@@ -16,6 +17,9 @@ class AppBase:
         self._debug = args.debug
         self._verbose = args.verbose
         self._use_uvloop = args.use_uvloop
+
+        assert hasattr(args, PRINTER_NAMESPACE_ATTR_KEY)
+        self._printer = getattr(args, PRINTER_NAMESPACE_ATTR_KEY)
 
     @property
     def args(self) -> Namespace:
@@ -65,5 +69,14 @@ class AppBase:
         else:
             return 0.0
 
-    def print(self, *args) -> None:
-        self._printer(*args)
+    @property
+    def size(self) -> Optional[Tuple[int, int]]:
+        if self._args.size is not None:
+            assert isinstance(self._args.size, str)
+            x, y = self._args.size.split("x")
+            return int(x), int(y)
+        else:
+            return None
+
+    def print(self, *args, **kwargs) -> Any:
+        return self._printer(*args, **kwargs)

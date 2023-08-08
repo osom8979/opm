@@ -3,7 +3,6 @@
 from argparse import Namespace
 from asyncio import Task, create_task, shield
 from contextlib import asynccontextmanager
-from typing import Callable
 
 from fastapi import APIRouter, FastAPI
 from uvicorn import run as uvicorn_run
@@ -15,8 +14,8 @@ from %PROJECT_LOWER%.logging.logging import logger
 class ServerApp(AppBase):
     _subtask: Task[None]
 
-    def __init__(self, args: Namespace, printer: Callable[..., None] = print):
-        super().__init__(args, printer)
+    def __init__(self, args: Namespace):
+        super().__init__(args)
 
         self._router = APIRouter()
         self._router.add_api_route("/health", self.health, methods=["GET"])
@@ -61,6 +60,6 @@ class ServerApp(AppBase):
         )
 
 
-def server_main(args: Namespace, printer: Callable[..., None] = print) -> None:
-    app = ServerApp(args, printer)
+def server_main(args: Namespace) -> None:
+    app = ServerApp(args)
     app.run()

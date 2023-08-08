@@ -15,10 +15,10 @@ CMD2MAIN = {
 }
 
 
-def run_app(cmd: str, args: Namespace, printer: Callable[..., None] = print) -> int:
+def run_app(cmd: str, args: Namespace) -> int:
     assert cmd in CMD2MAIN
     try:
-        CMD2MAIN[cmd](args, printer)
+        CMD2MAIN[cmd](args)
     except CancelledError:
         logger.debug("An cancelled signal was detected")
         return 0
