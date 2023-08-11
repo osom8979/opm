@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from argparse import Namespace
-from typing import Any, Callable, OPtional, Tuple
+from typing import Any, Optional, Tuple
 
 from %PROJECT_LOWER%.variables import PRINTER_NAMESPACE_ATTR_KEY
 

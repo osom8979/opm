@@ -228,7 +228,7 @@ case "$COMMAND" in
         ;;
     deploy)
         # run_deploy_pypi
-        run_deploy_gitlab_package
+        # run_deploy_gitlab_package
         ;;
     *)
         print_error "Unknown command '$COMMAND'"

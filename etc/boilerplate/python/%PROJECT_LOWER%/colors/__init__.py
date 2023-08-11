@@ -5,7 +5,7 @@ from importlib import import_module
 from types import ModuleType
 from typing import Dict, Final, Tuple
 
-COLORS_PACKAGE_PATH: Final[str] = "scot.colors"
+COLORS_PACKAGE_PATH: Final[str] = "%PROJECT_LOWER%.colors"
 
 
 def _color_filter(module: ModuleType, key: str) -> bool:

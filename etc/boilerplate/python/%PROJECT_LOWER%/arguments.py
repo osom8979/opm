@@ -30,7 +30,7 @@ DEFAULT_TIMEOUT: Final[float] = 1.0
 @lru_cache
 def version() -> str:
     # [IMPORTANT] Avoid 'circular import' issues
-    from scot import __version__
+    from %PROJECT_LOWER% import __version__
 
     return __version__
 
