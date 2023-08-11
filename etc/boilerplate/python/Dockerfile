@@ -1,4 +1,4 @@
-FROM python:3.11.2-slim as builder
+FROM python:3.9.17-slim as builder
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -13,7 +13,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/.wheels -r requirements.
     cp dist/*.whl /app/.wheels
 
 # --[[ NEXT STAGE
-FROM python:3.11.2-slim
+FROM python:3.9.17-slim
 
 WORKDIR /app
 COPY --from=builder /app/.wheels /app/.wheels
