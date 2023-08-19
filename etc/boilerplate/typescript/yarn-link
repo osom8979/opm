@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
+
+USAGE="Usage: ${BASH_SOURCE[0]} name dir"
+
+if [[ $# -lt 2 ]]; then
+    echo "$USAGE" 1>&2
+    exit 1
+fi
+
+PACKAGE_NAME=$1
+PACKAGE_DIR=$2
+
+if [[ ! -d "$PACKAGE_DIR" ]]; then
+    echo "Not found directory: $PACKAGE_DIR"
+    exit 1
+fi
+
+"$ROOT_DIR/yarn" --cwd "$PACKAGE_DIR" link
+"$ROOT_DIR/yarn" link "$PACKAGE_NAME"
