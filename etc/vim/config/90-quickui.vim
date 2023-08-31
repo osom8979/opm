@@ -91,6 +91,8 @@ call quickui#menu#install("&Edit", [
             \ [ "--", "" ],
             \ [ "HEX color to rgba", ":HexRgba" ],
             \ [ "--", "" ],
+            \ [ "Wiki/4Space to Asterisk", ":%s/^    /* / | %s/    /*/g" ],
+            \ [ "--", "" ],
             \ [ "PascalCase\tgsp", ':execute "normal \<Plug>CaserMixedCase"' ],
             \ [ "camelCase\tgsc", ':execute "normal \<Plug>CaserCamelCase"' ],
             \ [ "snake_case\tgs_", ':execute "normal \<Plug>CaserSnakeCase"' ],
