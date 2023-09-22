@@ -11,10 +11,12 @@ fi
 
 DAYS=365
 KEYSIZE=4096
+DHSIZE=2048
 CHECK=0
 PRIVATE_FILE=private.key
 REQUEST_FILE=request.csr
 CERTIFICATE_FILE=ca.crt
+DH_FILE=params.dh
 
 COUNTRY=NO
 STATE=NO
@@ -129,6 +131,9 @@ function opm_generate_ssc_main
         opm-println-info "Check a certificate"
         openssl x509 -in "$CERTIFICATE_FILE" -text -noout
     fi
+
+    opm-println-info "Generate DH params file: $PRIVATE_FILE"
+    openssl dhparam -out "$DH_FILE" "$DHSIZE"
 }
 
 opm_generate_ssc_main "$@"
