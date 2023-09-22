@@ -1,0 +1,134 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v openssl &> /dev/null; then
+    opm-println-error "Not found openssl command"
+    exit 1
+fi
+
+DAYS=365
+KEYSIZE=4096
+CHECK=0
+PRIVATE_FILE=private.key
+REQUEST_FILE=request.csr
+CERTIFICATE_FILE=ca.crt
+
+COUNTRY=NO
+STATE=NO
+LOCATION=NO
+ORGANIZATION=NO
+ORGANIZATIONAL_UNIT=NO
+COMMON_NAME=NO
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} [options]
+
+Available options are:
+  -h, --help    Print this message
+  --days        Expiration period (default: $DAYS)
+  --keysize     Private key size (default: $KEYSIZE)
+  -c            Country (default: '$COUNTRY')
+  -s            State (default: '$STATE')
+  -l            Location (default: '$LOCATION')
+  -o            Organization (default: '$ORGANIZATION')
+  -ou           Organizational Unit (default: '$ORGANIZATIONAL_UNIT')
+  -cn           Common Name (default: '$COMMON_NAME')
+  --check       Check a certificate file
+  --            Skip handling options
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+# ssc: self signed certificate
+function opm_generate_ssc_main
+{
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        --days)
+            DAYS=$2
+            shift 2
+            ;;
+        --keysize)
+            KEYSIZE=$2
+            shift 2
+            ;;
+        -c)
+            COUNTRY=$2
+            shift 2
+            ;;
+        -s)
+            STATE=$2
+            shift 2
+            ;;
+        -l)
+            LOCATION=$2
+            shift 2
+            ;;
+        -o)
+            ORGANIZATION=$2
+            shift 2
+            ;;
+        -ou)
+            ORGANIZATIONAL_UNIT=$2
+            shift 2
+            ;;
+        -cn)
+            COMMON_NAME=$2
+            shift 2
+            ;;
+        --check)
+            CHECK=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    ## sets certificate subject
+    local subj=""
+    subj="${subj}/C=${COUNTRY}"
+    subj="${subj}/ST=${STATE}"
+    subj="${subj}/L=${LOCATION}"
+    subj="${subj}/O=${ORGANIZATION}"
+    subj="${subj}/OU=${ORGANIZATIONAL_UNIT}"
+    subj="${subj}/CN=${COMMON_NAME}"
+
+    opm-println-info "Generate RSA Private key: $PRIVATE_FILE"
+    openssl genrsa -out "$PRIVATE_FILE" "$KEYSIZE"
+
+    opm-println-info "Create the certificate signing request: $REQUEST_FILE"
+    openssl req -new -sha256 \
+        -key "$PRIVATE_FILE" \
+        -out "$REQUEST_FILE" \
+        -subj "$subj"
+
+    opm-println-info "Sign the certificate using the private key and CSR: $CERTIFICATE_FILE"
+    openssl x509 -req -sha256 \
+        -days "$DAYS" \
+        -in "$REQUEST_FILE" \
+        -signkey "$PRIVATE_FILE" \
+        -out "$CERTIFICATE_FILE"
+
+    if [[ $CHECK -ne 0 ]]; then
+        opm-println-info "Check a certificate"
+        openssl x509 -in "$CERTIFICATE_FILE" -text -noout
+    fi
+}
+
+opm_generate_ssc_main "$@"
