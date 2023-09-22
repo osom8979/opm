@@ -14,6 +14,7 @@ from logging import (
 )
 from logging import config as logging_config
 from logging import getLogger
+from logging.handlers import TimedRotatingFileHandler
 from sys import stdout
 from typing import Final, Literal, Optional, Union
 
@@ -40,6 +41,9 @@ SEVERITIES = (
 )
 
 LoggingStyleLiteral = Literal["%", "{", "$"]
+TimedRotatingWhenLiteral = Literal[
+    "S", "M", "H", "D", "W0", "W1", "W2", "W3", "W4", "W5", "W6", "midnight"
+]  # W0=Monday
 
 DEFAULT_SIMPLE_LOGGING_FORMAT: Final[str] = "{levelname[0]} [{name}] {message}"
 DEFAULT_SIMPLE_LOGGING_STYLE: Final[LoggingStyleLiteral] = "{"
@@ -192,25 +196,49 @@ def set_default_logging_config() -> None:
     logging_config.dictConfig(DEFAULT_LOGGING_CONFIG)
 
 
-def set_colored_formatter_logging_config() -> None:
+def add_colored_formatter_logging_config(level=DEBUG) -> None:
     from %PROJECT_LOWER%.logging.colored_formatter import ColoredFormatter
 
-    formatter = ColoredFormatter(DEFAULT_FORMAT, DEFAULT_DATEFMT, DEFAULT_STYLE)
+    formatter = ColoredFormatter(
+        fmt=DEFAULT_FORMAT,
+        datefmt=DEFAULT_DATEFMT,
+        style=DEFAULT_STYLE,
+    )
 
     handler = StreamHandler(stdout)
     handler.setFormatter(formatter)
-    handler.setLevel(DEBUG)
+    handler.setLevel(level)
 
-    root_logger = getLogger()
-    root_logger.setLevel(DEBUG)
-    root_logger.addHandler(handler)
+    getLogger().addHandler(handler)
 
 
-def set_simple_logging_config() -> None:
-    simple_formatter = Formatter(
+def add_rotate_file_logging_config(
+    prefix: str,
+    when: Union[str, TimedRotatingWhenLiteral] = "D",
+    level=DEBUG,
+) -> None:
+    formatter = Formatter(
+        fmt=DEFAULT_FORMAT,
+        datefmt=DEFAULT_DATEFMT,
+        style=DEFAULT_STYLE,
+    )
+
+    handler = TimedRotatingFileHandler(prefix, when)
+    handler.suffix = "%Y%m%d_%H%M%S.log"
+    handler.setFormatter(formatter)
+    handler.setLevel(level)
+
+    getLogger().addHandler(handler)
+
+
+def add_simple_logging_config(level=DEBUG) -> None:
+    formatter = Formatter(
         fmt=DEFAULT_SIMPLE_LOGGING_FORMAT,
         style=DEFAULT_SIMPLE_LOGGING_STYLE,
     )
-    stream_handler = StreamHandler(stdout)
-    stream_handler.setFormatter(simple_formatter)
-    getLogger().addHandler(stream_handler)
+
+    handler = StreamHandler(stdout)
+    handler.setFormatter(formatter)
+    handler.setLevel(level)
+
+    getLogger().addHandler(handler)

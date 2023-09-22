@@ -7,12 +7,13 @@ from %PROJECT_LOWER%.apps import run_app
 from %PROJECT_LOWER%.arguments import CMDS, get_default_arguments
 from %PROJECT_LOWER%.logging.logging import (
     SEVERITY_NAME_DEBUG,
+    add_colored_formatter_logging_config,
+    add_rotate_file_logging_config,
+    add_simple_logging_config,
     logger,
-    set_colored_formatter_logging_config,
     set_root_level,
-    set_simple_logging_config,
 )
-from %PROJECT_LOWER%.variables import PRINTER_NAMESPACE_ATTR_KEY
+from %PROJECT_LOWER%.variables import PRINTER_ATTR_KEY, VERBOSE_LEVEL_1
 
 
 def main(
@@ -25,35 +26,48 @@ def main(
         printer("The command does not exist")
         return 1
 
+    if args.colored_logging and args.simple_logging:
+        printer("The 'colored_logging' and 'simple_logging' flags cannot coexist")
+        return 1
+
+    assert args.cmd in CMDS
+    assert isinstance(args.colored_logging, bool)
+    assert isinstance(args.simple_logging, bool)
+    assert isinstance(args.rotate_logging, (type(None), str))
+    assert isinstance(args.rotate_logging_when, str)
+    assert isinstance(args.severity, str)
+    assert isinstance(args.debug, bool)
+    assert isinstance(args.verbose, int)
+
     cmd = args.cmd
     colored_logging = args.colored_logging
     simple_logging = args.simple_logging
+    rotate_logging = args.rotate_logging
+    rotate_logging_when = args.rotate_logging_when
     severity = args.severity
     debug = args.debug
     verbose = args.verbose
 
-    assert cmd in CMDS
-    assert isinstance(colored_logging, bool)
-    assert isinstance(simple_logging, bool)
-    assert isinstance(severity, str)
-    assert isinstance(debug, bool)
-    assert isinstance(verbose, int)
-
-    assert not hasattr(args, PRINTER_NAMESPACE_ATTR_KEY)
-    setattr(args, PRINTER_NAMESPACE_ATTR_KEY, printer)
-    assert hasattr(args, PRINTER_NAMESPACE_ATTR_KEY)
+    assert not hasattr(args, PRINTER_ATTR_KEY)
+    setattr(args, PRINTER_ATTR_KEY, printer)
+    assert hasattr(args, PRINTER_ATTR_KEY)
 
     if colored_logging:
-        set_colored_formatter_logging_config()
+        add_colored_formatter_logging_config()
     elif simple_logging:
-        set_simple_logging_config()
+        add_simple_logging_config()
+
+    if rotate_logging:
+        add_rotate_file_logging_config(rotate_logging, rotate_logging_when)
 
     if debug:
         set_root_level(SEVERITY_NAME_DEBUG)
     else:
         set_root_level(severity)
 
-    logger.debug(f"Parsed arguments: {args}")
+    if verbose >= VERBOSE_LEVEL_1:
+        logger.debug(f"Parsed arguments: {args}")
+
     return run_app(cmd, args)
 
 

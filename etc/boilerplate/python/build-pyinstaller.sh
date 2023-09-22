@@ -17,6 +17,7 @@ fi
 source "$ACTIVATE_PATH"
 
 cd "$ROOT_DIR" && pyinstaller \
+    --name "%PROJECT_NAME%" \
     --onefile \
     --clean \
     --noconsole \
