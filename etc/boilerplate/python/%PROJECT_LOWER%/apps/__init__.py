@@ -2,22 +2,31 @@
 
 from argparse import Namespace
 from asyncio.exceptions import CancelledError
+from functools import lru_cache
 
 from %PROJECT_LOWER%.apps.client.main import client_main
 from %PROJECT_LOWER%.apps.server.main import server_main
 from %PROJECT_LOWER%.arguments import CMD_CLIENT, CMD_SERVER
 from %PROJECT_LOWER%.logging.logging import logger
 
-CMD2MAIN = {
-    CMD_CLIENT: client_main,
-    CMD_SERVER: server_main,
-}
+
+@lru_cache
+def cmd_apps():
+    return {
+        CMD_CLIENT: client_main,
+        CMD_SERVER: server_main,
+    }
 
 
 def run_app(cmd: str, args: Namespace) -> int:
-    assert cmd in CMD2MAIN
+    apps = cmd_apps()
+    app = apps.get(cmd, None)
+    if app is None:
+        logger.error(f"Unknown app command: {cmd}")
+        return 1
+
     try:
-        CMD2MAIN[cmd](args)
+        app(args)
     except CancelledError:
         logger.debug("An cancelled signal was detected")
         return 0
