@@ -2,6 +2,8 @@
 
 scriptencoding utf-8
 
+" nnoremap p <ESC>:action EditorPasteSimple<CR>
+
 " nnoremap <C-\><C-[> <ESC>:action PreviousTab<CR>
 " nnoremap <C-\><C-]> <ESC>:action NextTab<CR>
 
