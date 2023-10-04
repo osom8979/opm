@@ -284,7 +284,7 @@ function! s:ToggleTerminalBuffer(...)
             silent execute 'bdelete! ' . dic[s:BUFFER_NUM]
         endif
     else
-        silent execute 'topleft ' . g:opm_terminal_height . 'split term://bash -l | startinsert'
+        silent execute 'belowright ' . g:opm_terminal_height . 'split term://bash -l | startinsert'
     endif
 endfunction
 
