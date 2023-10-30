@@ -2,8 +2,39 @@
 
 scriptencoding utf-8
 
+sethandler <C-2>    a:vim  " Project Directory
+sethandler <C-S-2>  a:vim  " Toggle Bookmark 2
+sethandler <C-6>    a:vim  " Go to Bookmark 6
+sethandler <C-S-6>  a:vim  " Toggle Bookmark 6
+sethandler <C-A>    a:vim  " Select All
+sethandler <C-B>    a:vim  " Referenced Rows
+sethandler <C-C>    a:ide  " Copy
+sethandler <C-D>    a:vim  " Show Diff
+sethandler <C-E>    a:vim  " Toggle Changed Only Files
+sethandler <C-F>    a:vim  " Find
+sethandler <C-G>    a:vim  " Row
+sethandler <C-H>    a:vim  " Base on This Class
+sethandler <C-I>    a:vim  " Implement Methods
+sethandler <C-J>    a:vim  " Insert Live Template
+sethandler <C-K>    a:vim  " Commit
+sethandler <C-L>    a:vim  " Focus Text Filter
+sethandler <C-M>    a:vim  " Scroll to Center
+sethandler <C-N>    a:vim  " New Directory
+sethandler <C-O>    a:vim  " Override Methods
+sethandler <C-P>    a:vim  " Show/Hide Path Input Field
+sethandler <C-Q>    a:vim  " Show Commit Tooltip
+sethandler <C-R>    a:vim  " Replace
+sethandler <C-S>    a:ide  " Save All
+sethandler <C-T>    a:vim  " Update Project
+sethandler <C-U>    a:vim  " Go to Super Method
+sethandler <C-V>    a:vim  " Paste
+sethandler <C-W>    a:vim  " Extend Selection
+sethandler <C-X>    a:vim  " Remove
+sethandler <C-Y>    a:vim  " Delete Selected Rows
+sethandler <C-[>    a:vim  " Move Caret to Code Block Start
+sethandler <C-]>    a:vim  " Move Caret to Code Block End
+
 " nnoremap p <ESC>:action EditorPasteSimple<CR>
 
 " nnoremap <C-\><C-[> <ESC>:action PreviousTab<CR>
 " nnoremap <C-\><C-]> <ESC>:action NextTab<CR>
-
