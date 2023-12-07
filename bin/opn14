@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-
-if ! command -v opm-version &> /dev/null; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
-fi
-
-source opn14-env && node "$@"

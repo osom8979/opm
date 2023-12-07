@@ -4,4 +4,7 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-source opn16-env
+export OPN_VERSION=${OPN_VERSION:-$(opm-variable OPN_VERSION)}
+export OPN_VERBOSE=${OPN_VERBOSE:-$(opm-variable OPN_VERBOSE)}
+
+source opm-init-opn
