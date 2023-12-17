@@ -1,7 +1,7 @@
-#!/usr/bin/with-contenv sh
-
-set -e # Exit immediately if a command exits with a non-zero status.
-set -u # Treat unset variables as an error.
+# #!/usr/bin/with-contenv sh
+#
+# set -e # Exit immediately if a command exits with a non-zero status.
+# set -u # Treat unset variables as an error.
 
 export HOME=/config
 export PROFILE_DIR=$HOME/profile
@@ -22,7 +22,7 @@ unzip -p "$VDH_EXT_OUT" manifest.json \
 
 firefox --version
 
-exec /usr/bin/firefox_wrapper \
+exec /usr/bin/firefox \
     --profile "$PROFILE_DIR" \
     --setDefaultBrowser \
     >> "$OUTPUT_LOG" \
