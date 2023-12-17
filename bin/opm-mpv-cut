@@ -1,0 +1,226 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v mpv &> /dev/null; then
+    opm-println-error "Not found mpv executable"
+    exit 1
+fi
+
+if ! command -v ffmpeg &> /dev/null; then
+    opm-println-error "Not found ffmpeg executable"
+    exit 1
+fi
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} [options] video
+
+Available options are:
+  --interval={sec}  Specify update interval. (seconds)
+  -i {sec}          Same '--interval' flag.
+  --temp={dir}      Specify a temporary directory.
+  -t {dir}          Same '--temp' flag.
+  --extension={ext} Specify a output extension.
+  -e {ext}          Same '--temp' flag.
+  -h, --help        Print this message.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  -s, --silent      Suppresses all messages.
+  --                Stop handling options.
+"
+
+SELECT_FILENAME_PY_CODE="
+from tkinter import filedialog
+
+print(filedialog.askopenfilename())
+"
+
+MPV_PID=
+
+trap 'on_interrupt_trap' INT
+
+function on_interrupt_trap
+{
+    opm-println-error "An interrupt signal was detected."
+
+    if [[ -n $MPV_PID ]]; then
+        opm-println-error -v "Send a KILL signal to the mpv ($MPV_PID)"
+        kill "$MPV_PID"
+    fi
+
+    exit 1
+}
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function opm_mpv_cut_main
+{
+    local temp_dir=
+    local verbose_flag=0
+    local interval_seconds=1
+    local input_path=
+    local output_ext=
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        --interval=*)
+            interval_seconds=${1:11}
+            shift
+            ;;
+        -i|--interval)
+            interval_seconds=$2
+            shift 2
+            ;;
+        --temp=*)
+            temp_dir=${1:7}
+            shift
+            ;;
+        -t|--temp)
+            temp_dir=$2
+            shift 2
+            ;;
+        --extension=*)
+            output_ext=${1:12}
+            shift
+            ;;
+        -e|--extension)
+            output_ext=$2
+            shift 2
+            ;;
+        -h|--help)
+            print_usage
+            exit 0
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error -s "Invalid flag: $1"
+            return 1
+            ;;
+        *)
+            input_path="$1"
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    if [[ -z $input_path ]]; then
+        input_path=$(opy -c "$SELECT_FILENAME_PY_CODE")
+    fi
+    if [[ ! -f "$input_path" ]]; then
+        opm-println-error "Not found input file."
+        exit 1
+    fi
+
+    local input_parent="${input_path%/*}"
+    local input_filename="${input_path##*/}"
+    local input_name=${input_filename%.*}
+    local input_ext=${input_filename#*.}
+
+    if [[ -z $output_ext ]]; then
+        output_ext=$input_ext
+    fi
+
+    if [[ -z $temp_dir ]]; then
+        temp_dir="${input_path}.temp"
+    fi
+    if [[ ! -d "$temp_dir" ]]; then
+        mkdir -vp "$temp_dir"
+    fi
+
+    if [[ -n $(find "$temp_dir" -mindepth 1 -maxdepth 1 -type f -a -name '*.jpg') ]]; then
+        opm-println-error "An image file exists in the temporary directory."
+        opm-println-error "Please remove all image files before proceeding."
+        exit 1
+    fi
+
+    mpv \
+        --screenshot-template=%P \
+        --screenshot-directory="$temp_dir" \
+        --screenshot-format=jpg \
+        --screenshot-jpeg-quality=0 \
+        "$input_path" &> /dev/null &
+
+    MPV_PID=$!
+    opm-println -v "'mpv' process ID is $MPV_PID"
+    opm-println -v "To exit, press Q in mpv ..."
+
+    while true; do
+        opm-println -v "Next iter $(date "+%Y-%m-%d %H:%M:%S") ..."
+
+        local files
+        declare -a files
+
+        mapfile -t files < <(
+            find "$temp_dir" -mindepth 1 -maxdepth 1 -type f -a -name '*.jpg' | sort
+        )
+
+        local files_count="${#files[*]}"
+        if [[ $files_count -lt 2 ]]; then
+            continue
+        fi
+
+        local file0="${files[0]}"
+        local file1="${files[1]}"
+
+        local filename0="${file0##*/}"
+        local filename1="${file1##*/}"
+
+        local begin=${filename0%.*}
+        local end=${filename1%.*}
+
+        local suffix="${begin//:/}_${end//:/}"
+        local output="${input_parent}/${input_name}-${suffix}.${output_ext}"
+
+        opm-println "Cutting video playback section in progress ($begin ~ $end) ..."
+        ffmpeg \
+            -hide_banner \
+            -loglevel error \
+            -i "$input_path" \
+            -ss "$begin" \
+            -to "$end" \
+            -c copy \
+            "$output"
+
+        local exit_code=$?
+        if [[ $exit_code -eq 0 ]]; then
+            opm-println-info "Video cutting was successful: $output"
+        else
+            opm-println-error "Failed to cut video: $exit_code"
+        fi
+
+        rm -v "$file0" "$file1"
+
+        if ! ps --pid $MPV_PID &> /dev/null; then
+            opm-println "'mpv' process has terminated."
+            exit 0
+        fi
+
+        sleep "${interval_seconds}s" &> /dev/null
+    done
+}
+
+opm_mpv_cut_main "$@"
