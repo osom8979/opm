@@ -5,4 +5,4 @@ PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 export WINEARCH=win32
-export WINEPREFIX=$HOME/.wine32
+export WINEPREFIX=$OPM_HOME/var/wine32
