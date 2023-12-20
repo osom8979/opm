@@ -4,4 +4,13 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-opm-wine64 "$WINEPREFIX/drive_c/Program\ Files\ \(x86\)/Kakao/KakaoTalk/KakaoTalk.exe" "$@"
+WINEPREFIX=$(source opm-wine64-env && echo -n "$WINEPREFIX")
+KAKAO_SUFFIX="Program Files (x86)/Kakao/KakaoTalk/KakaoTalk.exe"
+KAKAO_PATH="$WINEPREFIX/drive_c/$KAKAO_SUFFIX"
+
+if [[ ! -f "$KAKAO_PATH" ]]; then
+    opm-println-error "Not found KakaoTalk.exe file"
+    exit 1
+fi
+
+opm-wine64 "$KAKAO_PATH" "$@" &

@@ -4,4 +4,9 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
+if ! command -v winetricks &> /dev/null; then
+    opm-println-error "Not found winetricks executable"
+    exit 1
+fi
+
 source opm-wine64-env && winetricks "$@"
