@@ -6,6 +6,7 @@ fi
 
 if ! command -v winetricks &> /dev/null; then
     opm-println-error "Not found winetricks executable"
+    opm-println-error "Try: apt install winetricks"
     exit 1
 fi
 
