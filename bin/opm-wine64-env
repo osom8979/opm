@@ -4,9 +4,9 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-if ! command -v wine &> /dev/null; then
-    opm-println-error "Not found wine executable"
-    opm-println-error "Try: apt install wine-stable"
+if ! command -v wine64 &> /dev/null; then
+    opm-println-error "Not found wine64 executable"
+    opm-println-error "Try this command: apt install wine64"
     exit 1
 fi
 

@@ -6,7 +6,7 @@ fi
 
 if ! command -v wine &> /dev/null; then
     opm-println-error "Not found wine executable"
-    opm-println-error "Try: apt install wine-stable"
+    opm-println-error "Try this command: apt install wine"
     exit 1
 fi
 

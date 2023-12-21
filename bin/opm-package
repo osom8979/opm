@@ -238,7 +238,7 @@ function package_main
             manager=${1:10}
             shift
             ;;
-        -m)
+        -m|--manager)
             manager=${2}
             shift 2
             ;;

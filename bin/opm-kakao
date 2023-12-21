@@ -8,9 +8,23 @@ WINEPREFIX=$(source opm-wine64-env && echo -n "$WINEPREFIX")
 KAKAO_SUFFIX="Program Files (x86)/Kakao/KakaoTalk/KakaoTalk.exe"
 KAKAO_PATH="$WINEPREFIX/drive_c/$KAKAO_SUFFIX"
 
+TEMP_DIR="$WINEPREFIX/temp"
+SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe"
+SETUP_PATH="$TEMP_DIR/KakaoTalk_Setup.exe"
+
 if [[ ! -f "$KAKAO_PATH" ]]; then
-    opm-println-error "Not found KakaoTalk.exe file"
-    exit 1
+    opm-println-warn "Not found KakaoTalk.exe file"
+
+    if [[ ! -d "$TEMP_DIR" ]]; then
+        mkdir -vp "$TEMP_DIR"
+    fi
+
+    if [[ ! -f "$SETUP_PATH" ]]; then
+        curl -o "$SETUP_PATH" "$SETUP_URL"
+    fi
+
+    opm-wine64 "$SETUP_PATH"
+    exit $?
 fi
 
 opm-wine64 "$KAKAO_PATH" "$@" &
