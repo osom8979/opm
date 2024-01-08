@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+function pip_install_if_not_exist
+{
+    if ! opy-pip show "$1" &> /dev/null; then
+        opy-pip install -U "$1"
+    fi
+}
+
+function opy_checked_install_main
+{
+    for package in "$@"; do
+        pip_install_if_not_exist "$package"
+    done
+}
+
+opy_checked_install_main "$@"

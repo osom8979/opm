@@ -4,7 +4,7 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-USAGE_MESSAGE="
+USAGE="
 Package manager.
 
   Usage: opm-package [options] [command] packages ...
@@ -28,9 +28,10 @@ Available command are:
   install       Install the package.
   remove        Remove the package.
 "
+
 function print_usage
 {
-    echo "$USAGE_MESSAGE"
+    echo "$USAGE"
 }
 
 function find_target

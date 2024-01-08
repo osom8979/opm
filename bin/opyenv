@@ -4,5 +4,10 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
+if [[ ! -d "$HOME/.pyenv" ]]; then
+    opm-println-error "Not found '$HOME/.pyenv' directory"
+    exit 1
+fi
+
 # https://github.com/pyenv/pyenv/wiki
 PATH="$HOME/.pyenv/bin/:$PATH" pyenv "$@"

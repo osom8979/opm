@@ -20,7 +20,7 @@ function print_usage
     echo "$USAGE"
 }
 
-function opm_yes_or_no
+function opm_yes_or_no_main
 {
     while [[ -n $1 ]]; do
         case $1 in
@@ -41,7 +41,7 @@ function opm_yes_or_no
     local prompt=$1
     local answer=n
 
-    read -r -p "$prompt (y/n) " answer
+    read -r -p "$prompt (y/N) " answer
 
     case "$answer" in
     [yY]*)
@@ -53,4 +53,4 @@ function opm_yes_or_no
     esac
 }
 
-opm_yes_or_no "$@"
+opm_yes_or_no_main "$@"
