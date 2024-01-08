@@ -66,7 +66,7 @@ endfunction
 
 let g:opm_vim_script_dir = expand('<sfile>:p:h')
 let g:opm_home = s:GetOpmHomeDir()
-let g:opm_information_path = g:opm_home.'/INFORMATION'
+let g:opm_information_path = g:opm_home.'/env'
 let g:opm_version = s:GetOpmVariable(g:opm_information_path, 'VERSION')
 let g:opy2_version = s:GetOpmVariable(g:opm_information_path, 'OPY2_VERSION')
 let g:opy3_version = s:GetOpmVariable(g:opm_information_path, 'OPY3_VERSION')

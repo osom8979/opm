@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import sys
+from sys import argv
+
 import cv2
 
 
@@ -24,4 +25,4 @@ def main(src: str, title="VideoPlayer") -> None:
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(argv[1])

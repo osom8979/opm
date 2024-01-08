@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from aiohttp import web
 from argparse import ArgumentParser, Namespace
 from typing import Final, List, Optional
+
+from aiohttp import web
 
 PROG: Final[str] = "aiohttp-echo-server"
 DEFAULT_BIND: Final[str] = "localhost"
@@ -60,7 +61,7 @@ def init_default_app():
     return app
 
 
-def run():
+def main():
     args = get_default_arguments()
     assert isinstance(args.bind, str)
     assert isinstance(args.port, int)
@@ -74,4 +75,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    main()

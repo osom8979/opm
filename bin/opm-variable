@@ -21,7 +21,7 @@ Available options are:
 
 function variable_main
 {
-    local src="$OPM_HOME/INFORMATION"
+    local src="$OPM_HOME/env"
     local with_key=0
 
     while [[ -n $1 ]]; do
@@ -34,7 +34,7 @@ function variable_main
             src=${1:9}
             shift
             ;;
-        -s)
+        -s|--source)
             src=${2}
             shift 2
             ;;
@@ -49,7 +49,7 @@ function variable_main
     done
 
     local total
-    total=$(grep --color=never -E '^[ \t]*[a-zA-Z0-9_]+=' "$src" | sed 's/^[ \t]*//g')
+    total=$(grep --color=never -E '^[ \t]*[a-zA-Z_][a-zA-Z0-9_]*[ \t]*=' "$src" | sed 's/^[ \t]*//g')
 
     if [[ ${#@} -eq 0 ]]; then
         echo -e "$total"
@@ -58,9 +58,9 @@ function variable_main
 
     for v in "$@"; do
         if [[ $with_key -eq 0 ]]; then
-            echo -e "$total" | grep "^${v}=" | sed "s/^${v}=//g"
+            echo -e "$total" | grep --color=never -E "^[ \t]*${v}[ \t]*=[ \t]*" | sed "s/^[ \t]*${v}[ \t]*=[ \t]*//g"
         else
-            echo -e "$total" | grep "^${v}="
+            echo -e "$total" | grep --color=never -E "^[ \t]*${v}[ \t]*=[ \t]*"
         fi
     done
 }

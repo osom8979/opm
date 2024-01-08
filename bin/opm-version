@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 
-# [WARNING]
-# This script should not refer to other OPM scripts.
-
-if [[ -z $OPM_HOME ]]; then
-OPM_HOME=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit; pwd)
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-grep --color=never '^VERSION=' "$OPM_HOME/INFORMATION" | sed 's/^VERSION=//g'
+opm-variable VERSION
