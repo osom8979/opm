@@ -6,8 +6,8 @@ fi
 
 function pip_install_if_not_exist
 {
-    if ! opy-pip show "$1" &> /dev/null; then
-        opy-pip install -U "$1"
+    if ! opy -m pip show "$1" &> /dev/null; then
+        opy -m pip install -U "$1"
     fi
 }
 

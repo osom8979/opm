@@ -5,24 +5,8 @@ PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 export OPY_SUFFIX=labelme
-export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY3_VERSION)}
+export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY_VERSION)}
 export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
 
-function install_labelme_if_not_exist
-{
-    if opy3-pip show labelme &> /dev/null; then
-        return 0
-    fi
-    opy3-pip install -U labelme
-}
-
-function opy_labelme_main
-{
-    if ! install_labelme_if_not_exist; then
-        return $?
-    fi
-
-    opy3 -m labelme "$@"
-}
-
-opy_labelme_main "$@"
+opy-checked-install labelme || exit $?
+opy -m labelme "$@"

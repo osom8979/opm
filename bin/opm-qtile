@@ -4,10 +4,16 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
+export OPY_SUFFIX=qtile
+export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY_VERSION)}
+export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
+
+opy-checked-install qtile || exit $?
+
 LIBOPY_DIR=$OPM_HOME/lib/python
 QTILE_SCRIPT_DIR=$OPM_HOME/etc/qtile
 QTILE_CONFIG_PATH=$QTILE_SCRIPT_DIR/config.py
 
-PYTHONPATH=$QTILE_SCRIPT_DIR:$LIBOPY_DIR:$PYTHONPATH \
-    source opy3-env && \
-    qtile --config="$QTILE_CONFIG_PATH" "$@"
+export PYTHONPATH=$QTILE_SCRIPT_DIR:$LIBOPY_DIR:$PYTHONPATH
+
+source opy-env && qtile --config="$QTILE_CONFIG_PATH" "$@"

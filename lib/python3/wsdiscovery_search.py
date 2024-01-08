@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, List, Optional, Union
 from json import dumps
+from typing import Dict, List, Optional, Union
 
 from wsdiscovery.discovery import ThreadedWSDiscovery
 

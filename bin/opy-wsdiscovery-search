@@ -5,5 +5,4 @@ PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 opy-checked-install WSDiscovery || exit $?
-
-opy3 "$(opm-home)/lib/python3/wsdiscovery_search.py" "$@"
+opy "$(opm-home)/lib/python3/wsdiscovery_search.py" "$@"

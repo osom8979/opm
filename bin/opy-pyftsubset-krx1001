@@ -4,14 +4,14 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
+GLYPHS_PATH="$OPM_HOME/etc/pyftsubset/KS_X_1001_ex-glyphs.txt"
+
 USAGE="
 Usage: ${BASH_SOURCE[0]} {woff|woff2} src dest
 
 Available options are:
   -h, --help        Print this message.
 "
-
-GLYPHS_PATH="$OPM_HOME/etc/pyftsubset/KS_X_1001_ex-glyphs.txt"
 
 function print_error
 {

@@ -5,6 +5,6 @@ PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY2_VERSION)}
-export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
+export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY2_VERBOSE)}
 
 source opm-init-opy

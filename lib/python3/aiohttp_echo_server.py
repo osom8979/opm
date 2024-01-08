@@ -5,7 +5,7 @@ from typing import Final, List, Optional
 
 from aiohttp import web
 
-PROG: Final[str] = "aiohttp-echo-server"
+PROG: Final[str] = "opy-aiohttp-echo-server"
 DEFAULT_BIND: Final[str] = "localhost"
 DEFAULT_PORT: Final[int] = 8080
 DEFAULT_TIMEOUT: Final[float] = 8.0

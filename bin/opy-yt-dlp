@@ -4,21 +4,5 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-function install_yt_dlp_if_not_exist
-{
-    if opy3-pip show yt-dlp &> /dev/null; then
-        return 0
-    fi
-    opy3-pip install -U yt-dlp
-}
-
-function opy_yt_dlp_main
-{
-    if ! install_yt_dlp_if_not_exist; then
-        return $?
-    fi
-
-    opy3 -m yt_dlp "$@"
-}
-
-opy_yt_dlp_main "$@"
+opy-checked-install yt-dlp || exit $?
+opy -m yt_dlp "$@"

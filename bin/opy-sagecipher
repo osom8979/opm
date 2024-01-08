@@ -15,7 +15,7 @@ if ! command -v ssh-add &> /dev/null; then
 fi
 
 export OPY_SUFFIX=sagecipher
-export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY3_VERSION)}
+export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY_VERSION)}
 export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
 
 USAGE="
@@ -41,14 +41,6 @@ print(Cipher.decrypt_string(bytearray.fromhex(argv[1])))
 "
 
 VERBOSE=0
-
-function install_sagecipher_package_if_not_exist
-{
-    if opy3-pip show sagecipher &> /dev/null; then
-        return 0
-    fi
-    opy3-pip install -U pip sagecipher
-}
 
 function kill_ssh_agent
 {
@@ -77,17 +69,17 @@ function print_usage
 
 function opy_sagecipher_encrypt
 {
-    opy3 -c "$PYTHON_ENCRYPT" "$1"
+    opy -c "$PYTHON_ENCRYPT" "$1"
 }
 
 function opy_sagecipher_decrypt
 {
-    opy3 -c "$PYTHON_DECRYPT" "$1"
+    opy -c "$PYTHON_DECRYPT" "$1"
 }
 
 function opy_sagecipher_main
 {
-    if ! install_sagecipher_package_if_not_exist; then
+    if ! opy-checked-install sagecipher; then
         return $?
     fi
 

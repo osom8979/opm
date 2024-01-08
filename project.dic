@@ -1,9 +1,11 @@
 # IDEA plugin: Dictionary
 # https://plugins.jetbrains.com/plugin/12089-dictionary
 
+addrs
 alacritty
 bestaudio
 bestvideo
+devicemgmt
 dwhelper
 endtry
 esni
@@ -23,6 +25,7 @@ opm
 opm's
 opwm
 osom
+pyftsubset
 pythonpath
 qall
 scriptencoding

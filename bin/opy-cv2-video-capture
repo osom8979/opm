@@ -4,4 +4,5 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-source opy3.7-env && pip "$@"
+opy-checked-install opencv-python || exit $?
+opy "$(opm-home)/lib/python3/cv2_video_capture.py" "$@"

@@ -4,4 +4,7 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-source opy3-env
+export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY_VERSION)}
+export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
+
+source opm-init-opy

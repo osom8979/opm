@@ -4,32 +4,5 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-PYTHON_CODE_PATH=$(opm-home)/lib/python3/aiohttp_echo_server.py
-
-function install_package_if_not_exist
-{
-    opy3-pip show "$1" &> /dev/null
-    local code=$?
-    if [[ $code -eq 0 ]]; then
-        return 0
-    fi
-    opy3-pip install -U "$1"
-}
-
-function exit_on_error
-{
-    local code=$?
-    if [[ $code -ne 0 ]]; then
-        exit $code
-    fi
-}
-
-function opy_aiohttp_echo_server_main
-{
-    install_package_if_not_exist aiohttp
-    exit_on_error
-
-    opy3 "$PYTHON_CODE_PATH" "$@"
-}
-
-opy_aiohttp_echo_server_main "$@"
+opy-checked-install aiohttp || exit $?
+opy "$(opm-home)/lib/python3/aiohttp_echo_server.py" "$@"
