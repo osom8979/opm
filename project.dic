@@ -13,6 +13,7 @@ gdbinit
 gitattributes
 hostnamectl
 keyrings
+keyrings
 lldbinit
 lscolors
 neobundle

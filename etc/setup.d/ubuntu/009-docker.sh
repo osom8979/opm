@@ -55,7 +55,14 @@ if [[ -n $SUDO_USER ]]; then
     read -r -p "Add user '${SUDO_USER}' to 'docker' group? (y/N) " ANSWER
     if [[ "$ANSWER" =~ ^[yY]$ ]]; then
         usermod -aG docker "$SUDO_USER"
+        newgrp docker
     fi
+    echo "Group result: $(grep docker /etc/group)"
 fi
 
-echo "Group result: $(grep docker /etc/group)"
+if command -v systemctl &> /dev/null; then
+    read -r -p "Restart docker service? (y/N) " ANSWER
+    if [[ "$ANSWER" =~ ^[yY]$ ]]; then
+        systemctl restart docker
+    fi
+fi
