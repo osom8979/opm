@@ -406,7 +406,7 @@ def get_default_arguments(
     parser.add_argument("--username", "-u", metavar="{id}", default=None)
     parser.add_argument("--password", "-p", metavar="{pw}", default=None)
     parser.add_argument("--use-digest", "-d", action="store_true", default=False)
-    parser.add_argument("--with-http-basic", "-b", action="store_true", default=False)
+    parser.add_argument("--with-http-basic", "-B", action="store_true", default=False)
     parser.add_argument("--with-http-digest", "-D", action="store_true", default=False)
     parser.add_argument("--address", "-a", metavar="{uri}", default="")
     subparsers = parser.add_subparsers(dest="cmd")
@@ -430,13 +430,14 @@ def get_default_arguments(
     profiles = subparsers.add_parser("GetProfiles")
     profiles.set_defaults(func=get_profiles)
 
+    _protocols = TRANSPORT_PROTOCOLS
+    _tcp = TRANSPORT_PROTOCOL_RTSP
+    _streams = STREAM_TYPES
+    _rtp_unicast = STREAM_TYPE_RTP_UNICAST
+
     stream_uri = subparsers.add_parser("GetStreamUri")
-    stream_uri.add_argument(
-        "--Protocol", choices=TRANSPORT_PROTOCOLS, default=TRANSPORT_PROTOCOL_RTSP
-    )
-    stream_uri.add_argument(
-        "--Stream", choices=STREAM_TYPES, default=STREAM_TYPE_RTP_UNICAST
-    )
+    stream_uri.add_argument("--Protocol", choices=_protocols, default=_tcp)
+    stream_uri.add_argument("--Stream", choices=_streams, default=_rtp_unicast)
     stream_uri.add_argument("ProfileToken")
     stream_uri.set_defaults(func=get_stream_uri)
 
