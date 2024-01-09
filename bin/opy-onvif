@@ -4,5 +4,5 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-opy-checked-install zeep || exit $?
-opy "$(opm-home)/lib/python3/onvif.py" "$@"
+opy-checked-install requests WSDiscovery zeep || exit $?
+opy "$(opm-home)/lib/python3/onvif_client.py" "$@"

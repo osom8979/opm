@@ -32,4 +32,5 @@ scriptencoding
 sudoer
 timedatectl
 tparty
+unicast
 xinitrc
