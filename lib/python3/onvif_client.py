@@ -431,12 +431,12 @@ def get_default_arguments(
     profiles.set_defaults(func=get_profiles)
 
     _protocols = TRANSPORT_PROTOCOLS
-    _tcp = TRANSPORT_PROTOCOL_RTSP
+    _rtsp = TRANSPORT_PROTOCOL_RTSP
     _streams = STREAM_TYPES
     _rtp_unicast = STREAM_TYPE_RTP_UNICAST
 
     stream_uri = subparsers.add_parser("GetStreamUri")
-    stream_uri.add_argument("--Protocol", choices=_protocols, default=_tcp)
+    stream_uri.add_argument("--Protocol", choices=_protocols, default=_rtsp)
     stream_uri.add_argument("--Stream", choices=_streams, default=_rtp_unicast)
     stream_uri.add_argument("ProfileToken")
     stream_uri.set_defaults(func=get_stream_uri)
