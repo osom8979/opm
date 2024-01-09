@@ -22,8 +22,11 @@ from zeep.wsse.username import UsernameToken
 
 PROG: Final[str] = "opy-onvif"
 EPILOG = f"""
+ONVIF device discovery:
+  {PROG} -j WS-Discovery | jq '.[].XAddrs'
+
 Obtain a list of device capabilities:
-  {PROG} -a [URL] GetCapabilities
+  {PROG} -j -a [URL] GetCapabilities
 
 If authentication is required:
   {PROG} -u 'admin' -p '1q2w3e4r5t!' -a [URL] ...
@@ -31,17 +34,14 @@ If authentication is required:
   {PROG} -u 'admin' -p '1q2w3e4r5t!' --with-http-basic -a [URL] ...
   {PROG} -u 'admin' -p '1q2w3e4r5t!' --use-digest --with-http-digest -a [URL] ...
 
-ONVIF device discovery:
-  {PROG} -j WS-Discovery | jq '.[].XAddrs'
-
 Obtain a list of media profiles:
   {PROG} -j -a [URL] GetProfiles | jq '.[].token'
 
 Obtain a stream URI:
-  {PROG} -j GetStreamUri [TOKEN] | jq '.Uri'
-  
+  {PROG} -j -a [URL] GetStreamUri [TOKEN] | jq '.Uri'
+
 Obtain a snapshot URI:
-  {PROG} -j GetSnapshotUri [TOKEN] | jq '.Uri'
+  {PROG} -j -a [URL] GetSnapshotUri [TOKEN] | jq '.Uri'
 """
 
 OPM_LIB_DIR: Final[str] = os.path.dirname(os.path.dirname(__file__))
