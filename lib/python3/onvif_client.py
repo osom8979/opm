@@ -5,8 +5,9 @@ import sys
 from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 from datetime import datetime, timedelta
 from json import JSONEncoder, dumps
-from logging import getLogger
+from logging import DEBUG, StreamHandler, getLogger
 from pathlib import Path
+from pprint import pprint
 from typing import Any, Dict, Final, List, Optional, Sequence, Tuple, Union
 from urllib.parse import urlparse
 
@@ -23,10 +24,10 @@ from zeep.wsse.username import UsernameToken
 PROG: Final[str] = "opy-onvif"
 EPILOG = f"""
 ONVIF device discovery:
-  {PROG} -j WS-Discovery | jq '.[].XAddrs'
+  {PROG} -j WS-Discovery | jq '.[].XAddrs[]'
 
 Obtain a list of device capabilities:
-  {PROG} -j -a [URL] GetCapabilities
+  {PROG} -j -a [URL] GetCapabilities | jq '.[].XAddr'
 
 If authentication is required:
   {PROG} -u 'admin' -p '1q2w3e4r5t!' -a [URL] ...
@@ -44,17 +45,79 @@ Obtain a snapshot URI:
   {PROG} -j -a [URL] GetSnapshotUri [TOKEN] | jq '.Uri'
 """
 
-OPM_LIB_DIR: Final[str] = os.path.dirname(os.path.dirname(__file__))
-OPM_HOME: Final[str] = os.environ.get("OPM_HOME", os.path.dirname(OPM_LIB_DIR))
-CACHE_DIR: Final[str] = os.path.join(OPM_HOME, "var", "wsdl")
+ONVIF_V10_SCHEMA_URL: Final[str] = "http://www.onvif.org/ver10/schema"
 
-logger = getLogger()
+TRANSPORT_PROTOCOL_UDP: Final[str] = "UDP"
+TRANSPORT_PROTOCOL_TCP: Final[str] = "TCP"  # Deprecated
+TRANSPORT_PROTOCOL_RTSP: Final[str] = "RTSP"
+TRANSPORT_PROTOCOL_HTTP: Final[str] = "HTTP"
+TRANSPORT_PROTOCOLS: Sequence[str] = (
+    TRANSPORT_PROTOCOL_UDP,
+    TRANSPORT_PROTOCOL_TCP,
+    TRANSPORT_PROTOCOL_RTSP,
+    TRANSPORT_PROTOCOL_HTTP,
+)
+
+_UDP: Final[str] = TRANSPORT_PROTOCOL_UDP
+_TCP: Final[str] = TRANSPORT_PROTOCOL_TCP
+_RTSP: Final[str] = TRANSPORT_PROTOCOL_RTSP
+_HTTP: Final[str] = TRANSPORT_PROTOCOL_HTTP
+_PROTOCOLS: Sequence[str] = TRANSPORT_PROTOCOLS
+
+STREAM_TYPE_RTP_UNICAST: Final[str] = "RTP-Unicast"
+STREAM_TYPE_RTP_MULTICAST: Final[str] = "RTP-Multicast"
+STREAM_TYPES: Sequence[str] = (STREAM_TYPE_RTP_UNICAST, STREAM_TYPE_RTP_MULTICAST)
+
+_RTP_UNICAST: Final[str] = STREAM_TYPE_RTP_UNICAST
+_RTP_MULTICAST: Final[str] = STREAM_TYPE_RTP_MULTICAST
+_STREAMS: Sequence[str] = STREAM_TYPES
+
+PROFILE_TOKEN_MAX_LENGTH: Final[int] = 64
+
+logger = getLogger("opm.onvif")
+
+
+def default_logger_setup():
+    logger.addHandler(StreamHandler(sys.stderr))
+    logger.setLevel(DEBUG)
+
+
+def find_default_wsdl_cache_dir() -> str:
+    """
+    Default cache folder location to use when used within an OPM library.
+    """
+
+    temp_cache_dir = os.path.join(os.path.dirname(__file__), "wsdl")
+    opm_home_dir = os.environ.get("OPM_HOME", None)
+
+    if opm_home_dir is None:
+        current_dir = os.path.dirname(__file__)
+        current_dirname = os.path.basename(current_dir)
+        if current_dirname != "python3":
+            return temp_cache_dir
+
+        parent_dir = os.path.dirname(current_dir)
+        parent_dirname = os.path.basename(parent_dir)
+        if parent_dirname != "lib":
+            return temp_cache_dir
+
+        opm_home_dir = os.path.dirname(parent_dir)
+
+    var_dir = os.path.join(opm_home_dir, "var")
+    if not os.path.isdir(var_dir):
+        return temp_cache_dir
+
+    wsdl_dir = os.path.join(var_dir, "wsdl")
+    if not os.path.isdir(wsdl_dir):
+        return temp_cache_dir
+
+    return wsdl_dir
 
 
 class ZeepFileCache(ZeepCacheBase):
-    def __init__(self, prefix: Optional[str] = None):
+    def __init__(self, prefix: str):
         super().__init__()
-        self._prefix = prefix if prefix else CACHE_DIR
+        self._prefix = prefix
 
     def get_cache_path(self, url: str) -> Path:
         o = urlparse(url)
@@ -70,7 +133,7 @@ class ZeepFileCache(ZeepCacheBase):
         except BaseException as e:  # noqa
             logger.error(f"ZeepFileCache.add(url={url}) error: {e}")
         else:
-            logger.info(f"ZeepFileCache.add(url={url}) ok")
+            logger.debug(f"ZeepFileCache.add(url={url}) ok")
 
     def get(self, url: str):
         filepath = self.get_cache_path(url)
@@ -81,7 +144,7 @@ class ZeepFileCache(ZeepCacheBase):
         except BaseException as e:  # noqa
             logger.error(f"ZeepFileCache.get(url={url}) error: {e}")
         else:
-            logger.info(f"ZeepFileCache.get(url={url}) ok")
+            logger.debug(f"ZeepFileCache.get(url={url}) ok")
         return None
 
 
@@ -109,9 +172,11 @@ class OnvifWsdlDeclaration:
     def create_client(
         self,
         wsse: Optional[UsernameToken] = None,
+        cache_dir: Optional[str] = None,
         with_http_basic=False,
         with_http_digest=False,
     ):
+        cache = ZeepFileCache(cache_dir) if cache_dir else None
         session = Session()
         if wsse:
             if with_http_basic and with_http_digest:
@@ -124,14 +189,10 @@ class OnvifWsdlDeclaration:
             if with_http_digest:
                 assert not with_http_basic
                 if not wsse.use_digest:
-                    logger.warning("<UsernameToken> must be encoded as a digest.")
+                    logger.warning("<UsernameToken> should be encoded as a digest.")
                 session.auth = HTTPDigestAuth(wsse.username, wsse.password)
-
-        return Client(
-            wsdl=self.wsdl_file_url,
-            wsse=wsse,
-            transport=Transport(cache=ZeepFileCache(), session=session),
-        )
+        transport = Transport(cache=cache, session=session)
+        return Client(wsdl=self.wsdl_file_url, wsse=wsse, transport=transport)
 
     def get_service_binding_name(self, index_or_name: Union[str, int] = 0) -> str:
         if isinstance(index_or_name, int):
@@ -199,22 +260,15 @@ ONVIF_DECLS: Sequence[OnvifWsdlDeclaration] = (
 )
 
 
-def _dump_default(o: Any) -> Any:
+def dumps_default(o: Any) -> Any:
     if isinstance(o, datetime):
         return o.isoformat()
     elif isinstance(o, timedelta):
         return o.total_seconds()
-    return JSONEncoder().default(o)
-
-
-def dump_json_text(o: Any, indent: Optional[Union[int, str]] = None, sort=False) -> str:
-    return dumps(o, indent=indent, sort_keys=sort, default=_dump_default)
-
-
-def dump_json_text_with_namespace(o: Any, args: Namespace) -> str:
-    assert isinstance(args.json_indent, int)
-    assert isinstance(args.json_sort, bool)
-    return dump_json_text(o, indent=args.json_indent, sort=args.json_sort)
+    try:
+        return JSONEncoder().default(o)
+    except TypeError:
+        return str(o)
 
 
 def create_username_token(
@@ -243,11 +297,13 @@ def create_client_and_service(
     if not args.address:
         raise ValueError("The 'address' argument is required.")
 
+    assert isinstance(args.no_cache, bool)
+    assert isinstance(args.cache_dir, str)
     assert isinstance(args.with_http_basic, bool)
     assert isinstance(args.with_http_digest, bool)
-    wsse = create_username_token_with_namespace(args)
     client = decl.create_client(
-        wsse=wsse,
+        wsse=create_username_token_with_namespace(args),
+        cache_dir=None if args.no_cache else args.cache_dir,
         with_http_basic=args.with_http_basic,
         with_http_digest=args.with_http_digest,
     )
@@ -290,13 +346,6 @@ def ws_discovery(args: Namespace):
 # ------------------------------------------------------
 
 def get_system_date_and_time(args: Namespace):
-    """
-    This operation gets the device system date and time.
-    The device shall support the return of the daylight saving setting and of
-    the manual system date and time (if applicable) or indication of NTP time
-    (if applicable) through the GetSystemDateAndTime command.
-    A device shall provide the UTCDateTime information.
-    """
     service = create_service(ONVIF_DECL_DEVICE_MANAGEMENT, args)
     return service.GetSystemDateAndTime()
 
@@ -311,18 +360,12 @@ def get_capabilities(args: Namespace):
 
 
 def get_services(args: Namespace):
-    """
-    Returns information about services on the device.
-    """
     assert isinstance(args.IncludeCapability, bool)
     service = create_service(ONVIF_DECL_DEVICE_MANAGEMENT, args)
     return service.GetServices(IncludeCapability=args.IncludeCapability)
 
 
 def get_device_information(args: Namespace):
-    """
-    This operation gets basic device information from the device.
-    """
     service = create_service(ONVIF_DECL_DEVICE_MANAGEMENT, args)
     return service.GetDeviceInformation()
 
@@ -337,32 +380,7 @@ def get_profiles(args: Namespace):
     return service.GetProfiles()
 
 
-ONVIF_V10_SCHEMA_URL: Final[str] = "http://www.onvif.org/ver10/schema"
-
-TRANSPORT_PROTOCOL_UDP: Final[str] = "UDP"
-TRANSPORT_PROTOCOL_TCP: Final[str] = "TCP"  # Deprecated
-TRANSPORT_PROTOCOL_RTSP: Final[str] = "RTSP"
-TRANSPORT_PROTOCOL_HTTP: Final[str] = "HTTP"
-TRANSPORT_PROTOCOLS: Sequence[str] = (
-    TRANSPORT_PROTOCOL_UDP,
-    TRANSPORT_PROTOCOL_TCP,
-    TRANSPORT_PROTOCOL_RTSP,
-    TRANSPORT_PROTOCOL_HTTP,
-)
-
-STREAM_TYPE_RTP_UNICAST: Final[str] = "RTP-Unicast"
-STREAM_TYPE_RTP_MULTICAST: Final[str] = "RTP-Multicast"
-STREAM_TYPES: Sequence[str] = (STREAM_TYPE_RTP_UNICAST, STREAM_TYPE_RTP_MULTICAST)
-
-PROFILE_TOKEN_MAX_LENGTH: Final[int] = 64
-
-
 def get_stream_uri(args: Namespace):
-    """
-    This operation requests a URI that can be used to initiate a live media stream
-    using RTSP as the control protocol.
-    """
-
     assert isinstance(args.Protocol, str)
     assert isinstance(args.Stream, str)
     assert isinstance(args.ProfileToken, str)
@@ -370,7 +388,7 @@ def get_stream_uri(args: Namespace):
     if args.Protocol == TRANSPORT_PROTOCOL_TCP:
         logger.warning(f"'{TRANSPORT_PROTOCOL_TCP}' protocol is deprecated")
     assert args.Stream in STREAM_TYPES
-    assert len(args.ProfileToken) < PROFILE_TOKEN_MAX_LENGTH
+    assert len(args.ProfileToken) <= PROFILE_TOKEN_MAX_LENGTH
 
     client, service = create_client_and_service(ONVIF_DECL_MEDIA, args)
     schema = client.type_factory(namespace=ONVIF_V10_SCHEMA_URL)
@@ -380,12 +398,8 @@ def get_stream_uri(args: Namespace):
 
 
 def get_snapshot_uri(args: Namespace):
-    """
-    A client uses the GetSnapshotUri command to obtain a JPEG snapshot from the device.
-    """
-
     assert isinstance(args.ProfileToken, str)
-    assert len(args.ProfileToken) < PROFILE_TOKEN_MAX_LENGTH
+    assert len(args.ProfileToken) <= PROFILE_TOKEN_MAX_LENGTH
 
     service = create_service(ONVIF_DECL_MEDIA, args)
     return service.GetSnapshotUri(ProfileToken=args.ProfileToken)
@@ -394,54 +408,141 @@ def get_snapshot_uri(args: Namespace):
 def get_default_arguments(
     cmdline: Optional[List[str]] = None,
     namespace: Optional[Namespace] = None,
+    default_cache_dir: Optional[str] = None,
 ) -> Namespace:
     parser = ArgumentParser(
         prog=PROG,
         epilog=EPILOG,
         formatter_class=RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--use-json", "-j", action="store_true", default=False)
-    parser.add_argument("--json-indent", "-i", metavar="{indent}", type=int, default=4)
-    parser.add_argument("--json-sort", "-s", action="store_true", default=False)
-    parser.add_argument("--username", "-u", metavar="{id}", default=None)
-    parser.add_argument("--password", "-p", metavar="{pw}", default=None)
-    parser.add_argument("--use-digest", "-d", action="store_true", default=False)
-    parser.add_argument("--with-http-basic", "-B", action="store_true", default=False)
-    parser.add_argument("--with-http-digest", "-D", action="store_true", default=False)
-    parser.add_argument("--address", "-a", metavar="{uri}", default="")
+    parser.add_argument(
+        "--address",
+        "-a",
+        metavar="{uri}",
+        default="",
+        help="URI to request ONVIF service",
+    )
+    parser.add_argument(
+        "--username",
+        "-u",
+        metavar="{id}",
+        default=None,
+        help="Username for <UsernameToken>",
+    )
+    parser.add_argument(
+        "--password",
+        "-p",
+        metavar="{pw}",
+        default=None,
+        help="Password for <UsernameToken>",
+    )
+    parser.add_argument(
+        "--use-digest",
+        "-d",
+        action="store_true",
+        default=False,
+        help="Digest-encode <UsernameToken>",
+    )
+    parser.add_argument(
+        "--with-http-basic",
+        "-B",
+        action="store_true",
+        default=False,
+        help="Add Basic authentication to the HTTP Authorization header.",
+    )
+    parser.add_argument(
+        "--with-http-digest",
+        "-D",
+        action="store_true",
+        default=False,
+        help="Add Digest authentication to the HTTP Authorization header.",
+    )
+    parser.add_argument(
+        "--use-json",
+        "-j",
+        action="store_true",
+        default=False,
+        help="The final result is output in JSON format.",
+    )
+    parser.add_argument(
+        "--json-indent",
+        "-i",
+        metavar="{indent}",
+        type=int,
+        default=4,
+        help="When outputting JSON, pretty-printed with that indent level."
+    )
+    parser.add_argument(
+        "--json-sort",
+        "-s",
+        action="store_true",
+        default=False,
+        help="When outputting JSON, sort by key.",
+    )
+    parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        default=False,
+        help="Do not save the WSDL schema as a file.",
+    )
+    parser.add_argument(
+        "--cache-dir",
+        metavar="{dir}",
+        default=default_cache_dir,
+        help=f"Specify WSDL cache directory (default: '{default_cache_dir}')",
+    )
     subparsers = parser.add_subparsers(dest="cmd")
 
-    discovery = subparsers.add_parser("WS-Discovery")
+    discovery = subparsers.add_parser(
+        name="WS-Discovery",
+        help="Discover ONVIF devices.",
+    )
     discovery.set_defaults(func=ws_discovery)
 
-    dt = subparsers.add_parser("GetSystemDateAndTime")
+    dt = subparsers.add_parser(
+        name="GetSystemDateAndTime",
+        help="This operation gets the device system date and time.",
+    )
     dt.set_defaults(func=get_system_date_and_time)
 
-    caps = subparsers.add_parser("GetCapabilities")
+    caps = subparsers.add_parser(
+        name="GetCapabilities",
+        help="Returns the capabilities of the device service.",
+    )
     caps.set_defaults(func=get_capabilities)
 
-    services = subparsers.add_parser("GetServices")
-    services.add_argument("--IncludeCapability", action="store_true", default=False)
+    services = subparsers.add_parser(
+        name="GetServices",
+        help="Returns information about services on the device.",
+    )
+    services.add_argument("-IncludeCapability", action="store_true", default=False)
     services.set_defaults(func=get_services)
 
-    info = subparsers.add_parser("GetDeviceInformation")
+    info = subparsers.add_parser(
+        name="GetDeviceInformation",
+        help="Gets basic device information from the device.",
+    )
     info.set_defaults(func=get_device_information)
 
-    profiles = subparsers.add_parser("GetProfiles")
+    profiles = subparsers.add_parser(
+        name="GetProfiles",
+        help="Get a list of media profiles.",
+    )
     profiles.set_defaults(func=get_profiles)
 
-    _protocols = TRANSPORT_PROTOCOLS
-    _rtsp = TRANSPORT_PROTOCOL_RTSP
-    _streams = STREAM_TYPES
-    _rtp_unicast = STREAM_TYPE_RTP_UNICAST
-
-    stream_uri = subparsers.add_parser("GetStreamUri")
-    stream_uri.add_argument("--Protocol", choices=_protocols, default=_rtsp)
-    stream_uri.add_argument("--Stream", choices=_streams, default=_rtp_unicast)
+    stream_uri = subparsers.add_parser(
+        name="GetStreamUri",
+        help="Obtain the RTSP stream address.",
+    )
+    stream_uri.add_argument("-Protocol", choices=_PROTOCOLS, default=_RTSP)
+    stream_uri.add_argument("-Stream", choices=_STREAMS, default=_RTP_UNICAST)
     stream_uri.add_argument("ProfileToken")
     stream_uri.set_defaults(func=get_stream_uri)
 
-    snapshot_uri = subparsers.add_parser("GetSnapshotUri")
+    snapshot_uri = subparsers.add_parser(
+        name="GetSnapshotUri",
+        help="Obtain a JPEG snapshot from the device.",
+    )
     snapshot_uri.add_argument("ProfileToken")
     snapshot_uri.set_defaults(func=get_snapshot_uri)
 
@@ -449,7 +550,9 @@ def get_default_arguments(
 
 
 def main() -> None:
-    args = get_default_arguments()
+    default_logger_setup()
+    default_cache_dir = find_default_wsdl_cache_dir()
+    args = get_default_arguments(default_cache_dir=default_cache_dir)
 
     if args.cmd is None:
         print("Empty command", file=sys.stderr)
@@ -457,10 +560,16 @@ def main() -> None:
 
     try:
         o = serialize_object(args.func(args), dict)
+        assert isinstance(args.use_json, bool)
         if args.use_json:
-            print(dump_json_text_with_namespace(o, args))
+            assert isinstance(args.json_indent, int)
+            assert isinstance(args.json_sort, bool)
+            indent = args.json_indent
+            sort = args.json_sort
+            json = dumps(o, indent=indent, sort_keys=sort, default=dumps_default)
+            print(json)
         else:
-            print(o)
+            pprint(o)
     except Exception as e:
         logger.exception(e)
         sys.exit(1)
