@@ -2,6 +2,7 @@
 
 import sys
 
+from base64 import b64decode
 from argparse import ArgumentParser, Namespace
 from typing import List, Optional, Sequence
 
@@ -9,12 +10,14 @@ from helium import kill_browser, start_chrome, start_firefox
 from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.chrome.webdriver import WebDriver as ChromeWebDriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.print_page_options import PrintOptions
 from selenium.webdriver.firefox.webdriver import WebDriver as FirefoxWebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
 CM_CHROME = "chrome"
+CM_CHROME_PDF = "chrome-pdf"
 CM_FIREFOX_PDF = "firefox-pdf"
-CRAWLING_METHODS: Sequence[str] = (CM_CHROME, CM_FIREFOX_PDF)
+CRAWLING_METHODS: Sequence[str] = (CM_CHROME, CM_CHROME_PDF, CM_FIREFOX_PDF)
 
 
 def crawling_firefox_pdf(args: Namespace) -> None:
@@ -31,6 +34,20 @@ def crawling_firefox_pdf(args: Namespace) -> None:
     assert isinstance(driver, FirefoxWebDriver)
 
     driver.execute_script("window.print();")
+
+
+def crawling_chrome_pdf(args: Namespace) -> None:
+    assert isinstance(args.uri, str)
+    assert isinstance(args.headless, bool)
+
+    driver = start_chrome(args.uri, headless=args.headless)
+    assert isinstance(driver, ChromeWebDriver)
+
+    options = PrintOptions()
+    content = driver.print_page(options)
+    buffer = b64decode(content)
+    with open(f"{driver.title}.pdf", "wb") as f:
+        f.write(buffer)
 
 
 def crawling_chrome(args: Namespace) -> None:
@@ -70,6 +87,8 @@ def main() -> None:
     try:
         if args.method == CM_CHROME:
             crawling_chrome(args)
+        elif args.method == CM_CHROME_PDF:
+            crawling_chrome_pdf(args)
         elif args.method == CM_FIREFOX_PDF:
             crawling_firefox_pdf(args)
         else:
