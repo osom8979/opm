@@ -2,17 +2,20 @@
 
 import sys
 
-from base64 import b64decode
 from argparse import ArgumentParser, Namespace
+from base64 import b64decode
 from typing import List, Optional, Sequence
 
 from helium import kill_browser, start_chrome, start_firefox
+from selenium.common import TimeoutException
+from selenium.webdriver import ChromeOptions
 from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.chrome.webdriver import WebDriver as ChromeWebDriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.print_page_options import PrintOptions
 from selenium.webdriver.firefox.webdriver import WebDriver as FirefoxWebDriver
-from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.remote.webdriver import WebDriver
 
 CM_CHROME = "chrome"
 CM_CHROME_PDF = "chrome-pdf"
@@ -20,29 +23,62 @@ CM_FIREFOX_PDF = "firefox-pdf"
 CRAWLING_METHODS: Sequence[str] = (CM_CHROME, CM_CHROME_PDF, CM_FIREFOX_PDF)
 
 
-def crawling_firefox_pdf(args: Namespace) -> None:
+def start_firefox_driver(
+    args: Namespace,
+    options: Optional[FirefoxOptions] = None,
+) -> FirefoxWebDriver:
     assert isinstance(args.uri, str)
     assert isinstance(args.headless, bool)
+    assert isinstance(args.page_load_timeout, int)
+    assert isinstance(args.implicitly_wait, int)
 
+    driver = start_firefox(headless=args.headless, options=options)
+    assert isinstance(driver, FirefoxWebDriver)
+    driver.set_page_load_timeout(args.page_load_timeout)
+    driver.implicitly_wait(args.implicitly_wait)
+
+    try:
+        driver.get(args.uri)
+    except TimeoutException:
+        pass
+
+    return driver
+
+
+def start_chrome_driver(
+    args: Namespace,
+    options: Optional[ChromeOptions] = None,
+) -> ChromeWebDriver:
+    assert isinstance(args.uri, str)
+    assert isinstance(args.headless, bool)
+    assert isinstance(args.page_load_timeout, int)
+    assert isinstance(args.implicitly_wait, int)
+
+    driver = start_chrome(headless=args.headless, options=options)
+    assert isinstance(driver, ChromeWebDriver)
+    driver.set_page_load_timeout(args.page_load_timeout)
+    driver.implicitly_wait(args.implicitly_wait)
+
+    try:
+        driver.get(args.uri)
+    except TimeoutException:
+        pass
+
+    return driver
+
+
+def crawling_firefox_pdf(args: Namespace) -> None:
     options = FirefoxOptions()
     options.add_argument("--start-maximized")
     options.set_preference("print.always_print_silent", True)
     options.set_preference("print.printer_Mozilla_Save_to_PDF.print_to_file", True)
     options.set_preference("print_printer", "Mozilla Save to PDF")
-
-    driver = start_firefox(args.uri, headless=args.headless, options=options)
-    assert isinstance(driver, FirefoxWebDriver)
-
+    driver = start_firefox_driver(args, options)
     driver.execute_script("window.print();")
 
 
 def crawling_chrome_pdf(args: Namespace) -> None:
-    assert isinstance(args.uri, str)
-    assert isinstance(args.headless, bool)
-
-    driver = start_chrome(args.uri, headless=args.headless)
-    assert isinstance(driver, ChromeWebDriver)
-
+    driver = start_chrome_driver(args)
     options = PrintOptions()
     content = driver.print_page(options)
     buffer = b64decode(content)
@@ -50,24 +86,20 @@ def crawling_chrome_pdf(args: Namespace) -> None:
         f.write(buffer)
 
 
-def crawling_chrome(args: Namespace) -> None:
-    assert isinstance(args.uri, str)
-    assert isinstance(args.headless, bool)
-
-    driver = start_chrome(args.uri, headless=args.headless)
-    assert isinstance(driver, ChromeWebDriver)
-
+def _print_img_src(driver: WebDriver) -> None:
     html = driver.find_element(By.TAG_NAME, "html")
-    head = html.find_element(By.TAG_NAME, "head")
-    body = html.find_element(By.TAG_NAME, "body")
-    assert isinstance(html, WebElement)
-    assert isinstance(head, WebElement)
-    assert isinstance(body, WebElement)
-    assert html.tag_name == "html"
-    assert head.tag_name == "head"
-    assert body.tag_name == "body"
+    css_path = "#LightboxModal > div > div > div.media > img"
+    while True:
+        print(driver.find_element(By.CSS_SELECTOR, css_path).get_attribute("src"))
+        html.send_keys(Keys.ARROW_RIGHT)
+
+
+def crawling_chrome(args: Namespace) -> None:
+    driver = start_chrome_driver(args)
 
     # TODO: insert your crawling codes
+
+    _print_img_src(driver)
 
 
 def get_default_arguments(
@@ -77,6 +109,8 @@ def get_default_arguments(
     parser = ArgumentParser(prog="opy-helium-crawling")
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--method", "-m", choices=CRAWLING_METHODS, default=CM_CHROME)
+    parser.add_argument("--page-load-timeout", metavar="{sec}", type=int, default=8)
+    parser.add_argument("--implicitly-wait", metavar="{sec}", type=int, default=8)
     parser.add_argument("uri")
     return parser.parse_known_args(cmdline, namespace)[0]
 
