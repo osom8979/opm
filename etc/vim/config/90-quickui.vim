@@ -85,6 +85,7 @@ call quickui#menu#install("&Edit", [
             \ [ "Remove &blank lines", ":call RemoveBlankLines()" ],
             \ [ "--", "" ],
             \ [ "&Json formatting", ":OpmJsonFormat" ],
+            \ [ "&XML formatting", ":OpmXmlFormat" ],
             \ [ "--", "" ],
             \ [ "&HEX mode", ":OpmHexMode" ],
             \ [ "&TEXT mode", ":OpmTextMode" ],

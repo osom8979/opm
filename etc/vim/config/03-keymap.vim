@@ -15,7 +15,8 @@ command! OpmReload         execute 'source ~/.vimrc'
 command! OpmHexMode        execute '%!xxd'
 command! OpmTextMode       execute '%!xxd -r'
 command! OpmLoadedScripts  execute ':scriptnames'
-command! OpmJsonFormat     execute ':%!python -m json.tool'
+command! OpmJsonFormat     execute ':%!python3 -m json.tool'
+command! OpmXmlFormat      execute ':%!python3 -c "import sys, xml.dom.minidom; print(xml.dom.minidom.parseString(sys.stdin.read()).toprettyxml())"'
 command! OpmAsyncRunOpen   execute 'call OpmAsyncRunAutoScrollQuickInput()'
 
 " --------------

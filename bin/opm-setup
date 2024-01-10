@@ -100,10 +100,10 @@ function install_neovim
 
 function install_neovim_libs
 {
-    opy-pip install --upgrade pip
-    opy-pip install neovim
-    opn-npm install -g yarn
-    opn-npm install -g neovim
+    opy -m pip install --upgrade pip
+    opy -m pip install neovim
+    opn -m npm install -g yarn
+    opn -m npm install -g neovim
 }
 
 function opm_setup_main

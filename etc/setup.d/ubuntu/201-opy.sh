@@ -5,8 +5,8 @@ if [[ -z $OPM_HOME ]]; then
     exit 1
 fi
 
-if ! command -v opy-pip &> /dev/null; then
-    echo "Not found opy-pip command" 1>&2
+if ! command -v opy &> /dev/null; then
+    echo "Not found opy command" 1>&2
     exit 1
 fi
 
@@ -17,5 +17,5 @@ PACKAGES=(
     pudb
 )
 
-opy-pip install --upgrade pip
-opy-pip install "${PACKAGES[@]}"
+opy -m pip install --upgrade pip
+opy -m pip install "${PACKAGES[@]}"
