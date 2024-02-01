@@ -1,0 +1,39 @@
+version: "3.3"
+
+services:
+  redis:
+    image: redis:7
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+    ports:
+      - "6379:6379"
+      - "16379:16379"
+    user: ${USER_UID:?err}:${USER_GID:?err}
+    volumes:
+      - ./redis:/data
+      - ./cert/ca.crt:/usr/local/etc/redis/ca.crt
+      - ./cert/params.dh:/usr/local/etc/redis/params.dh
+      - ./cert/redis.key:/usr/local/etc/redis/redis.key
+      - ./cert/redis.crt:/usr/local/etc/redis/redis.crt
+    environment:
+      - TZ=Asia/Seoul
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 8s
+      retries: 5
+    command: >
+      redis-server
+      --port 6379
+      --tls-port 16379
+      --requirepass ${REDIS_PASSWORD:?err}
+      --tls-ca-cert-file /usr/local/etc/redis/ca.crt
+      --tls-dh-params-file /usr/local/etc/redis/params.dh
+      --tls-cert-file /usr/local/etc/redis/redis.crt
+      --tls-key-file /usr/local/etc/redis/redis.key
+      --tls-auth-clients no
+      --tls-replication yes

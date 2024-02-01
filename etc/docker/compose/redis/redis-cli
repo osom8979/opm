@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+
+if ! command -v docker &> /dev/null; then
+    opm-println-error "Not found docker command"
+    exit 1
+fi
+
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
+
+DEFAULT_PORT=6379
+TLS_PORT=16379
+
+HOST=localhost
+PORT=
+DATABASE=
+PASSWORD=
+ENV_PASS=0
+TLS=0
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} [options]
+
+Available options are:
+  --help            Print this message.
+  -h, --host        Host address (default: '$HOST')
+  -p, --port        Port number (default: $DEFAULT_PORT / TLS mode default: $TLS_PORT)
+  -t, --tls         Enable TLS mode.
+  -n, -d, --database
+                    Database index
+  -a, --auth, --password
+                    Auth Password
+  --env-pass        Use .env Password
+  --                Stop handling options.
+"
+
+function print_error
+{
+    # shellcheck disable=SC2145
+    echo -e "\033[31m$@\033[0m" 1>&2
+}
+
+function print_message
+{
+    # shellcheck disable=SC2145
+    echo -e "\033[32m$@\033[0m"
+}
+
+trap 'cancel_black' INT
+
+function cancel_black
+{
+    print_error "An interrupt signal was detected."
+    exit 1
+}
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+while [[ -n $1 ]]; do
+    case $1 in
+    --help)
+        print_usage
+        exit 0
+        ;;
+    -h|--host)
+        HOST=$2
+        shift 2
+        ;;
+    -p|--port)
+        PORT=$2
+        shift 2
+        ;;
+    -t|--tls)
+        TLS=1
+        shift
+        ;;
+    -n|-d|--database)
+        DATABASE=$2
+        shift 2
+        ;;
+    -a|--auth|--password)
+        PASSWORD=$2
+        shift 2
+        ;;
+    --env-pass)
+        ENV_PASS=1
+        shift
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        print_error "Unknown option: $1"
+        exit 1
+        ;;
+    esac
+done
+
+if [[ -z $PORT ]]; then
+    if [[ $TLS -ne 0 ]]; then
+        PORT=$TLS_PORT
+    else
+        PORT=$DEFAULT_PORT
+    fi
+fi
+
+declare -a DOCKER_ARGS
+declare -a ARGS
+
+DOCKER_ARGS=()
+ARGS=(
+    -h "$HOST"
+    -p "$PORT"
+)
+
+if [[ -n $DATABASE ]]; then
+    ARGS+=(-n "$DATABASE")
+fi
+
+if [[ -z $PASSWORD && $ENV_PASS -ne 0 ]]; then
+    PASSWORD=$(source "$ROOT_DIR/.env" && echo "$REDIS_PASSWORD")
+fi
+
+if [[ -n $PASSWORD ]]; then
+    DOCKER_ARGS+=(-e "REDISCLI_AUTH=$PASSWORD")
+fi
+
+if [[ $TLS -ne 0 ]]; then
+    DOCKER_ARGS+=(-v "$ROOT_DIR/cert:/cert")
+    ARGS+=(
+        --tls
+        --cacert /cert/ca.crt
+        --cert /cert/redis.crt
+        --key /cert/redis.key
+    )
+fi
+
+docker run --rm -it \
+    --network host \
+    -u "$(id -u):$(id -g)" \
+    "${DOCKER_ARGS[@]}" \
+    redis:7 \
+    redis-cli \
+    "${ARGS[@]}"

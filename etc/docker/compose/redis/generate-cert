@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
+
+if ! command -v openssl &> /dev/null; then
+    opm-println-error "Not found openssl command"
+    exit 1
+fi
+
+DAYS=365
+KEYSIZE=4096
+DHSIZE=2048
+CERT_DIR="$ROOT_DIR/cert"
+
+mkdir -vp "$CERT_DIR"
+
+## ---------------------
+## Certificate authority
+## ---------------------
+
+CA_PRIVATE_FILE="$CERT_DIR/ca.key"
+CA_PRIVATE_TEXT="$CA_PRIVATE_FILE.txt"
+CA_CERTIFICATE_FILE="$CERT_DIR/ca.crt"
+CA_CERTIFICATE_TEXT="$CA_CERTIFICATE_FILE.txt"
+CA_SERIAL_FILE="$CERT_DIR/ca.srl"
+
+echo "Generate CA RSA Private key file: $CA_PRIVATE_FILE"
+openssl genrsa -out "$CA_PRIVATE_FILE" "$KEYSIZE"
+
+echo "Decode CA RSA Private key PEM: $CA_PRIVATE_TEXT"
+openssl rsa -in "$CA_PRIVATE_FILE" -text -noout -out "$CA_PRIVATE_TEXT"
+
+echo "Generate CA Certificate file: $CA_PRIVATE_FILE"
+openssl req -x509 -new -nodes -sha256 \
+    -key "$CA_PRIVATE_FILE" \
+    -days "$DAYS" \
+    -subj '/O=Redis/CN=CertificateAuthority' \
+    -out "$CA_CERTIFICATE_FILE"
+
+echo "Decode CA Certificate PEM: $CA_CERTIFICATE_TEXT"
+openssl x509 -in "$CA_CERTIFICATE_FILE" -text -noout -out "$CA_CERTIFICATE_TEXT"
+
+## ---------
+## DH Params
+## ---------
+
+DH_FILE="$CERT_DIR/params.dh"
+
+echo "Generate DH params file: $DH_FILE"
+openssl dhparam -out "$DH_FILE" "$DHSIZE" 2> /dev/null
+
+## ----------
+## Redis CERT
+## ----------
+
+REDIS_PRIVATE_FILE="$CERT_DIR/redis.key"
+REDIS_PRIVATE_TEXT="$REDIS_PRIVATE_FILE.txt"
+REDIS_REQUEST_FILE="$CERT_DIR/redis.csr"
+REDIS_REQUEST_TEXT="$REDIS_REQUEST_FILE.txt"
+REDIS_CERTIFICATE_FILE="$CERT_DIR/redis.crt"
+REDIS_CERTIFICATE_TEXT="$REDIS_CERTIFICATE_FILE.txt"
+
+echo "Generate server RSA private key file: $REDIS_PRIVATE_FILE"
+openssl genrsa -out "$REDIS_PRIVATE_FILE" "$KEYSIZE"
+
+echo "Decode Redis RSA Private key PEM: $REDIS_PRIVATE_TEXT"
+openssl rsa -in "$REDIS_PRIVATE_FILE" -text -noout -out "$REDIS_PRIVATE_TEXT"
+
+echo "Generate server CSR file: $REDIS_REQUEST_FILE"
+openssl req -new -sha256 \
+    -subj "/O=Redis/CN=Generic" \
+    -key "$REDIS_PRIVATE_FILE" \
+    -out "$REDIS_REQUEST_FILE"
+
+echo "Decode server CSR PEM: $REDIS_REQUEST_TEXT"
+openssl req -in "$REDIS_REQUEST_FILE" -text -noout -out "$REDIS_REQUEST_TEXT"
+
+echo "Sign the server certificate file: $REDIS_CERTIFICATE_FILE"
+openssl x509 -req -sha256 \
+    -CA "$CA_CERTIFICATE_FILE" \
+    -CAkey "$CA_PRIVATE_FILE" \
+    -CAserial "$CA_SERIAL_FILE" \
+    -CAcreateserial \
+    -days "$DAYS" \
+    -in "$REDIS_REQUEST_FILE" \
+    -out "$REDIS_CERTIFICATE_FILE"
+
+echo "Decode Redis Certificate PEM: $REDIS_CERTIFICATE_TEXT"
+openssl x509 -in "$REDIS_CERTIFICATE_FILE" -text -noout -out "$REDIS_CERTIFICATE_TEXT"

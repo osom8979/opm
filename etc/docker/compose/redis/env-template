@@ -1,0 +1,15 @@
+# redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_DATABASE=0
+REDIS_PASSWORD=@REDIS_PASSWORD@
+
+# redis tls
+REDIS_USE_TLS=False
+REDIS_CA_CERT=cert/ca.crt
+REDIS_CERT=cert/redis.crt
+REDIS_KEY=cert/redis.key
+
+# user/group
+USER_UID=@USER_UID@
+USER_GID=@USER_GID@
