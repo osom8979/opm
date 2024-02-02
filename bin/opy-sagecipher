@@ -28,16 +28,31 @@ Available options are:
   -              Just check the prerequisites.
 "
 
-PYTHON_ENCRYPT="
-from sys import argv
+PYTHON_ENCRYPT_ARGV="
+from sys import argv, stdout
 from sagecipher import Cipher
-print(Cipher.encrypt_string(argv[1]).hex())
+stdout.write(Cipher.encrypt_string(argv[1]).hex())
 "
 
-PYTHON_DECRYPT="
-from sys import argv
+PYTHON_ENCRYPT_PIPE="
+from sys import stdin, stdout
 from sagecipher import Cipher
-print(Cipher.decrypt_string(bytearray.fromhex(argv[1])))
+data = stdin.buffer.read()
+stdout.write(Cipher.encrypt_string(data).hex())
+"
+
+PYTHON_DECRYPT_ARGV="
+from sys import argv, stdout
+from sagecipher import Cipher
+data = bytearray.fromhex(argv[1])
+stdout.write(Cipher.decrypt_string(data))
+"
+
+PYTHON_DECRYPT_PIPE="
+from sys import stdin, stdout
+from sagecipher import Cipher
+data = stdin.buffer.read().decode('Latin-1')
+stdout.write(Cipher.decrypt_string(bytearray.fromhex(data)))
 "
 
 VERBOSE=0
@@ -69,12 +84,20 @@ function print_usage
 
 function opy_sagecipher_encrypt
 {
-    opy -c "$PYTHON_ENCRYPT" "$1"
+    if [[ -z "$1" ]]; then
+        opy -c "$PYTHON_ENCRYPT_PIPE"
+    else
+        opy -c "$PYTHON_ENCRYPT_ARGV" "$1"
+    fi
 }
 
 function opy_sagecipher_decrypt
 {
-    opy -c "$PYTHON_DECRYPT" "$1"
+    if [[ -z "$1" ]]; then
+        opy -c "$PYTHON_DECRYPT_PIPE" "$1"
+    else
+        opy -c "$PYTHON_DECRYPT_ARGV" "$1"
+    fi
 }
 
 function opy_sagecipher_main
@@ -127,11 +150,6 @@ function opy_sagecipher_main
         return 1
         ;;
     esac
-
-    if [[ -z $data ]]; then
-        opm-println-error -v "Empty data argument"
-        return 1
-    fi
 
     if [[ -z $SSH_AGENT_PID ]]; then
         if ! exec_ssh_agent; then
