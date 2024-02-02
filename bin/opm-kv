@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+# shellcheck disable=SC2155
+STORAGE_DIR=$(opm-home)/var/keys
+
+USAGE="
+Usage: opm-kv [options] {get|set|rm|ls} key [value]
+
+Available options are:
+  -h, --help     Print this message
+  --             Skip handling options
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function opm_kv_get
+{
+    local key=$1
+    local storage="$STORAGE_DIR/$key"
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    if [[ ! -f "$storage" ]]; then
+        opm-println-error "Not found key file."
+        return 1
+    fi
+
+    if ! opy-sagecipher decrypt "$(cat "$storage")"; then
+        opm-println-error "Decryption failed."
+        return 1
+    fi
+}
+
+function opm_kv_set
+{
+    local key=$1
+    local value=$2
+    local storage="$STORAGE_DIR/$key"
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    if [[ -z "$value" ]]; then
+        opm-println-error "The value argument is required."
+        return 1
+    fi
+
+    if [[ -f "$storage" ]]; then
+        opm-println-error "This key file already exists."
+        return 1
+    fi
+
+    if ! opy-sagecipher encrypt "$value" > "$storage"; then
+        opm-println-error "Encryption failed."
+        return $?
+    fi
+}
+
+function opm_kv_rm
+{
+    local key=$1
+    local storage="$STORAGE_DIR/$key"
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    if [[ ! -f "$storage" ]]; then
+        opm-println-error "Not found key file."
+        return 1
+    fi
+
+    rm "$storage"
+}
+
+function opm_kv_ls
+{
+    find "$STORAGE_DIR" -type f -printf "%f\n" | grep -v -E '^\..*'
+}
+
+function opm_kv_main
+{
+    if [[ ! -d "$STORAGE_DIR" ]]; then
+        opm-println-error "Not found storage directory: '$STORAGE_DIR'"
+        return 1
+    fi
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local op=$1
+    shift
+
+    if [[ "$op" != get && "$op" != set && "$op" != "rm" && "$op" != "ls" ]]; then
+        print_usage
+        return 1
+    fi
+
+    case $op in
+    get)
+        opm_kv_get "$1"
+        ;;
+    set)
+        opm_kv_set "$1" "$2"
+        ;;
+    rm)
+        opm_kv_rm "$1"
+        ;;
+    ls)
+        opm_kv_ls
+        ;;
+    esac
+}
+
+opm_kv_main "$@"
