@@ -38,7 +38,7 @@ function opm_kv_get
         return 1
     fi
 
-    if ! opy-sagecipher decrypt "$(cat "$file")"; then
+    if ! opy-sagecipher decrypt < "$file"; then
         opm-println-error "Decryption failed."
         return 1
     fi
@@ -56,24 +56,21 @@ function opm_kv_set
         return 1
     fi
 
-    if [[ -z "$value" ]]; then
-        if [[ ! -t 0 ]]; then
-            read -r -u 0 value
-        fi
-        if [[ -z "$value" ]]; then
-            opm-println-error "The value argument is required."
-            return 1
-        fi
-    fi
-
     if [[ -f "$file" ]]; then
         opm-println-error "This key file already exists."
         return 1
     fi
 
-    if ! opy-sagecipher encrypt "$value" > "$file"; then
-        opm-println-error "Encryption failed."
-        return $?
+    if [[ -z "$value" ]]; then
+        if ! opy-sagecipher encrypt > "$file"; then
+            opm-println-error "Encryption failed."
+            return 1
+        fi
+    else
+        if ! opy-sagecipher encrypt "$value" > "$file"; then
+            opm-println-error "Encryption failed."
+            return 1
+        fi
     fi
 }
 
@@ -138,16 +135,16 @@ function opm_kv_main
     shift
 
     case $op in
-    get)
+    g|get)
         opm_kv_get "$storage" "$1"
         ;;
-    set)
+    s|set)
         opm_kv_set "$storage" "$1" "$2"
         ;;
-    del|delete|rm|remove)
+    d|del|delete|r|rm|remove)
         opm_kv_rm "$storage" "$1"
         ;;
-    ls|list)
+    l|ls|list)
         opm_kv_ls "$storage"
         ;;
     *)
