@@ -11,8 +11,10 @@ USAGE="
 Usage: opm-kv [options] {get|set|rm|ls} key [value]
 
 Available options are:
-  -h, --help     Print this message
-  --             Skip handling options
+  -h, --help        Print this message.
+  -s {dir}, --storage {dir}
+                    Change storage directory
+  --                Skip handling options
 "
 
 function print_usage
@@ -22,20 +24,21 @@ function print_usage
 
 function opm_kv_get
 {
-    local key=$1
-    local storage="$STORAGE_DIR/$key"
+    local storage=$1
+    local key=$2
+    local file="$storage/$key"
 
     if [[ -z "$key" ]]; then
         opm-println-error "The key argument is required."
         return 1
     fi
 
-    if [[ ! -f "$storage" ]]; then
+    if [[ ! -f "$file" ]]; then
         opm-println-error "Not found key file."
         return 1
     fi
 
-    if ! opy-sagecipher decrypt "$(cat "$storage")"; then
+    if ! opy-sagecipher decrypt "$(cat "$file")"; then
         opm-println-error "Decryption failed."
         return 1
     fi
@@ -43,9 +46,10 @@ function opm_kv_get
 
 function opm_kv_set
 {
-    local key=$1
-    local value=$2
-    local storage="$STORAGE_DIR/$key"
+    local storage=$1
+    local key=$2
+    local value=$3
+    local file="$storage/$key"
 
     if [[ -z "$key" ]]; then
         opm-println-error "The key argument is required."
@@ -53,16 +57,21 @@ function opm_kv_set
     fi
 
     if [[ -z "$value" ]]; then
-        opm-println-error "The value argument is required."
-        return 1
+        if [[ ! -t 0 ]]; then
+            read -r -u 0 value
+        fi
+        if [[ -z "$value" ]]; then
+            opm-println-error "The value argument is required."
+            return 1
+        fi
     fi
 
-    if [[ -f "$storage" ]]; then
+    if [[ -f "$file" ]]; then
         opm-println-error "This key file already exists."
         return 1
     fi
 
-    if ! opy-sagecipher encrypt "$value" > "$storage"; then
+    if ! opy-sagecipher encrypt "$value" > "$file"; then
         opm-println-error "Encryption failed."
         return $?
     fi
@@ -70,39 +79,45 @@ function opm_kv_set
 
 function opm_kv_rm
 {
-    local key=$1
-    local storage="$STORAGE_DIR/$key"
+    local storage=$1
+    local key=$2
+    local file="$storage/$key"
 
     if [[ -z "$key" ]]; then
         opm-println-error "The key argument is required."
         return 1
     fi
 
-    if [[ ! -f "$storage" ]]; then
+    if [[ ! -f "$file" ]]; then
         opm-println-error "Not found key file."
         return 1
     fi
 
-    rm "$storage"
+    rm "$file"
 }
 
 function opm_kv_ls
 {
-    find "$STORAGE_DIR" -type f -printf "%f\n" | grep -v -E '^\..*'
+    find "$1" -type f -printf "%f\n" | grep -v -E '^\..*'
 }
 
 function opm_kv_main
 {
-    if [[ ! -d "$STORAGE_DIR" ]]; then
-        opm-println-error "Not found storage directory: '$STORAGE_DIR'"
-        return 1
-    fi
+    local storage="$STORAGE_DIR"
 
     while [[ -n $1 ]]; do
         case $1 in
         -h|--help)
             print_usage
             return 0
+            ;;
+        -s|--storage)
+            storage="$2"
+            shift 2
+            ;;
+        --storage=*)
+            storage="${1:10}"
+            shift
             ;;
         --)
             shift
@@ -114,27 +129,30 @@ function opm_kv_main
         esac
     done
 
-    local op=$1
-    shift
-
-    if [[ "$op" != get && "$op" != set && "$op" != "rm" && "$op" != "ls" ]]; then
-        print_usage
+    if [[ ! -d "$storage" ]]; then
+        opm-println-error "Not found storage directory: '$storage'"
         return 1
     fi
 
+    local op=$1
+    shift
+
     case $op in
     get)
-        opm_kv_get "$1"
+        opm_kv_get "$storage" "$1"
         ;;
     set)
-        opm_kv_set "$1" "$2"
+        opm_kv_set "$storage" "$1" "$2"
         ;;
-    rm)
-        opm_kv_rm "$1"
+    del|delete|rm|remove)
+        opm_kv_rm "$storage" "$1"
         ;;
-    ls)
-        opm_kv_ls
+    ls|list)
+        opm_kv_ls "$storage"
         ;;
+    *)
+        print_usage
+        return 1
     esac
 }
 
