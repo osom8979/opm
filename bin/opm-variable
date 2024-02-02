@@ -17,6 +17,7 @@ Available options are:
   -s {path}, --source={path}
                     Source file path.
   -k, --with-key    Print including key.
+  --                Skip handling options
 "
 
 function variable_main
@@ -41,6 +42,10 @@ function variable_main
         -k|--with-key)
             with_key=1
             shift
+            ;;
+        --)
+            shift
+            break
             ;;
         *)
             break
