@@ -1,0 +1,324 @@
+#!/usr/bin/env bash
+
+if ! command -v curl &> /dev/null; then
+    opm-println-error "Not found curl command"
+    exit 1
+fi
+
+if ! command -v jq &> /dev/null; then
+    opm-println-error "Not found jq command"
+    exit 1
+fi
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+# shellcheck disable=SC2155
+STORAGE_DIR=$(opm-home)/var/vault
+
+# shellcheck disable=SC2155
+TOKEN_DIR=$(opm-home)/var/vault.token
+
+USAGE="
+Usage: opm-vault [options] {add|get|get-token|rm|ls|request|run} key ...
+
+Available options are:
+  -h, --help        Print this message.
+  -j, --json        If possible, pretty print it in JSON format.
+  -y, --yes         Automatic yes to prompts.
+  -s, --silent      Suppresses all messages.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  --                Skip handling options
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function run_opm_keys
+{
+    opm-keys -s "$STORAGE_DIR" "$@"
+}
+
+function run_opm_token
+{
+    opm-keys -s "$TOKEN_DIR" "$@"
+}
+
+function opm_vault_add
+{
+    local key=$1
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    local hcp_client_id=${HCP_CLIENT_ID:-}
+    local hcp_client_secret=${HCP_CLIENT_SECRET:-}
+    local hcp_org_id=${HCP_ORG_ID:-}
+    local hcp_proj_id=${HCP_PROJ_ID:-}
+    local app_name=${APP_NAME:-}
+
+    read -e -i "$hcp_client_id" -r -p "HCP Client ID? " hcp_client_id
+    read -e -i "$hcp_client_secret" -r -p "HCP Client Secret? " hcp_client_secret
+    read -e -i "$hcp_org_id" -r -p "Organization ID? " hcp_org_id
+    read -e -i "$hcp_proj_id" -r -p "Project ID? " hcp_proj_id
+    read -e -i "$app_name" -r -p "App Name? " app_name
+
+    local data
+    data="${data}HCP_CLIENT_ID=$hcp_client_id\n"
+    data="${data}HCP_CLIENT_SECRET=$hcp_client_secret\n"
+    data="${data}HCP_ORG_ID=$hcp_org_id\n"
+    data="${data}HCP_PROJ_ID=$hcp_proj_id\n"
+    data="${data}APP_NAME=$app_name\n"
+
+    echo -n -e "$data" | run_opm_keys set "$key"
+}
+
+function opm_vault_get
+{
+    local key=$1
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    run_opm_keys get "$key"
+}
+
+function opm_vault_get_token
+{
+    local json_flag=$1
+    local key=$2
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The token key argument is required."
+        return 1
+    fi
+
+    if [[ $json_flag -ne 0 ]]; then
+        run_opm_token get "$key" | jq
+    else
+        run_opm_token get "$key"
+    fi
+}
+
+function opm_vault_rm
+{
+    local key=$1
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    if run_opm_keys has "$key"; then
+        run_opm_keys rm "$key"
+    else
+        opm-println-error "Not found key."
+    fi
+
+    if run_opm_token has "$key"; then
+        run_opm_token rm "$key"
+    else
+        opm-println-error "Not found token."
+    fi
+}
+
+function opm_vault_ls
+{
+    run_opm_keys ls
+}
+
+function opm_vault_request
+{
+    local json_flag=$1
+    local key=$2
+    shift
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    set -o allexport
+    # shellcheck disable=SC1090
+    source <(opm_vault_get "$key" || return $?)
+    set +o allexport
+
+    local token_json
+    local expires_in
+    local token_live=0
+
+    if run_opm_token has "$key"; then
+        token_json=$(run_opm_token get "$key" || return $?)
+        expires_in=$(echo "$token_json" | jq -r .expires_in || return $?)
+        now=$(echo "$token_json" | jq -r .now || return $?)
+        duration=$(( $(date -u -d "$now" +%s) + "$expires_in" - $(date +%s) ))
+
+        if [[ $duration -ge 0 ]]; then
+            opm-println-debug -v "Cached token is still alive"
+            token_live=1
+        else
+            opm-println-debug -v "Remove expired token cache"
+            run_opm_token rm "$key"
+        fi
+    fi
+
+    if [[ $token_live -eq 0 ]]; then
+        local extra_jq
+        extra_jq=". += {\"now\":\"$(date -u)\"}"
+
+        token_json=$(
+            curl \
+            --location "https://auth.idp.hashicorp.com/oauth2/token" \
+            --header "Content-Type: application/x-www-form-urlencoded" \
+            --data-urlencode "client_id=$HCP_CLIENT_ID" \
+            --data-urlencode "client_secret=$HCP_CLIENT_SECRET" \
+            --data-urlencode "grant_type=client_credentials" \
+            --data-urlencode "audience=https://api.hashicorp.cloud"
+        )
+
+        local token_request_code=$?
+        if [[ $token_request_code -ne 0 ]]; then
+            opm-println-error "Token request API failed ($token_request_code)"
+            return 1
+        fi
+
+        token_json=$(echo "$token_json" | jq "$extra_jq")
+        if ! echo "$token_json" | run_opm_token set "$key"; then
+            opm-println-warn "Token caching failed"
+        fi
+    fi
+
+    local access_token
+    local token_type
+    access_token=$(echo "$token_json" | jq -r .access_token || return $?)
+    token_type=$(echo "$token_json" | jq -r .token_type || return $?)
+
+    if [[ "$token_type" != "Bearer" ]]; then
+        opm-println-warn "Unsupported token type: '${token_type}'"
+    fi
+
+    local api_prefix="https://api.cloud.hashicorp.com/secrets/2023-06-13/organizations"
+    local api_url="$api_prefix/$HCP_ORG_ID/projects/$HCP_PROJ_ID/apps/$APP_NAME/open"
+    local secrets_json
+    secrets_json=$(
+        curl \
+        --location "$api_url" \
+        --request GET \
+        --header "Authorization: Bearer $access_token"
+    )
+
+    local secrets_request_code=$?
+    if [[ $secrets_request_code -ne 0 ]]; then
+        opm-println-error "Secrets request API failed ($secrets_request_code)"
+        return 1
+    fi
+
+    if [[ $json_flag -ne 0 ]]; then
+        echo "$secrets_json" | jq
+    else
+        echo "$secrets_json" | \
+            jq -r '.[][] | { name, value: .version.value } | "\(.name)=\(.value)"'
+    fi
+}
+
+function opm_vault_run
+{
+    local key=$1
+    shift
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    opm_vault_request
+}
+
+function opm_vault_main
+{
+    local json_flag=0
+    local auto_yes=0
+    local silent_flag=0
+    local verbose_flag=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -j|--json)
+            json_flag=1
+            shift
+            ;;
+        -y|--yes)
+            auto_yes=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    local op=$1
+    local key=$2
+    shift 2
+
+    case $op in
+    add)
+        opm_vault_add "$key"
+        ;;
+    get)
+        opm_vault_get "$key"
+        ;;
+    get-token)
+        opm_vault_get_token "$json_flag" "$key"
+        ;;
+    rm)
+        opm_vault_rm "$key"
+        ;;
+    ls|list)
+        opm_vault_ls
+        ;;
+    request)
+        opm_vault_request "$json_flag" "$key"
+        ;;
+    run)
+        opm_vault_run "$key" "$@"
+        ;;
+    *)
+        print_usage
+        return 1
+    esac
+}
+
+opm_vault_main "$@"
