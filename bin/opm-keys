@@ -8,13 +8,13 @@ fi
 STORAGE_DIR=$(opm-home)/var/keys
 
 USAGE="
-Usage: opm-keys [options] {get|set|rm|ls} key [value]
+Usage: opm-keys [options] {get|set|rget|rset|has|rm|ls} key [value]
 
 Available options are:
-  -h, --help        Print this message.
+  -h, --help    Print this message.
   -s {dir}, --storage {dir}
-                    Change storage directory
-  --                Skip handling options
+                Change storage directory
+  --            Skip handling options
 "
 
 function print_usage
@@ -25,11 +25,17 @@ function print_usage
 function opm_keys_get
 {
     local storage=$1
-    local key=$2
+    local raw=$2
+    local key=$3
     local file="$storage/$key"
 
     if [[ -z "$key" ]]; then
         opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    if [[ -z "$raw" ]]; then
+        opm-println-error "The raw argument is required. (script error)"
         return 1
     fi
 
@@ -38,21 +44,31 @@ function opm_keys_get
         return 1
     fi
 
-    if ! opy-sagecipher decrypt < "$file"; then
-        opm-println-error "Decryption failed."
-        return 1
+    if [[ $raw -eq 0 ]]; then
+        if ! opy-sagecipher decrypt < "$file"; then
+            opm-println-error "Decryption failed."
+            return 1
+        fi
+    else
+        cat "$file"
     fi
 }
 
 function opm_keys_set
 {
     local storage=$1
-    local key=$2
-    local value=$3
+    local raw=$2
+    local key=$3
+    local value=$4
     local file="$storage/$key"
 
     if [[ -z "$key" ]]; then
         opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    if [[ -z "$raw" ]]; then
+        opm-println-error "The raw argument is required. (script error)"
         return 1
     fi
 
@@ -62,15 +78,41 @@ function opm_keys_set
     fi
 
     if [[ -z "$value" ]]; then
-        if ! opy-sagecipher encrypt > "$file"; then
-            opm-println-error "Encryption failed."
-            return 1
+        if [[ $raw -eq 0 ]]; then
+            if ! opy-sagecipher encrypt > "$file"; then
+                opm-println-error "Encryption failed."
+                return 1
+            fi
+        else
+            cat > "$file"
         fi
     else
-        if ! opy-sagecipher encrypt "$value" > "$file"; then
-            opm-println-error "Encryption failed."
-            return 1
+        if [[ $raw -eq 0 ]]; then
+            if ! opy-sagecipher encrypt "$value" > "$file"; then
+                opm-println-error "Encryption failed."
+                return 1
+            fi
+        else
+            echo "$value" > "$file"
         fi
+    fi
+}
+
+function opm_keys_has
+{
+    local storage=$1
+    local key=$2
+    local file="$storage/$key"
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    if [[ -f "$file" ]]; then
+        return 0
+    else
+        return 1
     fi
 }
 
@@ -95,7 +137,9 @@ function opm_keys_rm
 
 function opm_keys_ls
 {
-    find "$1" -type f -printf "%f\n" | grep -v -E '^\..*'
+    local storage=$1
+
+    find "$storage" -mindepth 1 -maxdepth 1 -type f -printf "%f\n" | grep -v -E '^\..*'
 }
 
 function opm_keys_main
@@ -136,10 +180,19 @@ function opm_keys_main
 
     case $op in
     g|get)
-        opm_keys_get "$storage" "$1"
+        opm_keys_get "$storage" 0 "$1"
         ;;
     s|set)
-        opm_keys_set "$storage" "$1" "$2"
+        opm_keys_set "$storage" 0 "$1" "$2"
+        ;;
+    rget)
+        opm_keys_get "$storage" 1 "$1"
+        ;;
+    rset)
+        opm_keys_set "$storage" 1 "$1" "$2"
+        ;;
+    h|has|e|exist|exists)
+        opm_keys_has "$storage" "$1"
         ;;
     d|del|delete|r|rm|remove)
         opm_keys_rm "$storage" "$1"
