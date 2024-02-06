@@ -21,7 +21,7 @@ STORAGE_DIR=$(opm-home)/var/vault
 TOKEN_DIR=$(opm-home)/var/vault.token
 
 USAGE="
-Usage: opm-vault [options] {add|get|get-token|rm|ls|request|run} key ...
+Usage: opm-vault [options] {add|get|get-token|has|rm|ls|request|run} key ...
 
 Available options are:
   -h, --help        Print this message.
@@ -105,6 +105,18 @@ function opm_vault_get_token
     else
         run_opm_token get "$key"
     fi
+}
+
+function opm_vault_has
+{
+    local key=$1
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    run_opm_keys has "$key"
 }
 
 function opm_vault_rm
@@ -302,6 +314,9 @@ function opm_vault_main
         ;;
     get-token)
         opm_vault_get_token "$json_flag" "$key"
+        ;;
+    has)
+        opm_vault_has "$key"
         ;;
     rm)
         opm_vault_rm "$key"
