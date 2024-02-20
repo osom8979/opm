@@ -168,51 +168,48 @@ function opm_mpv_cut_main
     opm-println -v "'mpv' process ID is $MPV_PID"
     opm-println -v "To exit, press Q in mpv ..."
 
+    local files
+    declare -a files
+
     while true; do
         opm-println -v "Next iter $(date "+%Y-%m-%d %H:%M:%S") ..."
-
-        local files
-        declare -a files
-
         mapfile -t files < <(
             find "$temp_dir" -mindepth 1 -maxdepth 1 -type f -a -name '*.jpg' | sort
         )
 
         local files_count="${#files[*]}"
-        if [[ $files_count -lt 2 ]]; then
-            continue
+        if [[ $files_count -ge 2 ]]; then
+            local file0="${files[0]}"
+            local file1="${files[1]}"
+
+            local filename0="${file0##*/}"
+            local filename1="${file1##*/}"
+
+            local begin=${filename0%.*}
+            local end=${filename1%.*}
+
+            local suffix="${begin//:/}_${end//:/}"
+            local output="${input_name}-${suffix}.${output_ext}"
+
+            opm-println "Cutting video playback section in progress ($begin ~ $end) ..."
+            ffmpeg \
+                -hide_banner \
+                -loglevel error \
+                -i "$input_path" \
+                -ss "$begin" \
+                -to "$end" \
+                -c copy \
+                "$output"
+
+            local exit_code=$?
+            if [[ $exit_code -eq 0 ]]; then
+                opm-println-info "Video cutting was successful: $output"
+            else
+                opm-println-error "Failed to cut video: $exit_code"
+            fi
+
+            rm -v "$file0" "$file1"
         fi
-
-        local file0="${files[0]}"
-        local file1="${files[1]}"
-
-        local filename0="${file0##*/}"
-        local filename1="${file1##*/}"
-
-        local begin=${filename0%.*}
-        local end=${filename1%.*}
-
-        local suffix="${begin//:/}_${end//:/}"
-        local output="${input_parent}/${input_name}-${suffix}.${output_ext}"
-
-        opm-println "Cutting video playback section in progress ($begin ~ $end) ..."
-        ffmpeg \
-            -hide_banner \
-            -loglevel error \
-            -i "$input_path" \
-            -ss "$begin" \
-            -to "$end" \
-            -c copy \
-            "$output"
-
-        local exit_code=$?
-        if [[ $exit_code -eq 0 ]]; then
-            opm-println-info "Video cutting was successful: $output"
-        else
-            opm-println-error "Failed to cut video: $exit_code"
-        fi
-
-        rm -v "$file0" "$file1"
 
         if ! ps --pid $MPV_PID &> /dev/null; then
             opm-println "'mpv' process has terminated."
