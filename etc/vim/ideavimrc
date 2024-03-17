@@ -2,6 +2,9 @@
 
 scriptencoding utf-8
 
+" Use visual bell instead of beeping.
+set visualbell
+
 sethandler <C-2>    a:vim  " Project Directory
 sethandler <C-S-2>  a:vim  " Toggle Bookmark 2
 sethandler <C-6>    a:vim  " Go to Bookmark 6
