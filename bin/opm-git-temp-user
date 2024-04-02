@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Switch to a temporary user and use 'git'.
+
+  Usage: opm-git-temp-user {user} {email} ...
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+if [[ ${#@} -lt 2 ]]; then
+    print_usage
+    exit 1
+fi
+
+USER_NAME=$1
+USER_EMAIL=$2
+shift 2
+
+git \
+    -c "user.name=$USER_NAME" \
+    -c "user.email=$USER_EMAIL" \
+    "$@"
