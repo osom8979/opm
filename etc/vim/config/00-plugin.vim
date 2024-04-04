@@ -61,6 +61,7 @@ NeoBundle 'rust-lang/rust.vim'              " vim configuration for rust
 NeoBundle 'ap/vim-css-color'                " preview css colours
 NeoBundle 'jakerobers/vim-hexrgba'          " toggle between hex color codes and rgba
 NeoBundle 'habamax/vim-godot'               " use vim and godot engine to make games
+NeoBundle 'amadeus/vim-convert-color-to'    " convert color strings to different formats.
 
 " Semantic highlighting for python in neovim.
 NeoBundle 'numirias/semshi', {

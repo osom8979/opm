@@ -1,51 +1,61 @@
-+-------------------+-------------------------+-------------------------------------+
-| VisSum            | :VisSum                 | Computes sum of selected numbers    |
-| VisIncr           | :II & :II -1            | Increasing/Decreasing columns       |
-| SnipMate          | <C-J>                   | Textual snippets                    |
-| AsyncRun          | :AsyncRun[!] {args}     | Run Async Shell Commands            |
-| Easymotion        | <leader><leader>f       | Vim motions: Next char              |
-| Easymotion        | <leader><leader>F       | Vim motions: Prev char              |
-| Easymotion        | <leader><leader>w       | Vim motions: Next word              |
-| Easymotion        | <leader><leader>b       | Vim motions: Prev word              |
-| NERDCommenter     | <leader>cc & <leader>cu | commenting/uncommenting             |
-| NERDCommenter     | <leader>c<space>        | Toggle commenting                   |
-+-------------------+-------------------------+-------------------------------------+
-| Tabs              | <M-{>                   | Prev tab                            |
-| Tabs              | <M-}>                   | Next tab                            |
-| Quick Fix         | :cc                     | Current quick-fix                   |
-| Quick Fix         | <F1>                    | Prev quick-fix                      |
-| Quick Fix         | <F2>                    | Next quick-fix                      |
-| Visual Mode       | <C-v> or <C-q>          | Change Visual Mode                  |
-| Insert Char       | <C-v><C-m>              | Insert CR(^M)                       |
-| JumpList          | :jumps                  | List of jumps                       |
-| JumpList          | <C-i>                   | Goes forward in jump list           |
-| JumpList          | <C-o>                   | Goes back in jump list              |
-+-------------------+-------------------------+-------------------------------------+
-| Coc               | gd                      | (GoTo) Local declaration            |
-| Coc               | gD                      | (GoTo) Global declaration           |
-| Coc               | gf                      | (GoTo) File under the cursor        |
-| Coc               | g]                      | (GoTo) Jump to a tag definition     |
-| Coc               | <leader>rn              | Symbol renaming                     |
-| Coc               | <leader>ac              | Actions current buffer              |
-| Coc               | <leader>qf              | Auto QuickFix current line          |
-| Coc               | <leader>cl              | Code Lens current line              |
-+-------------------+-------------------------+-------------------------------------+
-| Coc (Visual Mode) | <leader>f               | Formatting selected code            |
-| Coc (Visual Mode) | <leader>a               | Actions selected code               |
-+-------------------+-------------------------+-------------------------------------+
-| Regex             | :g/^\s*$/d              | Remove blank lines                  |
-+-------------------+-------------------------+-------------------------------------+
-| Paste in cmd mode | <C-r>"                  | Yanked text to vi command prompt    |
-+-------------------+-------------------------+-------------------------------------+
-| PascalCase        | gsm & gsp               | Convert PascalCase                  |
-| camelCase         | gsc                     | Convert camelCase                   |
-| snake_case        | gs_                     | Convert snake_case                  |
-| UPPER_CASE        | gsu & gsU               | Convert UPPER_CASE                  |
-| Title Case        | gst                     | Convert Title Case                  |
-| Sentence case     | gss                     | Convert Sentence case               |
-| space case        | gs<space>               | Convert space case                  |
-| kebab-case        | gsk                     | Convert kebab-case                  |
-| Title-Kebab-Case  | gsK                     | Convert Title-Kebab-Case            |
-| dot.case          | gs.                     | Convert dot.case                    |
-+-------------------+-------------------------+-------------------------------------+
++-------------------+-------------------------+--------------------------------------------+
+| VisSum            | :VisSum                 | Computes sum of selected numbers           |
+| VisIncr           | :II & :II -1            | Increasing/Decreasing columns              |
+| SnipMate          | <C-J>                   | Textual snippets                           |
+| AsyncRun          | :AsyncRun[!] {args}     | Run Async Shell Commands                   |
+| Easymotion        | <leader><leader>f       | Vim motions: Next char                     |
+| Easymotion        | <leader><leader>F       | Vim motions: Prev char                     |
+| Easymotion        | <leader><leader>w       | Vim motions: Next word                     |
+| Easymotion        | <leader><leader>b       | Vim motions: Prev word                     |
+| NERDCommenter     | <leader>cc & <leader>cu | commenting/uncommenting                    |
+| NERDCommenter     | <leader>c<space>        | Toggle commenting                          |
++-------------------+-------------------------+--------------------------------------------+
+| Tabs              | <M-{>                   | Prev tab                                   |
+| Tabs              | <M-}>                   | Next tab                                   |
+| Quick Fix         | :cc                     | Current quick-fix                          |
+| Quick Fix         | <F1>                    | Prev quick-fix                             |
+| Quick Fix         | <F2>                    | Next quick-fix                             |
+| Visual Mode       | <C-v> or <C-q>          | Change Visual Mode                         |
+| Insert Char       | <C-v><C-m>              | Insert CR(^M)                              |
+| JumpList          | :jumps                  | List of jumps                              |
+| JumpList          | <C-i>                   | Goes forward in jump list                  |
+| JumpList          | <C-o>                   | Goes back in jump list                     |
++-------------------+-------------------------+--------------------------------------------+
+| Coc               | gd                      | (GoTo) Local declaration                   |
+| Coc               | gD                      | (GoTo) Global declaration                  |
+| Coc               | gf                      | (GoTo) File under the cursor               |
+| Coc               | g]                      | (GoTo) Jump to a tag definition            |
+| Coc               | <leader>rn              | Symbol renaming                            |
+| Coc               | <leader>ac              | Actions current buffer                     |
+| Coc               | <leader>qf              | Auto QuickFix current line                 |
+| Coc               | <leader>cl              | Code Lens current line                     |
++-------------------+-------------------------+--------------------------------------------+
+| Coc (Visual Mode) | <leader>f               | Formatting selected code                   |
+| Coc (Visual Mode) | <leader>a               | Actions selected code                      |
++-------------------+-------------------------+--------------------------------------------+
+| Regex             | :g/^\s*$/d              | Remove blank lines                         |
++-------------------+-------------------------+--------------------------------------------+
+| Paste in cmd mode | <C-r>"                  | Yanked text to vi command prompt           |
++-------------------+-------------------------+--------------------------------------------+
+| PascalCase        | gsm & gsp               | Convert PascalCase                         |
+| camelCase         | gsc                     | Convert camelCase                          |
+| snake_case        | gs_                     | Convert snake_case                         |
+| UPPER_CASE        | gsu & gsU               | Convert UPPER_CASE                         |
+| Title Case        | gst                     | Convert Title Case                         |
+| Sentence case     | gss                     | Convert Sentence case                      |
+| space case        | gs<space>               | Convert space case                         |
+| kebab-case        | gsk                     | Convert kebab-case                         |
+| Title-Kebab-Case  | gsK                     | Convert Title-Kebab-Case                   |
+| dot.case          | gs.                     | Convert dot.case                           |
++-------------------+-------------------------+--------------------------------------------+
+| ConvertColorTo hex                          | Convert color to '#001122'                 |
+| ConvertColorTo hexa                         | Convert color to '#00112233'               |
+| ConvertColorTo hex_num                      | Convert color to '0x001122'                |
+| ConvertColorTo rgb                          | Convert color to 'rgb(0, 100, 200)'        |
+| ConvertColorTo rgb_int                      | Convert color to 'rgb(0, 100, 200)'        |
+| ConvertColorTo rgb_float                    | Convert color to 'rgb(0.1, 0.2, 0.3)'      |
+| ConvertColorTo rgba                         | Convert color to 'rgba(0, 100, 200, 0.3)'  |
+| ConvertColorTo hsl                          | Convert color to 'hsl(200, 20%, 10%)'      |
+| ConvertColorTo hsla                         | Convert color to 'hsla(100, 20%, 30%, 0.2)'|
++-------------------+-------------------------+--------------------------------------------+
 
