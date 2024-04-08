@@ -84,9 +84,8 @@ unbind   -T copy-mode-vi MouseDragEnd1Pane
 
 set -g @plugin "tmux-plugins/tpm"
 set -g @plugin "tmux-plugins/tmux-open"
-set -g @plugin 'tmux-plugins/tmux-resurrect'
 set -g @plugin 'sainnhe/tmux-fzf'
-set -g @plugin 'samoshkin/tmux-plugin-sysstat'
+set -g @plugin 'erikw/tmux-powerline'
 
 # Initialize TMUX plugin manager
 # (keep this line at the very bottom of tmux.conf)
