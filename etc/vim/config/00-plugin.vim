@@ -92,12 +92,7 @@ NeoBundle 'Shougo/vimproc.vim', {
     \}
 
 " Intellisense engine.
-NeoBundle 'neoclide/coc.nvim', {
-    \   'branch': 'master',
-    \   'do': {
-    \       -> coc#util#install()
-    \   }
-    \}
+NeoBundle 'neoclide/coc.nvim', 'release'
 
 " Nvim treesitter configurations and abstraction layer
 "NeoBundle 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}

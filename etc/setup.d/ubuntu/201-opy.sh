@@ -11,7 +11,13 @@ if ! command -v opy &> /dev/null; then
 fi
 
 PACKAGES=(
+    black
+    debugpy
     flake8
+    isort
+    jedi
+    jedi-language-server
+    mypy
     neovim
     numpy
     pudb

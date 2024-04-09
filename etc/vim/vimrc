@@ -76,6 +76,7 @@ let g:opy3_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_nam
 let g:opn_node_path = s:GetOpnNodePath(g:opm_home.'/var', s:opn_prefix, s:user_name, g:opn_version, g:opn_suffix)
 let g:opn_neovim_node_host_path = s:GetOpnNeovimNodeHostPath(s:home_dir, s:opn_prefix, s:user_name, g:opn_version, g:opn_suffix)
 let &runtimepath .= ',' . g:opm_vim_script_dir
+let $PATH .= ':' . fnamemodify(g:opy3_python_path, ':p:h')
 
 "let g:loaded_python_provider = 1
 "let g:loaded_python3_provider = 1

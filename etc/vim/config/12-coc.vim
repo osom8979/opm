@@ -14,7 +14,7 @@ let g:coc_global_extensions = [
     \ 'coc-go',
     \ 'coc-metals',
     \ 'coc-omnisharp',
-    \ 'coc-python',
+    \ 'coc-jedi',
     \ 'coc-rls',
     \ 'coc-sh',
     \ 'coc-snippets',
@@ -227,6 +227,13 @@ call coc#config('python', {
     \       'pydocstyleEnabled': v:false,
     \       'pylamaEnabled': v:false,
     \       'pylintEnabled': v:false,
+    \   },
+    \})
+
+call coc#config('jedi', {
+    \   'executable': {
+    \       'command': 'jedi-language-server',
+    \       'args': [],
     \   },
     \})
 
