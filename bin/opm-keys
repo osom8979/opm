@@ -10,11 +10,22 @@ STORAGE_DIR=$(opm-home)/var/keys
 USAGE="
 Usage: opm-keys [options] {get|set|rget|rset|has|rm|ls} key [value]
 
+Commands:
+  get       Decrypt and obtain the value. (Use 'opy-sagecipher')
+  set       Encrypt and save the value. (Use 'opy-sagecipher')
+  rget      Raw get (without decrypt)
+  rset      Raw set (without encrypt)
+  has       Check if key exists
+  rm        Remove key
+  ls        List key
+
 Available options are:
   -h, --help    Print this message.
   -s {dir}, --storage {dir}
                 Change storage directory
   --            Skip handling options
+
+Default storage directory: '$STORAGE_DIR'
 "
 
 function print_usage

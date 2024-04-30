@@ -26,6 +26,15 @@ Available options are:
   -v, --verbose  Be more verbose/talkative during the operation.
   --             Skip handling options
   -              Just check the prerequisites.
+
+Before using, 'ssh-agent' must be running with at least one ssh-key available for
+producing cipher key material:
+  $ source <(ssh-agent)
+  $ ssh-add
+
+Usage:
+  $ opy-sagecipher encrypt {OriginalData}
+  $ opy-sagecipher decrypt {EncryptedData}
 "
 
 PYTHON_ENCRYPT_ARGV="

@@ -14,6 +14,8 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
+DEFAULT_API_PREFIX="https://api.cloud.hashicorp.com/secrets/2023-06-13/organizations"
+
 # shellcheck disable=SC2155
 STORAGE_DIR=$(opm-home)/var/vault
 
@@ -23,6 +25,15 @@ TOKEN_DIR=$(opm-home)/var/vault.token
 USAGE="
 Usage: opm-vault [options] {add|get|get-token|has|rm|ls|request|run} key ...
 
+Commands:
+  add           Register environment variables for access-token.
+  get           Check the environment variables for access-token.
+  get-token     Check access-token and expiration date.
+  has           Check if key exists
+  rm            Remove key
+  ls            List key
+  request       Requests the saved Secrets information
+
 Available options are:
   -h, --help        Print this message.
   -j, --json        If possible, pretty print it in JSON format.
@@ -30,7 +41,25 @@ Available options are:
   -s, --silent      Suppresses all messages.
   -v, --verbose     Be more verbose/talkative during the operation.
   --                Skip handling options
+
+Default API Prefix: '$DEFAULT_API_PREFIX'
+
+Usage:
+  Register environment variables for token request.
+    opm-vault add api
+
+  Requests the saved Secrets information and saves it in '.env' file.
+    opm-vault request api > .env
 "
+
+function assemble_api_url
+{
+    local prefix=${1:-$DEFAULT_API_PREFIX}
+    local organization_id=$2
+    local project_id=$3
+    local app_name=$4
+    echo "$prefix/$organization_id/projects/$project_id/apps/$app_name/open"
+}
 
 function print_usage
 {
@@ -216,7 +245,7 @@ function opm_vault_request
         opm-println-warn "Unsupported token type: '${token_type}'"
     fi
 
-    local api_prefix="https://api.cloud.hashicorp.com/secrets/2023-06-13/organizations"
+    local api_prefix="$DEFAULT_API_PREFIX"
     local api_url="$api_prefix/$HCP_ORG_ID/projects/$HCP_PROJ_ID/apps/$APP_NAME/open"
     local secrets_json
     secrets_json=$(
@@ -238,19 +267,6 @@ function opm_vault_request
         echo "$secrets_json" | \
             jq -r '.[][] | { name, value: .version.value } | "\(.name)=\(.value)"'
     fi
-}
-
-function opm_vault_run
-{
-    local key=$1
-    shift
-
-    if [[ -z "$key" ]]; then
-        opm-println-error "The key argument is required."
-        return 1
-    fi
-
-    opm_vault_request
 }
 
 function opm_vault_main
