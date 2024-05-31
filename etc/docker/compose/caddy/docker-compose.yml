@@ -1,0 +1,20 @@
+version: "3.3"
+
+services:
+  caddy:
+    image: caddy
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+    ports:
+      - "443:443"
+    user: ${USER_UID:?err}:${USER_GID:?err}
+    volumes:
+      - ./data/:/data/
+      - ./config/:/config/
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    environment:
+      - TZ=Asia/Seoul
