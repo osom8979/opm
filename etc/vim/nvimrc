@@ -1,0 +1,100 @@
+" Vim setting.
+"
+" Run all healthchecks.
+" :checkhealth
+
+scriptencoding utf-8
+
+let s:home_dir = $HOME
+let s:user_name = $USER
+let s:opy_prefix = 'opy'
+let g:opy_suffix = 'default'
+let s:opn_prefix = 'opn'
+let g:opn_suffix = 'default'
+let s:opm_home_by_env = $OPM_HOME
+let s:opm_home_by_sfile = expand('<sfile>:p:h:h:h')
+
+function! s:GetOpmHomeDir() abort
+    if strlen(s:opm_home_by_env) >= 1 && isdirectory(s:opm_home_by_env)
+        return s:opm_home_by_env
+    else
+        return s:opm_home_by_sfile
+    endif
+endfunction
+
+function! s:GetOpmVariable(file, key)
+    for line in readfile(a:file)
+        let l:value = matchstr(line, '^'.a:key.'=.*')
+        if strlen(l:value) >= 1
+            return split(l:value, '=')[1]
+        endif
+    endfor
+    return ''
+endfunction
+
+function! s:GetOpyPythonPath(home, prefix, name, version, suffix)
+    return a:home    . '/.pyenv/versions/' .
+         \ a:prefix  . '-' .
+         \ a:name    . '-' .
+         \ a:version . '-' .
+         \ a:suffix  . '/bin/python'
+endfunction
+
+function! s:GetOpnNodePath(home, prefix, name, version, suffix)
+    return a:home . '/n/' .
+         \ a:prefix  . '-' .
+         \ a:name    . '-' .
+         \ a:version . '-' .
+         \ a:suffix  . '/n/versions/node/' .
+         \ a:version . '/bin/node'
+endfunction
+
+function! s:GetOpnNeovimNodeHostPath(home, prefix, name, version, suffix)
+    return a:home . '/.n/' .
+         \ a:prefix  . '-' .
+         \ a:name    . '-' .
+         \ a:version . '-' .
+         \ a:suffix  . '/n/versions/node/' .
+         \ a:version . '/bin/neovim-node-host'
+endfunction
+
+function! s:ExecuteVimSourceFiles(dir)
+    for path in globpath(a:dir, '*.vim', 1, 1)
+        execute 'source '.path
+    endfor
+endfunction
+
+let g:opm_vim_script_dir = expand('<sfile>:p:h')
+let g:opm_home = s:GetOpmHomeDir()
+let g:opm_information_path = g:opm_home.'/env'
+let g:opm_version = s:GetOpmVariable(g:opm_information_path, 'VERSION')
+let g:opy2_version = s:GetOpmVariable(g:opm_information_path, 'OPY2_VERSION')
+let g:opy3_version = s:GetOpmVariable(g:opm_information_path, 'OPY_VERSION')
+let g:opn_version = s:GetOpmVariable(g:opm_information_path, 'OPN_VERSION')
+let g:opy2_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, g:opy2_version, g:opy_suffix)
+let g:opy3_python_path = s:GetOpyPythonPath(s:home_dir, s:opy_prefix, s:user_name, g:opy3_version, g:opy_suffix)
+let g:opn_node_path = s:GetOpnNodePath(g:opm_home.'/var', s:opn_prefix, s:user_name, g:opn_version, g:opn_suffix)
+let g:opn_neovim_node_host_path = s:GetOpnNeovimNodeHostPath(s:home_dir, s:opn_prefix, s:user_name, g:opn_version, g:opn_suffix)
+let &runtimepath .= ',' . g:opm_vim_script_dir
+let $PATH .= ':' . fnamemodify(g:opy3_python_path, ':p:h')
+
+"let g:loaded_python_provider = 1
+"let g:loaded_python3_provider = 1
+
+if executable(g:opy2_python_path)
+    let g:python_host_prog = g:opy2_python_path
+endif
+if executable(g:opy3_python_path)
+    let g:python3_host_prog = g:opy3_python_path
+endif
+
+if executable(g:opn_node_path)
+    let $PATH = fnamemodify(g:opn_node_path, ":p:h") . ":" . $PATH
+    if executable(g:opn_neovim_node_host_path)
+        let g:node_host_prog = g:opn_neovim_node_host_path
+    endif
+endif
+
+" auto-load setting.
+call s:ExecuteVimSourceFiles(g:opm_vim_script_dir.'/config')
+
