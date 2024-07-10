@@ -1,0 +1,345 @@
+#!/usr/bin/env bash
+
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
+BASE_PYTHON_VERSION=3.11.5
+VIRTUALENV_PREFIX=osom_api
+VIRTUALENV_SUFFIX=${VIRTUALENV_SUFFIX:-none}
+VIRTUALENV_NAME=$VIRTUALENV_PREFIX-$USER-$BASE_PYTHON_VERSION-${VIRTUALENV_SUFFIX}
+VENV_HOME=$ROOT_DIR/.venv
+VENV_PYTHON=$VENV_HOME/bin/python3
+REQUIREMENTS=$ROOT_DIR/requirements.txt
+
+function print_error
+{
+    # shellcheck disable=SC2145
+    echo -e "\033[31m$@\033[0m" 1>&2
+}
+
+function print_warning
+{
+    if [[ -z $NOWARNING ]]; then
+        # shellcheck disable=SC2145
+        echo -e "\033[33m$@\033[0m" 1>&2
+    fi
+}
+
+function print_message
+{
+    # shellcheck disable=SC2145
+    echo -e "\033[32m$@\033[0m"
+}
+
+function on_interrupt_trap
+{
+    print_error "An interrupt signal was detected"
+    exit 1
+}
+
+trap 'on_interrupt_trap' INT
+
+if [[ "${VIRTUALENV_PREFIX:0:1}" == "%" ]]; then
+    print_error "First, you must enter the virtualenv prefix"
+    print_error "Or prefixes starting with '%' are not allowed"
+    exit 1
+fi
+
+if ! command -v git &> /dev/null; then
+    print_error "Not found git executable"
+    exit 1
+fi
+
+if ! command -v make &> /dev/null; then
+    print_error "Not found make executable"
+    exit 1
+fi
+
+function install_pyenv
+{
+    local pyenv_home="$HOM/.pyenv"
+    git clone https://github.com/pyenv/pyenv.git "$pyenv_home"
+    cd "$pyenv_home" && ./src/configure && make -C src
+
+    local pyenv_virtualenv_home="$pyenv_home/plugins/pyenv-virtualenv"
+    git clone https://github.com/pyenv/pyenv-virtualenv.git "$pyenv_virtualenv_home"
+}
+
+function find_pyenv_exe
+{
+    local base_python_version
+    base_python_version=$1
+
+    local pyenv_exe
+    local virtualenv_version
+    local available_install_version
+    local default_pyenv_exe="$HOME/.pyenv/bin/pyenv"
+
+    pyenv_exe=$(command -v pyenv 2> /dev/null)
+    if [[ -z "$pyenv_exe" ]]; then
+        if [[ -x "$default_pyenv_exe" ]]; then
+            pyenv_exe=$default_pyenv_exe
+        else
+            print_error "Could not find executable pyenv command"
+            return 1
+        fi
+    fi
+
+    virtualenv_version=$("$pyenv_exe" virtualenv --version 2> /dev/null)
+    if [[ -z "$virtualenv_version" ]]; then
+        print_error "Could not find pyenv-virtualenv"
+        return 1
+    fi
+
+    available_install_version=$(
+        "$pyenv_exe" install -l \
+            | sed -n -e 's/^ *//g' -e '2,$p' \
+            | grep --color=none -Fx "$base_python_version"
+    )
+
+    if [[ -z "$available_install_version" ]]; then
+        print_error "Not found available python version: $base_python_version"
+        print_error "Please update pyenv"
+        return 1
+    fi
+
+    echo "$pyenv_exe"
+}
+
+function find_pyenv_version
+{
+    local pyenv_exe
+    local version
+
+    pyenv_exe=$1
+    version=$2
+
+    "$pyenv_exe" versions --bare | grep --color=never -Fx "$version"
+}
+
+function install_python_on_darwin
+{
+    local pyenv_exe
+    local base_python_version
+
+    pyenv_exe=$1
+    base_python_version=$2
+
+    print_message "Use the homebrew's OpenSSL, Zlib, SQLite"
+    print_message " - ref: https://github.com/pyenv/pyenv/wiki/Common-build-problems"
+    print_message "Install python '$base_python_version' from pyenv (--enable-framework) ..."
+
+    CFLAGS="-I$(brew --prefix openssl)/include -I$(brew --prefix zlib)/include -I$(brew --prefix sqlite)/include" \
+    LDFLAGS="-L$(brew --prefix openssl)/lib -L$(brew --prefix zlib)/lib -L$(brew --prefix sqlite)/lib" \
+    PYTHON_CONFIGURE_OPTS="--enable-framework" \
+        "$pyenv_exe" install "$base_python_version"
+}
+
+function install_python_on_auto_detect
+{
+    local pyenv_exe
+    local base_python_version
+
+    pyenv_exe=$1
+    base_python_version=$2
+
+    print_message "Install python '$base_python_version' from pyenv (--enable-shared) ..."
+
+    PYTHON_CONFIGURE_OPTS="--enable-shared" \
+        "$pyenv_exe" install "$base_python_version"
+}
+
+function install_python_if_not_exist
+{
+    local pyenv_exe
+    local base_python_version
+
+    pyenv_exe=$1
+    base_python_version=$2
+
+    if [[ -n $(find_pyenv_version "$pyenv_exe" "$base_python_version") ]]; then
+        return 0
+    fi
+
+    print_message "Not found '$base_python_version' in pyenv"
+
+    if [[ $(uname -s) == Darwin ]]; then
+        install_python_on_darwin "$pyenv_exe" "$base_python_version"
+    else
+        install_python_on_auto_detect "$pyenv_exe" "$base_python_version"
+    fi
+
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        print_error "Python installation failed: $code"
+        exit $code
+    fi
+}
+
+function install_virtualenv_if_not_exist
+{
+    local pyenv_exe
+    local base_python_version
+    local virtualenv_name
+
+    pyenv_exe=$1
+    base_python_version=$2
+    virtualenv_name=$3
+
+    if [[ -n $(find_pyenv_version "$pyenv_exe" "$virtualenv_name") ]]; then
+        return 0
+    fi
+
+    print_message "Not found '$virtualenv_name' in pyenv"
+    print_message "Install '$virtualenv_name' virtualenv based on '$base_python_version'"
+
+    "$pyenv_exe" virtualenv "$base_python_version" "$virtualenv_name"
+}
+
+function enable_pyenv
+{
+    local pyenv_exe
+    pyenv_exe=$1
+
+    PYENV_ROOT="$("$pyenv_exe" root)"
+    PATH="$PYENV_ROOT/bin:$PATH"
+
+    export PYENV_ROOT
+    export PATH
+
+    local platform
+    platform=$(uname -s)
+
+    # [IMPORTANT]
+    # An error occurs when using `pyenv_exe`
+    unset pyenv_exe
+
+    case "$platform" in
+    Darwin)
+        eval "$(pyenv init -)"
+        eval "$(pyenv virtualenv-init -)"
+        return 0
+        ;;
+    Linux)
+        eval "$(pyenv init --path)"
+        eval "$(pyenv init -)"
+        return 0
+        ;;
+    *)
+        print_error "Unsupported platform: $platform"
+        exit 1
+    esac
+}
+
+function active_virtualenv
+{
+    local virtualenv_name
+    virtualenv_name=$1
+
+    local current
+    current=$(pyenv version | awk '{print($1);}')
+
+    if [[ "$current" != "$virtualenv_name" ]]; then
+        pyenv shell "$virtualenv_name"
+    else
+        pyenv activate "$virtualenv_name"
+    fi
+}
+
+function exit_on_error
+{
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        exit $code
+    fi
+}
+
+function run_base_python
+{
+    local pyenv_exe
+    local base_python_version=$BASE_PYTHON_VERSION
+    local virtualenv_name=$VIRTUALENV_NAME
+
+    if [[ ! -d "$HOME/.pyenv" ]]; then
+        (install_pyenv)
+    fi
+
+    pyenv_exe=$(find_pyenv_exe "$base_python_version")
+    exit_on_error
+
+    install_python_if_not_exist "$pyenv_exe" "$base_python_version"
+    exit_on_error
+
+    install_virtualenv_if_not_exist \
+        "$pyenv_exe" \
+        "$base_python_version" \
+        "$virtualenv_name"
+    exit_on_error
+
+    enable_pyenv "$pyenv_exe"
+    exit_on_error
+
+    active_virtualenv "$virtualenv_name"
+    exit_on_error
+
+    local base_python_exe
+    base_python_exe=$(pyenv which python)
+
+    if [[ -x "$base_python_exe" ]]; then
+        "$base_python_exe" "$@"
+    else
+        print_error "The python executable could not be found"
+        exit 1
+    fi
+}
+
+## ----
+## MAIN
+## ----
+
+if [[ -n $PYTHON_EXE && -n $USE_SYSTEM_PYTHON ]]; then
+    print_error "{PYTHON_EXE} and {USE_SYSTEM_PYTHON} cannot coexist."
+    exit 1
+fi
+
+if [[ -n $PYTHON_EXE ]]; then
+    if [[ ! -x "$PYTHON_EXE" ]]; then
+        print_error "The specified python executable could not be run"
+        exit 1
+    fi
+elif [[ -n $USE_SYSTEM_PYTHON ]]; then
+    if [[ $USE_SYSTEM_PYTHON -eq 3 ]]; then
+        PYTHON_EXE=$(command -v python3 2> /dev/null)
+    elif [[ $USE_SYSTEM_PYTHON -eq 2 ]]; then
+        print_warning "python2 is deprecated. do you really use it?"
+        PYTHON_EXE=$(command -v python2 2> /dev/null)
+    elif [[ $USE_SYSTEM_PYTHON -eq 1 ]]; then
+        print_warning "Please specify the system python version as '3'"
+        PYTHON_EXE=$(command -v python 2> /dev/null)
+    else
+        print_error "{USE_SYSTEM_PYTHON} must be 1, 2, or 3"
+        exit 1
+    fi
+
+    if [[ -z $PYTHON_EXE ]]; then
+        print_error "Could not find system python executable"
+        exit 1
+    fi
+else
+    PYTHON_EXE=$VENV_PYTHON
+fi
+
+if [[ ! -x "$PYTHON_EXE" ]]; then
+    run_base_python -m venv "$VENV_HOME"
+    if [[ -x "$VENV_PYTHON" ]]; then
+        "$VENV_PYTHON" -m pip install -U pip
+        if [[ -f "$REQUIREMENTS" ]]; then
+            "$VENV_PYTHON" -m pip install -r "$REQUIREMENTS"
+        fi
+    fi
+    PYTHON_EXE=$VENV_PYTHON
+fi
+if [[ ! -x "$PYTHON_EXE" ]]; then
+    print_error "The venv's python executable could not be found."
+    exit 1
+fi
+
+PYTHONPATH="$ROOT_DIR:$PYTHONPATH" "$PYTHON_EXE" "$@"
