@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "./python"
+    "python.pythonPath": "./python",
     "python.jediEnabled": true,
     "python.autoComplete.extraPaths": [],
     "python.formatting.provider": "black",
@@ -8,7 +8,7 @@
     "python.linting.flake8Args": [
         "--extend-ignore=E203,W503",
         "--max-line-length=88",
-        "--exclude=*_pb2.py,*_pb2_grpc.py",
+        "--exclude=*_pb2.py,*_pb2_grpc.py"
     ],
     "python.linting.banditEnabled": false,
     "python.linting.mypyEnabled": false,
