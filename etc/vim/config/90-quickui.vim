@@ -183,6 +183,9 @@ call quickui#menu#install("&View", [
             \ [ "--", "" ],
             \ [ "Buffer Prev\t:bp", ":bp" ],
             \ [ "Buffer Next\t:bn", ":bn" ],
+            \ [ "--", "" ],
+            \ [ "Tab Prev\t:tabp", ":tabp" ],
+            \ [ "Tab Next\t:tabn", ":tabn" ],
             \ ])
 
 call quickui#menu#install("&Help", [
