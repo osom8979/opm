@@ -195,6 +195,24 @@ nnoremap <silent><nowait> <space>k  :<C-u>CocPrev<CR>
 " Resume latest coc list.
 nnoremap <silent><nowait> <space>p  :<C-u>CocListResume<CR>
 
+" -------------
+" coc workspace
+" -------------
+
+autocmd FileType python let b:coc_root_patterns = [
+    \   '.git',
+    \   '.env',
+    \   'setup.cfg',
+    \   'setup.py',
+    \   'pyproject.toml',
+    \]
+
+autocmd FileType javascript,typescript let b:coc_root_patterns = [
+    \   '.git',
+    \   '.env',
+    \   'project.json',
+    \]
+
 " ----------
 " coc config
 " ----------

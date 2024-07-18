@@ -13,7 +13,7 @@
                 "stopOnEntry": true,
                 "console": "integratedTerminal",
                 "cwd": "${workspaceRoot}",
-                "python": "${workspaceRoot}/.venv/bin/python",
+                "python": "${workspaceRoot}/python",
                 "program": "${workspaceRoot}/main.py",
                 "env": {
                     "PYTHONPATH": "${workspaceRoot}"

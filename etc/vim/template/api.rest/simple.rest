@@ -1,0 +1,15 @@
+http://127.0.0.1:3000
+GET /api/users/bakyeono
+
+http://127.0.0.1:3000
+POST /api/languages/ansi-common-lisp
+
+http://127.0.0.1:3000
+PUT /api/resources/1789
+
+http://127.0.0.1:3000
+Accepts: application/text; charset=utf-8
+PUT /api/chat
+{
+  "message": "hello"
+}

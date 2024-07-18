@@ -34,38 +34,35 @@ function! CreateNewFileAsTemplate(file, template)
     endfor
 endfunction
 
-function! s:TemplateMenus()
+function! s:TemplateMenuNode(dir_path, node_path)
     let result = []
-    let template_dir = fnameescape(g:opm_vim_script_dir) . '/template'
-    let normal_nodes = globpath(template_dir, '*', 0, 1)
-    let hidden_nodes = globpath(template_dir, '.[^.]*', 0, 1)
+
+    let normal_nodes = globpath(a:dir_path, '*', 0, 1)
+    let hidden_nodes = globpath(a:dir_path, '.[^.]*', 0, 1)
     let nodes = normal_nodes + hidden_nodes
+
     for node in nodes
-        if !isdirectory(node)
+        let node_name = fnamemodify(node, ':t')
+        if node_name == '.' || node_name == '..'
             continue
         endif
 
-        let dirname = fnamemodify(node, ':t')
-        if dirname == '.' || dirname == '..'
+        if isdirectory(node)
+            let subnode_path = a:node_path == '' ? node_name : a:node_path.'/'.node_name
+            let result += s:TemplateMenuNode(node, subnode_path)
             continue
         endif
 
-        let normal_files = globpath(node, '*', 0, 1)
-        let hidden_files = globpath(node, '.[^.]*', 0, 1)
-        let files = normal_files + hidden_files
-
-        for file in files
-            if isdirectory(file)
-                continue
-            endif
-
-            let filename = fnamemodify(file, ':t')
-            let menu_name = 'Open '.dirname.'/'.filename
-            let menu_cmd = ':call CreateNewFileAsTemplate("'.dirname.'","'.file.'")'
-            let result += [[menu_name, menu_cmd]]
-        endfor
+        let menu_name = 'Edit '.a:node_path.' ← '.node_name
+        let menu_cmd = ':call CreateNewFileAsTemplate("'.a:node_path.'","'.node.'")'
+        let result += [[menu_name, menu_cmd]]
     endfor
     return result
+endfunction
+
+function! s:TemplateMenus()
+    let template_dir = fnameescape(g:opm_vim_script_dir) . '/template'
+    return s:TemplateMenuNode(template_dir, '')
 endfunction
 
 " -------------------------

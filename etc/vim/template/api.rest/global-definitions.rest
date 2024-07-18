@@ -1,0 +1,36 @@
+# Global definitions.
+// Default host.
+https://domain[:port]/...
+
+// Default (buffer scope) cUrl options.
+-L
+--connect-timeout 10
+
+// Default headers.
+Accept: application/json
+X-Header: Custom Data
+--
+
+# Request block that uses default values from the global section.
+--
+GET /some/query
+
+# Request block that specifies its own host and extra headers.
+// Local host.
+https://example.net:9200
+
+// Local cUrl opts.
+-k
+--ipv4
+// This cUrl option overwrites the one in the global section.
+--connect-timeout 30
+-b /path/to/cookie
+-c /path/to/cookie
+
+// Extra headers.
+Xtra-Header: Some Extra.
+// This header will overwrite the one in the global section.
+X-Header: New Data
+
+POST /service
+var1=value
