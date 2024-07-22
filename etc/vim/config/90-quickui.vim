@@ -202,7 +202,7 @@ call quickui#menu#install("&Help", [
             \ ["Vim Config", "help config"],
             \ ["Opm Help", ":OpmHelp"],
             \ ["--", ""],
-            \ [ "Print file path (relative)", ":echo @%" ],
+            \ [ "Print file path (relative)\tC-G", ":echo @%" ],
             \ [ "Print file path (absolute)", ":echo expand('%:p')" ],
             \ ["--", ""],
             \ ["&Loaded Scripts", ":OpmLoadedScripts"],
