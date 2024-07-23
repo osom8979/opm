@@ -43,6 +43,8 @@ if g:vimspector_enable_mappings ==# 'opvim'
     nmap <S-F9>     <Plug>VimspectorLaunch
     nmap <F33>      <Plug>VimspectorLaunch
 
+    nmap <C-F2>     <Plug>VimspectorStop
+
     nmap <F9>       <Plug>VimspectorContinue
     nmap <F7>       <Plug>VimspectorStepInto
     nmap <F8>       <Plug>VimspectorStepOver

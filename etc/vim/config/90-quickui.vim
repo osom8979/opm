@@ -148,7 +148,7 @@ call quickui#menu#install("&Debug", [
             \ [ "Reset", ':VimspectorReset' ],
             \ [ "--", "" ],
             \ [ "&Continue\tF9", ':execute "normal \<Plug>VimspectorContinue"' ],
-            \ [ "&Stop", ':execute "normal \<Plug>VimspectorStop"' ],
+            \ [ "&Stop\tC-F2", ':execute "normal \<Plug>VimspectorStop"' ],
             \ [ "&Restart", ':execute "normal \<Plug>VimspectorRestart"' ],
             \ [ "&Pause", ':execute "normal \<Plug>VimspectorPause"' ],
             \ [ "--", "" ],
