@@ -1,6 +1,4 @@
 snippet snip-cv2-video-capture
-	# -*- coding: utf-8 -*-
-
 	import cv2
 
 	cap = cv2.VideoCapture("sample.mp4")
@@ -22,34 +20,22 @@ snippet snip-cv2-video-capture
 
 
 snippet snip-cv2-select-roi
-	# -*- coding: utf-8 -*-
-
 	import cv2
 	import numpy as np
 
-	canvas = np.zeros((300, 300, 3), dtype=np.uint8)
 	color = (0, 0, 255)
 	thickness = 0
 	line_type = cv2.LINE_8
 
-	while True:
-		r = cv2.selectROI(canvas)
-		if r == (0, 0, 0, 0):
-			break
-
-		img = canvas.copy()
-		cv2.rectangle(img, r, color, thickness, line_type)
-		cv2.imshow("preview", img)
-
-		keycode = cv2.waitKey(1)
-		if keycode & 0xFF == ord("q"):
-			break
+	img = np.zeros((300, 300, 3), dtype=np.uint8)
+	roi = cv2.selectROI(img)
+	cv2.rectangle(img, roi, color, thickness, line_type)
+	cv2.imshow("Preview", img)
+	cv2.waitKey()
 
 
 snippet snip-unittest-default
-	# -*- coding: utf-8 -*-
-
-	from unittest import TestCase
+	from unittest import TestCase, main
 
 	class ${1:Name}TestCase(TestCase):
 		@classmethod
@@ -66,24 +52,34 @@ snippet snip-unittest-default
 		def tearDown(self):
 			pass
 
+		def test_default(self):
+			self.assertTrue(True)
+
+	if __name__ == "__main__":
+		main()
+
 
 snippet snip-av-rtsp-streaming
 	import av
-	import time
-	import numpy as np
 	import cv2
+	import io
+	import numpy as np
+	import time
 
-	video_src = 'sample.mp4'
+	video_src = "sample.mp4"
 	video_index = 0
-	frame_format = 'bgr24'
-	options = { 'rtsp_transport': 'tcp' }
-	container_options = {}
-	stream_options = []
+	frame_format = "bgr24"
+	options = dict(rtsp_transport="tcp")
+	container_options = dict()
+	stream_options = list()
 
-	container = av.open(video_src, options=options,
-						container_options=container_options,
-						stream_options=stream_options)
-	container.streams.video[video_index].thread_type = 'AUTO'  # Go faster!
+	container = av.open(
+		video_src,
+		options=options,
+		container_options=container_options,
+		stream_options=stream_options,
+	)
+	container.streams.video[video_index].thread_type = "AUTO"  # Go faster!
 	frames = container.decode(video=video_index)
 
 	while True:
@@ -94,12 +90,30 @@ snippet snip-av-rtsp-streaming
 		last_index = frame.index
 		last_pts = frame.pts
 
-		end = time.time()
-		elapsed = int((end-begin)*1000)
-		print(f'index={last_index}, pts={last_pts}, shape={last_frame.shape}, elapsed={elapsed}ms')
+		elapsed = time.time() - begin
 
-		cv2.imshow('frame', last_frame)
-		if cv2.waitKey(1) & 0xFF == ord('q'):
+		buffer = io.StringIO()
+		buffer.write(f"Index={last_index},")
+		buffer.write(f"PTS={last_pts},")
+		buffer.write(f"Shape={last_frame.shape},")
+		buffer.write(f"Elapsed={elapsed:.3f}s")
+		print(buffer.getvalue().strip())
+
+		cv2.imshow("Frame", last_frame)
+		if cv2.waitKey(1) & 0xFF == ord("q"):
 			break
+
+
+snippet snip-directory-retrieve
+	import os
+
+	nodenames = os.listdir(os.getcwd())
+	# or
+	for dirpath, dirnames, filenames in os.walk(os.getcwd()):
+		print(dirpath)
+		for dirname in dirnames:
+			print(dirname)
+		for filename in filenames:
+			print(filename)
 
 
