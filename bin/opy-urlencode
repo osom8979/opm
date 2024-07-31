@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+# ----------------------------------------------------------- #
+# RFC 3986 Uniform Resource Identifier (URI):                 #
+# Generic Syntax lists the following (un)reserved characters. #
+#                                                             #
+# unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"       #
+# reserved      = gen-delims / sub-delims                     #
+# gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"     #
+# sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"           #
+#               / "*" / "+" / "," / ";" / "="                 #
+# ----------------------------------------------------------- #
+
+opy -c "from urllib.parse import quote; print(quote(r'$*', safe=r\"-._~:/?#[]@!$&'()*+,;=\", encoding=None, errors=None))"
