@@ -4,10 +4,11 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-CONKY_CONFIG="$OPM_HOME/etc/conky/conky.lua"
-
-if [[ -n $(which conky 2> /dev/null) ]]; then
-    conky -c "$CONKY_CONFIG" --daemonize
-else
+if ! command -v conky &> /dev/null; then
+    opm-println-error "Not found conky executable"
     exit 1
 fi
+
+CONKY_CONFIG="$OPM_HOME/etc/conky/conky.lua"
+
+conky -c "$CONKY_CONFIG" --daemonize
