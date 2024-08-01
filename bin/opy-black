@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} [options] ...
+
+Available options are:
+  -h, --help    Print this message.
+  -D            Use default settings
+  -F            Edit files in place.
+  --            Stop handling options.
+  ...           Command-line arguments for black.
+"
+
+function opy_black_main
+{
+    local fix=0
+    local default=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            echo "$USAGE"
+            exit 0
+            ;;
+        -D)
+            default=1
+            shift
+            ;;
+        -F)
+            fix=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local args=()
+    if [[ $default -ne 0 ]]; then
+        args+=("--exclude=(/\.git|/\.venv)")
+    fi
+    if [[ $fix -eq 0 ]]; then
+        args+=("--check" "--diff" "--color")
+    fi
+
+    opy-checked-install black
+    opy -m black "${args[@]}" "$@"
+}
+
+opy_black_main "$@"
