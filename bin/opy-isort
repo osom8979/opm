@@ -11,6 +11,8 @@ Available options are:
   -h, --help    Print this message.
   -D            Use default settings
   -F            Edit files in place.
+  --skip-installation-check
+                Skip package installation verification.
   --            Stop handling options.
   ...           Command-line arguments for isort.
 "
@@ -19,6 +21,7 @@ function opy_isort_main
 {
     local fix=0
     local default=0
+    local skip_installation_check=0
 
     while [[ -n $1 ]]; do
         case $1 in
@@ -32,6 +35,10 @@ function opy_isort_main
             ;;
         -F)
             fix=1
+            shift
+            ;;
+        --skip-installation-check)
+            skip_installation_check=1
             shift
             ;;
         --)
@@ -60,7 +67,10 @@ function opy_isort_main
         args+=("--check" "--diff" "--color")
     fi
 
-    opy-checked-install isort
+    if [[ $skip_installation_check -eq 0 ]]; then
+        opy-checked-install isort
+    fi
+
     opy -m isort "${args[@]}" "$@"
 }
 

@@ -13,22 +13,44 @@ Available options are:
   --skip-installation-check
                 Skip package installation verification.
   --            Stop handling options.
-  ...           Command-line arguments for flake8.
+  ...           Command-line arguments for pytest.
 "
 
-FLAKE8_CONFIG="
-[flake8]
-max-line-length = 88
-extend-ignore =
-    E203, W503
-exclude =
-    */.git,
-    */.venv
-filename = *.py
-format=%(path)s:%(row)d:%(col)d: %(code)s %(text)s
+PYTEST_CONFIG="
+[pytest]
+cache_dir = .pytest_cache
+
+# pytest-cov
+# these values are generally used when running product code.
+[run]
+branch = True
+data_file = build/cov/data
+source = tester
+source_pkgs = cvp
+omit =
+    */__init__.py
+    */__main__.py
+
+# pytest-cov
+# values common to many kinds of reporting.
+[report]
+exclude_lines =
+    noqa
+    nocov
+    if __name__ == .__main__.:
+
+# pytest-cov
+# values particular to html reporting.
+[html]
+directory = build/cov/html
+
+# pytest-cov
+# values particular to xml reporting.
+[xml]
+output = build/cov.xml
 "
 
-function opy_flake8_main
+function opy_pytest_main
 {
     local default=0
     local skip_installation_check=0
@@ -59,14 +81,20 @@ function opy_flake8_main
 
     local args=()
     if [[ $default -ne 0 ]]; then
-        args+=("--config" <(echo "$FLAKE8_CONFIG"))
+        args+=(
+            "-v"
+            "--cov"
+            "--cov-report=term-missing"
+            "--cov-report=html"
+            "--cov-config" <(echo "$PYTEST_CONFIG")
+        )
     fi
 
     if [[ $skip_installation_check -eq 0 ]]; then
-        opy-checked-install flake8
+        opy-checked-install pytest coverage pytest-cov
     fi
 
-    opy -m flake8 "${args[@]}" "$@"
+    opy -m pytest "${args[@]}" "$@"
 }
 
-opy_flake8_main "$@"
+opy_pytest_main "$@"

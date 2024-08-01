@@ -10,6 +10,8 @@ Usage: ${BASH_SOURCE[0]} [options] ...
 Available options are:
   -h, --help    Print this message.
   -D            Use default settings
+  --skip-installation-check
+                Skip package installation verification.
   --            Stop handling options.
   ...           Command-line arguments for mypy.
 "
@@ -28,6 +30,7 @@ cache_dir = .mypy_cache
 function opy_mypy_main
 {
     local default=0
+    local skip_installation_check=0
 
     while [[ -n $1 ]]; do
         case $1 in
@@ -37,6 +40,10 @@ function opy_mypy_main
             ;;
         -D)
             default=1
+            shift
+            ;;
+        --skip-installation-check)
+            skip_installation_check=1
             shift
             ;;
         --)
@@ -54,7 +61,10 @@ function opy_mypy_main
         args+=("--config-file" <(echo "$MYPY_CONFIG"))
     fi
 
-    opy-checked-install mypy
+    if [[ $skip_installation_check -eq 0 ]]; then
+        opy-checked-install mypy
+    fi
+
     opy -m mypy "${args[@]}" "$@"
 }
 
