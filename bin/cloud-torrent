@@ -1,13 +1,23 @@
 #!/usr/bin/env bash
 
-PORT=19000
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v docker &> /dev/null; then
+    opm-println-error "Not found docker command"
+    exit 1
+fi
+
+IMAGE_NAME=jpillora/cloud-torrent:latest
+HOST_PORT=19000
 DOWNLOAD_DIR=$HOME/Downloads
 
-echo "Run Cloud-Torrent"
-echo "URL: http://localhost:$PORT"
-echo "DIR: $DOWNLOAD_DIR"
+opm-println-info "Run Cloud-Torrent ($IMAGE_NAME)"
+opm-println-info "URL: http://localhost:$HOST_PORT"
+opm-println-info "DIR: $DOWNLOAD_DIR"
 
-docker run --rm -p $PORT:3000 -v $DOWNLOAD_DIR:/downloads jpillora/cloud-torrent
-
-echo "Done."
-
+docker run --rm \
+    --publish "$HOST_PORT:3000" \
+    --volume "$DOWNLOAD_DIR:/downloads" \
+    "$IMAGE_NAME"
