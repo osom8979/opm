@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} [options] ...
+
+Available options are:
+  -h, --help    Print this message.
+  -D            Use default settings
+  --            Stop handling options.
+  ...           Command-line arguments for mypy.
+"
+
+MYPY_CONFIG="
+[mypy]
+ignore_missing_imports = True
+show_error_context = True
+show_column_numbers = True
+show_error_codes = True
+pretty = True
+exclude = (/.git|/.venv)
+cache_dir = .mypy_cache
+"
+
+function opy_mypy_main
+{
+    local default=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            echo "$USAGE"
+            exit 0
+            ;;
+        -D)
+            default=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local args=()
+    if [[ $default -ne 0 ]]; then
+        args+=("--config-file" <(echo "$MYPY_CONFIG"))
+    fi
+
+    opy-checked-install mypy
+    opy -m mypy "${args[@]}" "$@"
+}
+
+opy_mypy_main "$@"
