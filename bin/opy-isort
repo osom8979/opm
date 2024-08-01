@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} [options] ...
+
+Available options are:
+  -h, --help    Print this message.
+  -D            Use default settings
+  -F            Edit files in place.
+  --            Stop handling options.
+  ...           Command-line arguments for isort.
+"
+
+function opy_isort_main
+{
+    local fix=0
+    local default=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            echo "$USAGE"
+            exit 0
+            ;;
+        -D)
+            default=1
+            shift
+            ;;
+        -F)
+            fix=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local args=()
+    local src_paths=()
+
+    if [[ $default -ne 0 ]]; then
+        args+=("--skip-gitignore" "--profile" "black" "--py" "auto")
+        mapfile -t src_paths < <(
+            find . -name '*.py' | sed -e 's/^\.\///g' | awk -F/ '{print($1)}' | sort | uniq
+        )
+        if [[ ${#src_paths[@]} -ge 1 ]]; then
+            args+=("--src-path" "$(IFS=,; echo "${src_paths[*]}")")
+        fi
+    fi
+    if [[ $fix -eq 0 ]]; then
+        args+=("--check" "--diff" "--color")
+    fi
+
+    opy-checked-install isort
+    opy -m isort "${args[@]}" "$@"
+}
+
+opy_isort_main "$@"
