@@ -9,8 +9,9 @@ Usage: ${BASH_SOURCE[0]} [options] ...
 
 Available options are:
   -h, --help    Print this message.
-  -D            Use default settings
   -F            Edit files in place.
+  --disable-defaults
+                Disable default settings
   --skip-installation-check
                 Skip package installation verification.
   --            Stop handling options.
@@ -20,7 +21,7 @@ Available options are:
 function opy_isort_main
 {
     local fix=0
-    local default=0
+    local disable_defaults=0
     local skip_installation_check=0
 
     while [[ -n $1 ]]; do
@@ -29,12 +30,12 @@ function opy_isort_main
             echo "$USAGE"
             exit 0
             ;;
-        -D)
-            default=1
-            shift
-            ;;
         -F)
             fix=1
+            shift
+            ;;
+        --disable-defaults)
+            disable_defaults=1
             shift
             ;;
         --skip-installation-check)
@@ -54,23 +55,27 @@ function opy_isort_main
     local args=()
     local src_paths=()
 
-    if [[ $default -ne 0 ]]; then
-        args+=("--skip-gitignore" "--profile" "black" "--py" "auto")
+    if [[ $disable_defaults -eq 0 ]]; then
+        args+=("--skip-gitignore" "--profile=black" "--py=auto")
+
         mapfile -t src_paths < <(
             find . -name '*.py' | sed -e 's/^\.\///g' | awk -F/ '{print($1)}' | sort | uniq
         )
+
         if [[ ${#src_paths[@]} -ge 1 ]]; then
             args+=("--src-path" "$(IFS=,; echo "${src_paths[*]}")")
         fi
     fi
+
     if [[ $fix -eq 0 ]]; then
         args+=("--check" "--diff" "--color")
     fi
 
     if [[ $skip_installation_check -eq 0 ]]; then
-        opy-checked-install isort
+        opy-checked-install isort colorama
     fi
 
+    opm-println-info isort "${args[@]}" "$@"
     opy -m isort "${args[@]}" "$@"
 }
 

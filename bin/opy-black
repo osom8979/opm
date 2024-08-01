@@ -9,8 +9,9 @@ Usage: ${BASH_SOURCE[0]} [options] ...
 
 Available options are:
   -h, --help    Print this message.
-  -D            Use default settings
   -F            Edit files in place.
+  --disable-defaults
+                Disable default settings
   --skip-installation-check
                 Skip package installation verification.
   --            Stop handling options.
@@ -20,7 +21,7 @@ Available options are:
 function opy_black_main
 {
     local fix=0
-    local default=0
+    local disable_defaults=0
     local skip_installation_check=0
 
     while [[ -n $1 ]]; do
@@ -29,12 +30,12 @@ function opy_black_main
             echo "$USAGE"
             exit 0
             ;;
-        -D)
-            default=1
-            shift
-            ;;
         -F)
             fix=1
+            shift
+            ;;
+        --disable-defaults)
+            disable_defaults=1
             shift
             ;;
         --skip-installation-check)
@@ -52,7 +53,7 @@ function opy_black_main
     done
 
     local args=()
-    if [[ $default -ne 0 ]]; then
+    if [[ $disable_defaults -eq 0 ]]; then
         args+=("--exclude=(/\.git|/\.venv)")
     fi
     if [[ $fix -eq 0 ]]; then
@@ -63,6 +64,7 @@ function opy_black_main
         opy-checked-install black
     fi
 
+    opm-println-info black "${args[@]}" "$@"
     opy -m black "${args[@]}" "$@"
 }
 

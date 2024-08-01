@@ -12,18 +12,25 @@ function get_pyenv_path
 
 function must_pyenv_path
 {
-    local pyenv_cmd=$(get_pyenv_path)
+    local pyenv_cmd
+
+    pyenv_cmd=$(get_pyenv_path)
+
     if [[ -z $pyenv_cmd ]]; then
         opm-println-error "Not found pyenv command."
         exit 1  # The assertion error ends immediately.
     fi
+
     echo "$pyenv_cmd"
 }
 
 function find_pyenv_version
 {
     local version=$1
-    local pyenv_cmd=$(must_pyenv_path)
+    local pyenv_cmd
+
+    pyenv_cmd=$(must_pyenv_path)
+
     "$pyenv_cmd" versions --bare | grep --color=never -Fx "$version"
 }
 
@@ -33,7 +40,10 @@ function find_pyenv_version
 
 function install_pyenv_on_auto_detect
 {
-    local not_found_cmds=$(opm-find-cmds -n -s git curl)
+    local not_found_cmds
+
+    not_found_cmds=$(opm-find-cmds -n -s git curl)
+
     if [[ -n $not_found_cmds ]]; then
         opm-println "Not found commands: $not_found_cmds"
         opm-package update

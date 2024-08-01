@@ -9,28 +9,17 @@ Usage: ${BASH_SOURCE[0]} [options] ...
 
 Available options are:
   -h, --help    Print this message.
-  -D            Use default settings
+  --disable-defaults
+                Disable default settings
   --skip-installation-check
                 Skip package installation verification.
   --            Stop handling options.
   ...           Command-line arguments for flake8.
 "
 
-FLAKE8_CONFIG="
-[flake8]
-max-line-length = 88
-extend-ignore =
-    E203, W503
-exclude =
-    */.git,
-    */.venv
-filename = *.py
-format=%(path)s:%(row)d:%(col)d: %(code)s %(text)s
-"
-
 function opy_flake8_main
 {
-    local default=0
+    local disable_defaults=0
     local skip_installation_check=0
 
     while [[ -n $1 ]]; do
@@ -39,8 +28,8 @@ function opy_flake8_main
             echo "$USAGE"
             exit 0
             ;;
-        -D)
-            default=1
+        --disable-defaults)
+            disable_defaults=1
             shift
             ;;
         --skip-installation-check)
@@ -58,14 +47,21 @@ function opy_flake8_main
     done
 
     local args=()
-    if [[ $default -ne 0 ]]; then
-        args+=("--config" <(echo "$FLAKE8_CONFIG"))
+    if [[ $disable_defaults -eq 0 ]]; then
+        args+=(
+            '--max-line-length=88'
+            '--extend-ignore=E203,W503'
+            '--exclude=*/.git,*/.venv'
+            '--filename=*.py'
+            '--format=%(path)s:%(row)d:%(col)d: %(code)s %(text)s'
+        )
     fi
 
     if [[ $skip_installation_check -eq 0 ]]; then
         opy-checked-install flake8
     fi
 
+    opm-println-info flake8 "${args[@]}" "$@"
     opy -m flake8 "${args[@]}" "$@"
 }
 

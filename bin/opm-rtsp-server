@@ -45,11 +45,11 @@ function opm_rtsp_server_main
             shift 2
             ;;
         --size=*)
-            IFS="x" read -ra size <<< ${1:7}
+            IFS="x" read -ra size <<< "${1:7}"
             shift
             ;;
         -s)
-            IFS="x" read -ra size <<< $2
+            IFS="x" read -ra size <<< "$2"
             shift 2
             ;;
         --)
