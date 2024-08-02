@@ -60,7 +60,7 @@ function opy_mypy_main
     fi
 
     if [[ $skip_installation_check -eq 0 ]]; then
-        opy-checked-install mypy
+        opy-checked-install mypy types-requests
     fi
 
     opm-println-info mypy "${args[@]}" "$@"
