@@ -9,7 +9,7 @@ Usage: ${BASH_SOURCE[0]} [options] ...
 
 Available options are:
   -h, --help    Print this message.
-  -F            Edit files in place.
+  --fix         Edit files in place.
   --disable-defaults
                 Disable default settings
   --skip-installation-check
@@ -30,7 +30,7 @@ function opy_isort_main
             echo "$USAGE"
             exit 0
             ;;
-        -F)
+        --fix)
             fix=1
             shift
             ;;
