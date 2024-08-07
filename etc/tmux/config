@@ -82,19 +82,42 @@ set -g status-justify "centre"
 set -g status-left-length 60
 set -g status-right-length 90
 
+# set-environment -g MY_VARIABLE value
+
 #################
 # List of plugins
 #################
 
 set -g @plugin "tmux-plugins/tpm"
 set -g @plugin "tmux-plugins/tmux-open"
-set -g @plugin 'sainnhe/tmux-fzf'
-set -g @plugin 'erikw/tmux-powerline'
+set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
 set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @plugin 'erikw/tmux-powerline'
+set -g @plugin 'wfxr/tmux-power'
+set -g @plugin 'wfxr/tmux-net-speed'
+set -g @plugin 'sainnhe/tmux-fzf'
+
 set -g @resurrect-save 'S'
 set -g @resurrect-restore 'R'
 set -g @resurrect-strategy-vim 'session'
 set -g @resurrect-strategy-nvim 'session'
+set -g @continuum-restore 'on'
+
+set -g @tmux_power_theme 'everforest'
+set -g @tmux_power_date_icon ''
+set -g @tmux_power_time_icon ''
+set -g @tmux_power_user_icon ''
+set -g @tmux_power_session_icon ''
+set -g @tmux_power_date_format '%F'
+set -g @tmux_power_time_format '%T'
+set -g @tmux_power_left_arrow_icon  ''
+set -g @tmux_power_right_arrow_icon ''
+set -g @tmux_power_upload_speed_icon   ''
+set -g @tmux_power_download_speed_icon ''
+set -g @tmux_power_show_upload_speed true
+set -g @tmux_power_show_download_speed true
+set -g @tmux_power_prefix_highlight_pos 'L'
 
 # Initialize TMUX plugin manager
 # (keep this line at the very bottom of tmux.conf)
