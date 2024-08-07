@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v fc-query &> /dev/null; then
+    opm-println-error "Not found fc-query command"
+    exit 1
+fi
+
+USAGE="
+Usage: opm-print-glyphs [options] font
+
+Available options are:
+  -h, --help        Print this message.
+  --                Skip handling options
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function print_char_range
+{
+    local start=$1
+    local end=$2
+
+    if [[ -n "$end" ]]; then
+        start=$(( 16#$start ))
+        end=$(( 16#$end ))
+
+        for (( i = start ; i <= end ; i++ )); do
+            printf -v char '\\U%x' "$i"
+            printf '%b' "$char"
+        done
+    else
+        printf '%b' "\\U$start"
+    fi
+}
+
+function opm_print_glyphs_main
+{
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local file=$1
+    if [[ ! -f "$file" ]]; then
+        opm-println-error "Not found font file: '$file'"
+        return 1
+    fi
+
+    for range in $(fc-query --format='%{charset}\n' "$file"); do
+        IFS=- read -r start end <<< "$range"
+        print_char_range "$start" "$end"
+    done
+}
+
+opm_print_glyphs_main "$@"

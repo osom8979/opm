@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
 if ! command -v curl &> /dev/null; then
     opm-println-error "Not found curl command"
     exit 1
@@ -8,10 +12,6 @@ fi
 if ! command -v jq &> /dev/null; then
     opm-println-error "Not found jq command"
     exit 1
-fi
-
-if ! command -v opm-version &> /dev/null; then
-PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 DEFAULT_API_PREFIX="https://api.cloud.hashicorp.com/secrets/2023-06-13/organizations"
