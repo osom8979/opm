@@ -8,5 +8,5 @@ export OPY_SUFFIX=glances
 export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY_VERSION)}
 export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
 
-opy-checked-install glances nvidia-ml-py3 || exit $?
+opy-checked-install 'glances[all]' || exit $?
 opy -m glances "$@"
