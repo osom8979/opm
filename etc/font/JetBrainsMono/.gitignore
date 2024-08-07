@@ -1,4 +1,3 @@
-*
-!.gitignore
-!JetBrainsMono.sh
-!JetBrainsMono.tar.xz
+OFL.txt
+README.md
+*.ttf

@@ -10,10 +10,10 @@ font:
     #   - (macOS) Menlo
     #   - (Linux/BSD) monospace
     #   - (Windows) Consolas
-    family: 'DroidSansMono Nerd Font'
+    family: 'JetBrainsMonoNL NFM'
 
   # Point size
-  size: 8.5
+  size: 9.0
 
 key_bindings:
   - { key: Left,  mods: Alt, chars: "\x1bb" }

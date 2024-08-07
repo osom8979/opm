@@ -11,8 +11,14 @@ AUTOMATIC_YES=${AUTOMATIC_YES:-0}
 IFS=" " read -r -a VFI_FLAGS <<< "${VFI_FLAGS:--v}"
 
 # https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/DroidSansMono/complete/Droid%20Sans%20Mono%20Nerd%20Font%20Complete.otf
-FONT_NAME="DroidSansMono Nerd Font"
-FILE_NAME="Droid Sans Mono Nerd Font Complete.otf"
+# FONT_NAME="DroidSansMono Nerd Font"
+# FILE_NAME="Droid Sans Mono Nerd Font Complete.otf"
+
+# NL = No Ligatures
+# NFM = Nerd Font Mono
+# https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz
+FONT_NAME="JetBrainsMonoNL NFM"
+FILE_NAME="JetBrainsMonoNLNerdFontMono-Regular.ttf"
 
 ALREADY_INSTALLED=0
 KERNEL=$(uname -s)
