@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+export OPY_SUFFIX=glances
+export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY_VERSION)}
+export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
+
+opy-checked-install glances nvidia-ml-py3 || exit $?
+opy -m glances "$@"
