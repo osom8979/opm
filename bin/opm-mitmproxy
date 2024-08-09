@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+docker run \
+    --rm \
+    --interactive \
+    --tty \
+    --publish 8080:8080 \
+    mitmproxy/mitmproxy:latest
