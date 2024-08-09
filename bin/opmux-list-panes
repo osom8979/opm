@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if [[ ! -x $(which tmux 2> /dev/null ) ]]; then
+    opm-println-error "Not found tmux executable"
+    exit 1
+fi
+
+tmux list-panes "$@"
