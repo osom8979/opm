@@ -208,6 +208,7 @@ call quickui#menu#install("&Help", [
             \ ["&Loaded Scripts", ":OpmLoadedScripts"],
             \ ["Healthcheck", ":checkhealth"],
             \ ["--", ""],
+            \ ["Redraw\t<C-L>", ":mode", "Clear and redraw the screen"],
             \ ["&Reload", ":OpmReload"],
             \ ], 10000)
 
