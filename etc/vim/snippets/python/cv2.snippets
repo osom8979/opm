@@ -1,0 +1,35 @@
+snippet snip-cv2-video-capture
+	import cv2
+
+	cap = cv2.VideoCapture("sample.mp4")
+
+	while cap.isOpened():
+		ret, frame = cap.read()
+		if not ret:
+			break
+
+		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+		cv2.imshow("frame", gray)
+
+		keycode = cv2.waitKey(1)
+		if keycode & 0xFF == ord("q"):
+			break
+
+	cap.release()
+	cv2.destroyAllWindows()
+
+
+snippet snip-cv2-select-roi
+	import cv2
+	import numpy as np
+
+	color = (0, 0, 255)
+	thickness = 0
+	line_type = cv2.LINE_8
+
+	img = np.zeros((300, 300, 3), dtype=np.uint8)
+	roi = cv2.selectROI(img)
+	cv2.rectangle(img, roi, color, thickness, line_type)
+	cv2.imshow("Preview", img)
+	cv2.waitKey()
+

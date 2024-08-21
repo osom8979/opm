@@ -1,0 +1,17 @@
+snippet snip-dir-list
+	import os
+
+	for node in os.listdir(os.getcwd()):
+		print(node)
+
+
+snippet snip-dir-retrieve
+	import os
+
+	for dirpath, dirnames, filenames in os.walk(os.getcwd()):
+		print(dirpath)
+		for dirname in dirnames:
+			print(dirname)
+		for filename in filenames:
+			print(filename)
+

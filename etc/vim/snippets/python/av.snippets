@@ -1,0 +1,44 @@
+snippet snip-av-rtsp-streaming
+	import av
+	import cv2
+	import io
+	import numpy as np
+	import time
+
+	video_src = "sample.mp4"
+	video_index = 0
+	frame_format = "bgr24"
+	options = dict(rtsp_transport="tcp")
+	container_options = dict()
+	stream_options = list()
+
+	container = av.open(
+		video_src,
+		options=options,
+		container_options=container_options,
+		stream_options=stream_options,
+	)
+	container.streams.video[video_index].thread_type = "AUTO"  # Go faster!
+	frames = container.decode(video=video_index)
+
+	while True:
+		begin = time.time()
+
+		frame = next(frames)
+		last_frame = frame.to_ndarray(format=frame_format)
+		last_index = frame.index
+		last_pts = frame.pts
+
+		elapsed = time.time() - begin
+
+		buffer = io.StringIO()
+		buffer.write(f"Index={last_index},")
+		buffer.write(f"PTS={last_pts},")
+		buffer.write(f"Shape={last_frame.shape},")
+		buffer.write(f"Elapsed={elapsed:.3f}s")
+		print(buffer.getvalue().strip())
+
+		cv2.imshow("Frame", last_frame)
+		if cv2.waitKey(1) & 0xFF == ord("q"):
+			break
+

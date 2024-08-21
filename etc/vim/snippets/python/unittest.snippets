@@ -1,0 +1,24 @@
+snippet snip-unittest-default
+	from unittest import TestCase, main
+
+	class ${1:Name}TestCase(TestCase):
+		@classmethod
+		def setUpClass(cls):
+			pass
+
+		@classmethod
+		def tearDownClass(cls):
+			pass
+
+		def setUp(self):
+			pass
+
+		def tearDown(self):
+			pass
+
+		def test_default(self):
+			self.assertTrue(True)
+
+	if __name__ == "__main__":
+		main()
+
