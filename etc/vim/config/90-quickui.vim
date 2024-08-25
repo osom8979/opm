@@ -97,6 +97,18 @@ call quickui#menu#install("&Edit", [
             \ [ "--", "" ],
             \ [ "Wiki/4Space to Asterisk", ":%s/^    /* / | %s/    /*/g" ],
             \ [ "--", "" ],
+            \ [ "Diff update", ":diffupdate" ],
+            \ [ "Diff split", ":diffsplit" ],
+            \ [ "Diff this", ":diffthis" ],
+            \ [ "Diff patch", ":diffpatch" ],
+            \ [ "Diff off", ":diffoff" ],
+            \ [ "Diff jump forwards\t]c", ':call feedkeys("]c")' ],
+            \ [ "Diff jump backwards\t[c", ':call feedkeys("[c")' ],
+            \ [ "Diff get", ':diffget' ],
+            \ [ "Diff put", ':diffput' ],
+            \ [ "--", "" ],
+            \ [ "E&xchange Next Window\t<C-w>x", ':call feedkeys("\<C-w>x")' ],
+            \ [ "--", "" ],
             \ [ "PascalCase\tgsp", ':execute "normal \<Plug>CaserMixedCase"' ],
             \ [ "camelCase\tgsc", ':execute "normal \<Plug>CaserCamelCase"' ],
             \ [ "snake_case\tgs_", ':execute "normal \<Plug>CaserSnakeCase"' ],
@@ -109,7 +121,7 @@ call quickui#menu#install("&Edit", [
             \ [ "dot.case\tgs.", ':execute "normal \<Plug>CaserDotCase"' ],
             \ ])
 
-call quickui#menu#install("&Grep", [
+call quickui#menu#install("&Find", [
             \ [ "File (<cword>)", ":call AsyncRunGrepCwordCurrentFile()" ],
             \ [ "File (pattern?)", ":call AsyncRunGrepCurrentFile()" ],
             \ [ "File IgnoreCase (<cword>)", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
@@ -167,6 +179,11 @@ call quickui#menu#install("&Debug", [
             \ [ "--", "" ],
             \ [ "Install Gadgets", ':VimspectorInstall' ],
             \ [ "Update Gadgets", ':VimspectorUpdate' ],
+            \ ])
+
+call quickui#menu#install("&Git", [
+            \ [ "Git log", ':Git log' ],
+            \ [ "Git blame", ':Git blame' ],
             \ ])
 
 call quickui#menu#install("&View", [
