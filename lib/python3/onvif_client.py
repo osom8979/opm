@@ -35,6 +35,9 @@ If authentication is required:
   {PROG} -u 'admin' -p '1q2w3e4r5t!' --with-http-basic -a [URL] ...
   {PROG} -u 'admin' -p '1q2w3e4r5t!' --use-digest --with-http-digest -a [URL] ...
 
+If 'CERTIFICATE_VERIFY_FAILED' error is raised:
+  {PROG} -k ...
+
 Obtain a list of media profiles:
   {PROG} -j -a [URL] GetProfiles | jq '.[].token'
 
@@ -175,9 +178,11 @@ class OnvifWsdlDeclaration:
         cache_dir: Optional[str] = None,
         with_http_basic=False,
         with_http_digest=False,
+        verify=True,
     ):
         cache = ZeepFileCache(cache_dir) if cache_dir else None
         session = Session()
+        session.verify = verify
         if wsse:
             if with_http_basic and with_http_digest:
                 raise ValueError(
@@ -297,6 +302,7 @@ def create_client_and_service(
     if not args.address:
         raise ValueError("The 'address' argument is required.")
 
+    assert isinstance(args.no_verify, bool)
     assert isinstance(args.no_cache, bool)
     assert isinstance(args.cache_dir, str)
     assert isinstance(args.with_http_basic, bool)
@@ -306,6 +312,7 @@ def create_client_and_service(
         cache_dir=None if args.no_cache else args.cache_dir,
         with_http_basic=args.with_http_basic,
         with_http_digest=args.with_http_digest,
+        verify=not args.no_verify,
     )
     binding_name = decl.get_service_binding_name()
     service = client.create_service(binding_name, args.address)
@@ -344,6 +351,7 @@ def ws_discovery(args: Namespace):
 # ------------------------------------------------------
 # http://www.onvif.org/ver10/device/wsdl/devicemgmt.wsdl
 # ------------------------------------------------------
+
 
 def get_system_date_and_time(args: Namespace):
     service = create_service(ONVIF_DECL_DEVICE_MANAGEMENT, args)
@@ -470,7 +478,7 @@ def get_default_arguments(
         metavar="{indent}",
         type=int,
         default=4,
-        help="When outputting JSON, pretty-printed with that indent level."
+        help="When outputting JSON, pretty-printed with that indent level.",
     )
     parser.add_argument(
         "--json-sort",
@@ -478,6 +486,13 @@ def get_default_arguments(
         action="store_true",
         default=False,
         help="When outputting JSON, sort by key.",
+    )
+    parser.add_argument(
+        "--no-verify",
+        "-k",
+        action="store_true",
+        default=False,
+        help="Disabling SSL certificate verification",
     )
     parser.add_argument(
         "--no-cache",
