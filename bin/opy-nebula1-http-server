@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v ip &> /dev/null; then
+    opm-println-error "Not found ip command"
+    exit 1
+fi
+
+if ! command -v grep &> /dev/null; then
+    opm-println-error "Not found grep command"
+    exit 1
+fi
+
+if ! ADDRESS=$(ip -4 addr show nebula1 | grep --color=never -oP '(?<=inet\s)\d+(\.\d+){3}'); then
+    exit 1
+fi
+
+opy -m http.server \
+    -b "$ADDRESS" \
+    -d "$PWD" \
+    -p "HTTP/1.0" \
+    48888
