@@ -259,8 +259,8 @@ call coc#config('languageserver', {
     \   'ccls': {
     \       'command': 'ccls',
     \       'trace.server': 'verbose',
-    \       'filetypes': ['c', 'cpp', 'objc', 'objcpp']
-    \       'rootPatterns': ['.ccls', 'compile_commands.json', '.git/', '.hg/'],
+    \       'filetypes': ['c', 'cpp', 'objc', 'objcpp'],
+    \       'rootPatterns': ['.ccls', 'CMakeLists.txt', 'compile_commands.json', '.vim/', '.git/', '.hg/'],
     \       'initializationOptions': {
     \           'cache': {
     \               'directory': '/tmp/ccls'

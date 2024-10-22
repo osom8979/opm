@@ -153,6 +153,8 @@ call quickui#menu#install("&Coc", [
             \ [ "Diagnostic &next\t]g", ':execute "normal \<Plug>(coc-diagnostic-next)"' ],
             \ [ "--", "" ],
             \ [ "Code Actions\t<leader>ac", ':execute "normal \<Plug>(coc-codeaction)"' ],
+            \ [ "--", "" ],
+            \ [ "Install clangd", ':CocCommand clangd.install' ],
             \ ])
 
 call quickui#menu#install("&Debug", [
