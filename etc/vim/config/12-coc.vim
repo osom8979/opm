@@ -260,6 +260,12 @@ call coc#config('languageserver', {
     \       'command': 'ccls',
     \       'trace.server': 'verbose',
     \       'filetypes': ['c', 'cpp', 'objc', 'objcpp']
+    \       'rootPatterns': ['.ccls', 'compile_commands.json', '.git/', '.hg/'],
+    \       'initializationOptions': {
+    \           'cache': {
+    \               'directory': '/tmp/ccls'
+    \           }
+    \       }
     \   },
     \   'csharp-ls': {
     \       'command': 'csharp-ls',
