@@ -6,7 +6,7 @@
 scriptencoding utf-8
 
 let s:home_dir = $HOME
-let s:user_name = $USER
+let s:user_name = trim(system('id -un')) " If you are logged in as root, $USER may be empty.
 let s:opy_prefix = 'opy'
 let g:opy_suffix = 'default'
 let s:opn_prefix = 'opn'
