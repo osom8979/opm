@@ -11,7 +11,7 @@ fi
 
 TMUX_SESSION_NAME=${TMUX_SESSION_NAME:-opm}
 
-if tmux list-sessions | grep "^$TMUX_SESSION_NAME:" &> /dev/null; then
+if tmux list-sessions 2> /dev/null | grep "^$TMUX_SESSION_NAME:" &> /dev/null; then
     tmux attach -t "$TMUX_SESSION_NAME" "$@"
 else
     tmux new -s "$TMUX_SESSION_NAME" "$@"
