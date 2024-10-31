@@ -9,5 +9,10 @@ if [[ ! -x $(which tmux 2> /dev/null ) ]]; then
     exit 1
 fi
 
-tmux attach -t opm || tmux new -s opm
+TMUX_SESSION_NAME=${TMUX_SESSION_NAME:-opm}
 
+if tmux list-sessions | grep "^$TMUX_SESSION_NAME:" &> /dev/null; then
+    tmux attach -t "$TMUX_SESSION_NAME" "$@"
+else
+    tmux new -s "$TMUX_SESSION_NAME" "$@"
+fi
