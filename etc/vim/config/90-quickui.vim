@@ -155,6 +155,9 @@ call quickui#menu#install("&Coc", [
             \ [ "Code Actions\t<leader>ac", ':execute "normal \<Plug>(coc-codeaction)"' ],
             \ [ "--", "" ],
             \ [ "Install clangd", ':CocCommand clangd.install' ],
+            \ [ "--", "" ],
+            \ [ "Edit workspace settings", ':CocLocalConfig' ],
+            \ [ "Edit user settings", ':CocConfig' ],
             \ ])
 
 call quickui#menu#install("&Debug", [
@@ -184,8 +187,8 @@ call quickui#menu#install("&Debug", [
             \ ])
 
 call quickui#menu#install("&Git", [
-            \ [ "Git log", ':Git log' ],
-            \ [ "Git blame", ':Git blame' ],
+            \ [ "Git &log", ':Git log' ],
+            \ [ "Git &blame", ':Git blame' ],
             \ ])
 
 call quickui#menu#install("&View", [

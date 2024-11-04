@@ -1,0 +1,19 @@
+{
+    "java.enabled": true,
+    "java.jdt.ls.java.home": "/path/to/java/home",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-1.8",
+            "path": "/path/to/jdk-8"
+        },
+        {
+            "name": "JavaSE-11",
+            "path": "/path/to/jdk-11"
+        },
+        {
+            "name": "JavaSE-21",
+            "path": "/path/to/jdk-21",
+            "default": true
+        }
+    ]
+}
