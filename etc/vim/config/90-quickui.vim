@@ -95,7 +95,7 @@ call quickui#menu#install("&Edit", [
             \ [ "--", "" ],
             \ [ "HEX color to rgba", ":HexRgba" ],
             \ [ "--", "" ],
-            \ [ "Wiki/4Space to Asterisk", ":%s/^    /* / | %s/    /*/g" ],
+            \ [ "&Wiki/4Space to Asterisk", ":%s/^    /* / | %s/    /*/g" ],
             \ [ "--", "" ],
             \ [ "Diff update", ":diffupdate" ],
             \ [ "Diff split", ":diffsplit" ],
