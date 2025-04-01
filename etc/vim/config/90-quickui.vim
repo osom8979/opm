@@ -97,6 +97,8 @@ call quickui#menu#install("&Edit", [
             \ [ "--", "" ],
             \ [ "&Wiki/4Space to Asterisk", ":%s/^    /* / | %s/    /*/g" ],
             \ [ "Wiki/Not list is H2", ':%s/^\([^\*].*\)/== \1 ==/' ],
+            \ [ "Wiki/Not list is H3", ':%s/^\([^\*].*\)/=== \1 ===/' ],
+            \ [ "Wiki/Not list is H4", ':%s/^\([^\*].*\)/==== \1 ====/' ],
             \ [ "--", "" ],
             \ [ "Diff update", ":diffupdate" ],
             \ [ "Diff split", ":diffsplit" ],
