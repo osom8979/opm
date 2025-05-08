@@ -99,6 +99,7 @@ set -g @plugin "tmux-plugins/tpm"
 set -g @plugin "tmux-plugins/tmux-open"
 set -g @plugin 'tmux-plugins/tmux-prefix-highlight'
 set -g @plugin 'tmux-plugins/tmux-resurrect'
+set -g @plugin 'tmux-plugins/tmux-logging'
 set -g @plugin 'erikw/tmux-powerline'
 set -g @plugin 'wfxr/tmux-power'
 set -g @plugin 'wfxr/tmux-net-speed'
