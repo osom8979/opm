@@ -15,6 +15,7 @@ PACKAGES=(
     prettier
     typescript
     yarn
+    @anthropic-ai/claude-code
 )
 
 opn-npm install -g "${PACKAGES[@]}"
