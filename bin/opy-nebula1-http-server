@@ -18,6 +18,8 @@ if ! ADDRESS=$(ip -4 addr show nebula1 | grep --color=never -oP '(?<=inet\s)\d+(
     exit 1
 fi
 
+opm-println-info "Serving HTTP on https://test0.osom.run/"
+
 opy -m http.server \
     -b "$ADDRESS" \
     -d "$PWD" \
