@@ -16,6 +16,7 @@ PACKAGES=(
     typescript
     yarn
     @anthropic-ai/claude-code
+    @google/gemini-cli
 )
 
 opn-npm install -g "${PACKAGES[@]}"
