@@ -26,10 +26,11 @@ set  scrolloff=10               " acquire a vertical scroll space.
 set  cursorline                 " show cursor line.
 "set cursorcolumn               " show cursor column.
 set  tabstop=4                  " tab size.
+set  shiftwidth=4               " indent size in '>>' or '<<'
+set  softtabstop=4              " indent size when pressing the <TAB> key
 set  expandtab                  " tab to space.
 set  autoindent                 " auto indent.
 "set smartindent                " auto indent.
-set  shiftwidth=4               " indent size in '>>' or '<<'
 set  nofoldenable               " no folding.
 set  noswapfile                 " no swap file.
 "set nobackup                   " no backup.
@@ -125,9 +126,28 @@ if has('autocmd')
     autocmd TabEnter * NERDTree | wincmd p
 
     " Remove tailing whitespace.
-    autocmd FileType vim,c,cpp,java,php,ruby,python autocmd BufWritePre <buffer> :%s/\s\+$//e
+    autocmd FileType c,cpp,go,java,php,python,ruby,vim autocmd BufWritePre <buffer> :%s/\s\+$//e
+
+    " Python: Use 4 spaces
+    autocmd FileType python setlocal expandtab tabstop=4 shiftwidth=4 softtabstop=4
+
+    " JavaScript: Use 2 spaces
+    autocmd FileType javascript setlocal expandtab tabstop=2 shiftwidth=2 softtabstop=2
+
+    " TypeScript: Use 2 spaces
+    autocmd FileType typescript setlocal expandtab tabstop=2 shiftwidth=2 softtabstop=2
+
+    " Go: Use real tab characters (gofmt requirement)
+    autocmd FileType go setlocal noexpandtab tabstop=4 shiftwidth=4
+
+    " Makefile: Must use tabs (syntax requirement)
+    autocmd FileType make setlocal noexpandtab tabstop=4 shiftwidth=4
 
     " CMakeLists.txt
     autocmd BufNewFile,BufRead CMakeLists.txt set filetype=cmake
+
+    " Use Windows line endings for bat, cmd files
+    autocmd FileType dosbatch setlocal fileformat=dos
+    autocmd BufNewFile,BufRead *.bat,*.cmd setlocal fileformat=dos
 endif
 
