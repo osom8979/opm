@@ -14,7 +14,7 @@ require'nvim-treesitter.configs'.setup {
         -- "gitconfig",
         -- "gitignore",
         -- "glsl",
-        -- "go",
+        "go",
         -- "html",
         -- "http",
         -- "ini",
