@@ -257,6 +257,10 @@ function! s:ExistsQuickfixBuffer()
     return s:IsActiveBuffer(dic)
 endfunction
 
+function s:OpenQuickfixBuffer()
+    silent execute 'belowright ' . g:opm_quickfix_height . 'copen | wincmd p'
+endfunction
+
 function! s:ToggleQuickfixBuffer(...)
     if s:ExistsQuickfixBuffer()
         let force_enable_show = a:0 > 0 ? a:1 : 0
@@ -264,7 +268,7 @@ function! s:ToggleQuickfixBuffer(...)
             silent execute 'cclose'
         endif
     else
-        silent execute 'belowright ' . g:opm_quickfix_height . 'copen | wincmd p'
+        call s:OpenQuickfixBuffer()
     endif
 endfunction
 
@@ -385,6 +389,10 @@ silent execute 'noremap '.g:opm_move_next_buffer_key.' <ESC>:call OpmMoveNextBuf
 silent execute 'noremap '.g:opm_move_prev_buffer_key.' <ESC>:call OpmMovePrevBuffer()<CR>'
 silent execute 'noremap '.g:opm_close_buffer_key    .' <ESC>:call OpmCloseBuffer()<CR>'
 silent execute 'noremap '.g:opm_close_all_buffer_key.' <ESC>:call OpmCloseAllBuffer()<CR>'
+
+function! OpmOpenQuickfixBuffer()
+    call s:OpenQuickfixBuffer()
+endfunction
 
 function! OpmToggleQuickfixBuffer()
     call s:ToggleQuickfixBuffer()

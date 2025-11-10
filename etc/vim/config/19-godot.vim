@@ -38,6 +38,6 @@ func! GodotSettings() abort
 endfunc
 
 augroup godot | au!
-    au FileType gdscript call GodotSettings()
+    autocmd FileType gdscript call GodotSettings()
 augroup end
 

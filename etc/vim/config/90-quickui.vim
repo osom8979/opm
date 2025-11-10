@@ -100,16 +100,6 @@ call quickui#menu#install("&Edit", [
             \ [ "Wiki/Not list is H3", ':%s/^\([^\*].*\)/=== \1 ===/' ],
             \ [ "Wiki/Not list is H4", ':%s/^\([^\*].*\)/==== \1 ====/' ],
             \ [ "--", "" ],
-            \ [ "Diff update", ":diffupdate" ],
-            \ [ "Diff split", ":diffsplit" ],
-            \ [ "Diff this", ":diffthis" ],
-            \ [ "Diff patch", ":diffpatch" ],
-            \ [ "Diff off", ":diffoff" ],
-            \ [ "Diff jump forwards\t]c", ':call feedkeys("]c")' ],
-            \ [ "Diff jump backwards\t[c", ':call feedkeys("[c")' ],
-            \ [ "Diff get", ':diffget' ],
-            \ [ "Diff put", ':diffput' ],
-            \ [ "--", "" ],
             \ [ "E&xchange Next Window\t<C-w>x", ':call feedkeys("\<C-w>x")' ],
             \ [ "--", "" ],
             \ [ "PascalCase\tgsp", ':execute "normal \<Plug>CaserMixedCase"' ],
@@ -124,7 +114,7 @@ call quickui#menu#install("&Edit", [
             \ [ "dot.case\tgs.", ':execute "normal \<Plug>CaserDotCase"' ],
             \ ])
 
-call quickui#menu#install("&Find", [
+call quickui#menu#install("&Grep", [
             \ [ "File (<cword>)", ":call AsyncRunGrepCwordCurrentFile()" ],
             \ [ "File (pattern?)", ":call AsyncRunGrepCurrentFile()" ],
             \ [ "File IgnoreCase (<cword>)", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
@@ -138,6 +128,18 @@ call quickui#menu#install("&Find", [
             \ [ "Project IgnoreCase (pattern?,<cwd>)", ":call AsyncRunGrepCwdRecursiveIgnoreCase()" ],
             \ [ "Project IgnoreCase (<cword>,file?)", ":call AsyncRunGrepCwordRecursiveIgnoreCase()" ],
             \ [ "Project IgnoreCase (pattern?,file?)", ":call AsyncRunGrepRecursiveIgnoreCase()" ],
+            \ ])
+
+call quickui#menu#install("&Diff", [
+            \ [ "Diff update", ":diffupdate" ],
+            \ [ "Diff split", ":diffsplit" ],
+            \ [ "Diff this", ":diffthis" ],
+            \ [ "Diff patch", ":diffpatch" ],
+            \ [ "Diff off", ":diffoff" ],
+            \ [ "Diff jump forwards\t]c", ':call feedkeys("]c")' ],
+            \ [ "Diff jump backwards\t[c", ':call feedkeys("[c")' ],
+            \ [ "Diff get", ':diffget' ],
+            \ [ "Diff put", ':diffput' ],
             \ ])
 
 call quickui#menu#install("&Coc", [
@@ -192,9 +194,11 @@ call quickui#menu#install("&Debug", [
             \ [ "Update Gadgets", ':VimspectorUpdate' ],
             \ ])
 
-call quickui#menu#install("&Git", [
+call quickui#menu#install("&Tools", [
             \ [ "Git &log", ':Git log' ],
             \ [ "Git &blame", ':Git blame' ],
+            \ [ "--", "" ],
+            \ [ "Claude Code Autocomplete\t<leader><Space>", ':call OpmClaudeCodeAutocomplete()' ],
             \ ])
 
 call quickui#menu#install("&View", [
