@@ -24,6 +24,8 @@ PACKAGES=(
     network-manager
     shellcheck
     tmux
+    fuse
+    libfuse2
 )
 
 apt-get -y install "${PACKAGES[@]}"
