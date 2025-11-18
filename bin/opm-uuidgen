@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v uuidgen &> /dev/null; then
+    opm-println-error "Not found uuidgen command"
+    exit 1
+fi
+
+uuidgen "$@"
+
+# or cat /proc/sys/kernel/random/uuid
