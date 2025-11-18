@@ -65,9 +65,9 @@ NeoBundle 'amadeus/vim-convert-color-to'    " convert color strings to different
 NeoBundle 'osom8979/claude-cursor.vim'      " seamless claude code integration for vim
 
 " Semantic highlighting for python in neovim.
-NeoBundle 'numirias/semshi', {
-    \   'do': ':UpdateRemotePlugins'
-    \}
+" NeoBundle 'numirias/semshi', {
+"     \   'do': ':UpdateRemotePlugins'
+"     \}
 
 " A command-line fuzzy finder.
 NeoBundle 'junegunn/fzf', {

@@ -38,10 +38,12 @@ noremap  <leader><leader>2  <ESC>:Tagbar<CR>
 "noremap <leader><leader>3  " It is already set in opm
 "noremap <leader><leader>4  " It is already set in opm
 noremap  <leader><leader>5  <ESC>:GundoToggle<CR>
+noremap  <leader><leader>6  <ESC>:ClaudeCursorToggle<CR>
 "noremap <leader><leader>8  <ESC>:SrcExplToggle<CR>
 
 " Jump window.
 noremap  <leader>1  <ESC>:NERDTreeFocus<CR>
+noremap  <leader>6  <ESC>:ClaudeCursorFocus<CR>
 
 " Quick-fix settings.
 noremap  <F1>  <ESC>:cprevious<CR>
