@@ -11,8 +11,21 @@ if ! command -v curl &> /dev/null; then
 fi
 
 NVIM_PATH=/usr/local/bin/nvim
-NVIM_VERSION=v0.9.5
+
+# NVIM_VERSION=v0.9.5
+NVIM_VERSION=latest
+
+if [[ "$NVIM_VERSION" == "latest" ]]; then
+URL="https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage"
+else
 URL="https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim.appimage"
+fi
+
+if [[ -f "$NVIM_PATH" ]]; then
+    echo "Exists output file path: $NVIM_PATH"
+    echo "Please delete the file before continuing."
+    exit 1
+fi
 
 curl -L -k -o "$NVIM_PATH" "$URL"
 
