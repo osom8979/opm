@@ -78,6 +78,8 @@ call quickui#menu#install("&File", [
             \ [ "--", "" ],
             \ ] + s:TemplateMenus() + [
             \ [ "--", "" ],
+            \ [ "Reload\t:e!", ":e!", "If you messed up the buffer and want to start all over again." ],
+            \ [ "--", "" ],
             \ [ "E&xit\t:qa", ":qa", "Exit Vim, unless there are some buffers which have been changed." ],
             \ [ "Exit Force\t:qa!", ":qa", "Exit Vim. Any changes to buffers are lost." ],
             \ ])
