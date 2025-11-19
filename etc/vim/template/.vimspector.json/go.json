@@ -1,0 +1,99 @@
+{
+    "configurations": {
+        "debug-edge": {
+            "adapter": "delve",
+            "filetypes": [ "go" ],
+            "configuration": {
+                "request": "launch",
+                "program": "${workspaceRoot}/cmd/edge/main.go",
+                "mode": "debug",
+                "dlvLoadConfig": {
+                    "followPointers": true,
+                    "maxVariableRecurse": 1,
+                    "maxStringLen": 64,
+                    "maxArrayValues": 64,
+                    "maxStructFields": -1
+                },
+                "env": {
+                    "GO_ENV": "development"
+                },
+                "args": [],
+                "cwd": "${workspaceRoot}",
+                "buildFlags": "",
+                "remotePath": "",
+                "port": 2345,
+                "host": "127.0.0.1",
+                "logOutput": "debugger,debuglineerr,gdbwire,lldbout,rpc",
+                "trace": "verbose",
+                "showLog": true
+            },
+            "breakpoints": {
+                "exception": {
+                    "caught": "",
+                    "uncaught": ""
+                }
+            }
+        },
+        "debug-edge-attach": {
+            "adapter": "delve",
+            "filetypes": [ "go" ],
+            "configuration": {
+                "request": "attach",
+                "mode": "remote",
+                "port": 2345,
+                "host": "127.0.0.1",
+                "remotePath": "",
+                "cwd": "${workspaceRoot}",
+                "dlvLoadConfig": {
+                    "followPointers": true,
+                    "maxVariableRecurse": 1,
+                    "maxStringLen": 64,
+                    "maxArrayValues": 64,
+                    "maxStructFields": -1
+                },
+                "logOutput": "debugger,debuglineerr,gdbwire,lldbout,rpc",
+                "trace": "verbose",
+                "showLog": true
+            },
+            "breakpoints": {
+                "exception": {
+                    "caught": "",
+                    "uncaught": ""
+                }
+            }
+        },
+        "debug-edge-test": {
+            "adapter": "delve",
+            "filetypes": [ "go" ],
+            "configuration": {
+                "request": "launch",
+                "mode": "test",
+                "program": "${workspaceRoot}",
+                "dlvLoadConfig": {
+                    "followPointers": true,
+                    "maxVariableRecurse": 1,
+                    "maxStringLen": 64,
+                    "maxArrayValues": 64,
+                    "maxStructFields": -1
+                },
+                "env": {
+                    "GO_ENV": "test"
+                },
+                "args": [
+                    "-test.v"
+                ],
+                "cwd": "${workspaceRoot}",
+                "buildFlags": "",
+                "logOutput": "debugger,debuglineerr,gdbwire,lldbout,rpc",
+                "trace": "verbose",
+                "showLog": true
+            },
+            "breakpoints": {
+                "exception": {
+                    "caught": "",
+                    "uncaught": ""
+                }
+            }
+        }
+    }
+}
