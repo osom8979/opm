@@ -65,6 +65,80 @@ function! s:TemplateMenus()
     return s:TemplateMenuNode(template_dir, '')
 endfunction
 
+function! s:GetVisualSelectionBegin() abort
+    let [line_start, column_start] = getpos("'<")[1:2]
+    return [line_start, column_start]
+endfunction
+
+function! s:GetVisualSelectionEnd() abort
+    let [line_end, column_end] = getpos("'>")[1:2]
+    return [line_end, column_end]
+endfunction
+
+function! s:GetVisualSelection()
+    let [line_start, column_start] = s:GetVisualSelectionBegin()
+    let [line_end, column_end] = s:GetVisualSelectionEnd()
+
+    if (line2byte(line_start) + column_start) > (line2byte(line_end) + column_end)
+        let [line_start, column_start, line_end, column_end] = [line_end, column_end, line_start, column_start]
+    endif
+
+    let lines = getline(line_start, line_end)
+
+    if empty(lines)
+        return ''
+    endif
+
+    let lines[-1] = lines[-1][: column_end - (&selection ==# 'inclusive' ? 1 : 2)]
+    let lines[0] = lines[0][column_start - 1:]
+
+    return join(lines, "\n")
+endfunction
+
+function! s:GetCurrentFile() abort
+    return expand('%:p')
+endfunction
+
+function! s:GetCurrentLine() abort
+    return line('.')
+endfunction
+
+function! s:GetCurrentColumn() abort
+    return col('.')
+endfunction
+
+if !exists('g:opm_quickui_current_file')
+    let g:opm_quickui_current_file = ''
+endif
+if !exists('g:opm_quickui_current_line')
+    let g:opm_quickui_current_line = 0
+endif
+if !exists('g:opm_quickui_current_column')
+    let g:opm_quickui_current_column = 0
+endif
+
+if !exists('g:opm_quickui_selected_begin')
+    let g:opm_quickui_selected_begin = []
+endif
+if !exists('g:opm_quickui_selected_end')
+    let g:opm_quickui_selected_end = []
+endif
+if !exists('g:opm_quickui_selected_text')
+    let g:opm_quickui_selected_text = ''
+endif
+
+function! OpenQuickuiMenuWithCopySelection(namespace)
+    let g:opm_quickui_current_file = s:GetCurrentFile()
+    let g:opm_quickui_current_line = s:GetCurrentLine()
+    let g:opm_quickui_current_column = s:GetCurrentColumn()
+
+    let g:opm_quickui_selected_begin = s:GetVisualSelectionBegin()
+    let g:opm_quickui_selected_end = s:GetVisualSelectionEnd()
+    let g:opm_quickui_selected_text = s:GetVisualSelection()
+
+    call quickui#menu#open(a:namespace)
+endfunction
+
 " -------------------------
 " OPM quickui configuration
 " -------------------------
@@ -77,6 +151,16 @@ call quickui#menu#install("&File", [
             \ [ "New &Vertically Buffer\t:vnew", ":vnew", "Create a new window and start editing an empty file in it. but split vertically." ],
             \ [ "--", "" ],
             \ ] + s:TemplateMenus() + [
+            \ [ "--", "" ],
+            \ [ "Diff update\t:diffupdate", ":diffupdate", "Update the diff highlighting and folds."],
+            \ [ "Diff split\t:diffsplit", ":diffsplit" ],
+            \ [ "Diff this\t:diffthis", ":diffthis" ],
+            \ [ "Diff patch\t:diffpatch", ":diffpatch" ],
+            \ [ "Diff off\t:diffoff", ":diffoff" ],
+            \ [ "Diff jump forwards\t]c", ':call feedkeys("]c")' ],
+            \ [ "Diff jump backwards\t[c", ':call feedkeys("[c")' ],
+            \ [ "Diff get\t:diffget", ':diffget' ],
+            \ [ "Diff put\t:diffput", ':diffput' ],
             \ [ "--", "" ],
             \ [ "Reload\t:e!", ":e!", "If you messed up the buffer and want to start all over again." ],
             \ [ "--", "" ],
@@ -114,7 +198,7 @@ call quickui#menu#install("&Edit", [
             \ [ "dot.case\tgs.", ':execute "normal \<Plug>CaserDotCase"' ],
             \ ])
 
-call quickui#menu#install("&Grep", [
+call quickui#menu#install("&Navigation", [
             \ [ "File (<cword>)", ":call AsyncRunGrepCwordCurrentFile()" ],
             \ [ "File (pattern?)", ":call AsyncRunGrepCurrentFile()" ],
             \ [ "File IgnoreCase (<cword>)", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
@@ -130,18 +214,6 @@ call quickui#menu#install("&Grep", [
             \ [ "Project IgnoreCase (pattern?,file?)", ":call AsyncRunGrepRecursiveIgnoreCase()" ],
             \ [ "--", "" ],
             \ [ "Stop highlighting\t:nohlsearch", ":nohlsearch", "Stop the highlighting for the 'hlsearch' option." ],
-            \ ])
-
-call quickui#menu#install("&Diff", [
-            \ [ "Diff update\t:diffupdate", ":diffupdate", "Update the diff highlighting and folds."],
-            \ [ "Diff split\t:diffsplit", ":diffsplit" ],
-            \ [ "Diff this\t:diffthis", ":diffthis" ],
-            \ [ "Diff patch\t:diffpatch", ":diffpatch" ],
-            \ [ "Diff off\t:diffoff", ":diffoff" ],
-            \ [ "Diff jump forwards\t]c", ':call feedkeys("]c")' ],
-            \ [ "Diff jump backwards\t[c", ':call feedkeys("[c")' ],
-            \ [ "Diff get\t:diffget", ':diffget' ],
-            \ [ "Diff put\t:diffput", ':diffput' ],
             \ ])
 
 call quickui#menu#install("&Coc", [
@@ -265,5 +337,5 @@ let g:quickui_show_tip = 1
 " Key mapping
 " -----------
 
-silent execute 'noremap '.g:opm_default_quickui_toggle_key.' <ESC>:call quickui#menu#open(g:opm_default_quickui_namespace)<CR>'
+silent execute 'noremap '.g:opm_default_quickui_toggle_key.' <ESC>:call OpenQuickuiMenuWithCopySelection(g:opm_default_quickui_namespace)<CR>'
 
