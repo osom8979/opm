@@ -217,6 +217,8 @@ call quickui#menu#install("&Navigation", [
             \ ])
 
 call quickui#menu#install("&Coc", [
+            \ [ "&Fzf Symbols", ':execute ":CocFzfList symbols"' ],
+            \ [ "--", "" ],
             \ [ "&Find references", ':execute "normal \<Plug>(coc-references)"' ],
             \ [ "--", "" ],
             \ [ "GoTo &definition\tgd", ':execute "normal \<Plug>(coc-definition)"' ],
