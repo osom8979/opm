@@ -68,7 +68,7 @@ fi
 
 ETHERNET_NAME=$(
     nmcli device 2>&1 | \
-    grep --color=never ethernet | \
+    grep --color=never -E '[[:space:]](ethernet|wifi)[[:space:]]' | \
     grep --color=never connected | \
     awk '{print $1}'
 )
