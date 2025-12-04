@@ -42,6 +42,7 @@ set  backspace=indent,eol,start " make that backspace key work the way it should
 "set textwidth=120              " maximum width of text that is being inserted.
 set  colorcolumn=88,100,120     " highlight columns
 set  termguicolors              " enables 24-bit rgb color in the TUI.
+set  iskeyword=@,48-57,_,192-255
 
 " enable mouse event.
 if has('mouse')
