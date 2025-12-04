@@ -58,7 +58,7 @@
     diffw-5 = diff --word-diff HEAD^^^^^..HEAD
     showf   = show --oneline --name-only
     count   = rev-list --count HEAD
-    zip     = archive --format zip --output master.zip master
+    zip     = archive --format zip --output main.zip main
     st      = status
     reh     = reset HEAD
     res     = restore --staged
