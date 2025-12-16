@@ -207,6 +207,23 @@ IPTABLES_SERVER_FILTER="
 # Outbound HTTP
 -A OUTPUT -o $ETHERNET_NAME -p tcp -m tcp --dport 80 -m state --state NEW -j ACCEPT
 -A OUTPUT -o $ETHERNET_NAME -p tcp -m tcp --dport 443 -m state --state NEW -j ACCEPT
+
+# Kubernetes Control plane
+#-A INPUT -p tcp --dport 6443      -j ACCEPT -m comment --comment \"Kubernetes API server\"
+#-A INPUT -p tcp --dport 2379:2380 -j ACCEPT -m comment --comment \"etcd server client API\"
+#-A INPUT -p tcp --dport 10250     -j ACCEPT -m comment --comment \"Kubelet API\"
+#-A INPUT -p tcp --dport 10259     -j ACCEPT -m comment --comment \"kube-scheduler\"
+#-A INPUT -p tcp --dport 10257     -j ACCEPT -m comment --comment \"kube-controller-manager\"
+
+# Kubernetes Worker node(s)
+#-A INPUT -p tcp --dport 10250       -j ACCEPT -m comment --comment \"Kubelet API\"
+#-A INPUT -p tcp --dport 10256       -j ACCEPT -m comment --comment \"kube-proxy\"
+#-A INPUT -p tcp --dport 30000:32767 -j ACCEPT -m comment --comment \"NodePort Services\"
+#-A INPUT -p udp --dport 30000:32767 -j ACCEPT -m comment --comment \"NodePort Services\"
+
+# Kubernetes PODs
+#-A FORWARD -j ACCEPT
+
 COMMIT
 "
 
