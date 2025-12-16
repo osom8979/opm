@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v nmcli &> /dev/null; then
+    opm-println-error "Not found nmcli command"
+    exit 1
+fi
+
+nmcli connection show | grep --color=never wifi
