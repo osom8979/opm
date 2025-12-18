@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+function run_install_latest_package
+{
+    for pkg in "$@"; do
+        opm-println-info "Install package: ${pkg}@latest"
+        opn-npm install -g -- "${pkg}@latest"
+    done
+}
+
+run_install_latest_package "$@"
+
