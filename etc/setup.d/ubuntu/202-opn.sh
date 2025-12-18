@@ -11,12 +11,13 @@ if ! command -v opn-npm &> /dev/null; then
 fi
 
 PACKAGES=(
-    neovim
-    prettier
-    typescript
-    yarn
-    @anthropic-ai/claude-code
-    @google/gemini-cli
+    @anthropic-ai/claude-code@latest
+    @google/gemini-cli@latest
+    neovim@latest
+    prettier@latest
+    typescript@latest
+    wrangler@latest
+    yarn@latest
 )
 
 opn-npm install -g "${PACKAGES[@]}"
