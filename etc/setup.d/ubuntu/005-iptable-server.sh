@@ -224,6 +224,13 @@ IPTABLES_SERVER_FILTER="
 # Kubernetes PODs
 #-A FORWARD -j ACCEPT
 
+# Inbound Rules for K3s Nodes
+#-A INPUT -p tcp --dport 6443  -j ACCEPT -m comment --comment \"Allow K3s API Server\"
+#-A INPUT -p tcp --dport 10250 -j ACCEPT -m comment --comment \"Allow kubelet metrics\"
+#-A INPUT -p udp --dport 8472  -j ACCEPT -m comment --comment \"Allow Flannel VXLAN\"
+#-A INPUT -s 10.42.0.0/16      -j ACCEPT -m comment --comment \"Allow Pod network\"
+#-A INPUT -s 10.43.0.0/16      -j ACCEPT -m comment --comment \"Allow Service network\"
+
 COMMIT
 "
 
