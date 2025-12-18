@@ -1,0 +1,50 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/jammy64"
+  config.vm.box_check_update = false
+
+  config.vm.define "osom-k8s-control" do |control|
+    control.vm.hostname = "osom-k8s-control"
+    control.vm.network "private_network", ip: "192.168.2.10"
+
+    control.vm.provider "virtualbox" do |vb|
+      vb.name = "osom-k8s-control-plane"
+      vb.memory = "4096"
+      vb.cpus = 2
+      vb.gui = false
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+    end
+
+    control.vm.provision "shell", inline: <<-SHELL
+      swapoff -a
+      sed -i '/swap/d' /etc/fstab
+
+      echo "overlay"      | tee /etc/modules-load.d/k8s.conf
+      echo "br_netfilter" | tee /etc/modules-load.d/k8s.conf
+
+      modprobe overlay
+      modprobe br_netfilter
+
+      echo "net.bridge.bridge-nf-call-ip6tables = 1" | tee /etc/sysctl.d/k8s.conf
+      echo "net.bridge.bridge-nf-call-iptables = 1"  | tee /etc/sysctl.d/k8s.conf
+      echo "net.ipv4.ip_forward = 1"                 | tee /etc/sysctl.d/k8s.conf
+
+      sysctl --system
+
+      apt update
+      apt install -y apt-transport-https ca-certificates curl software-properties-common gpg
+      curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.35/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.35/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
+      apt-get update
+      apt-get install -y kubelet kubeadm kubectl
+      apt-mark hold kubelet kubeadm kubectl
+
+      systemctl enable --now kubelet
+    SHELL
+  end
+end
+
