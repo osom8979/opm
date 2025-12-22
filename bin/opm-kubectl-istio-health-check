@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v kubectl &> /dev/null; then
+    opm-println-error "Not found kubectl command"
+    exit 1
+fi
+
+opm-println-info "=== Checking Istio Pods ==="
+kubectl get pods -n istio-system
+
+opm-println-info "=== Checking Istio Services ==="
+kubectl get svc -n istio-system
+
+opm-println-info "=== Checking Istio Deployments ==="
+kubectl get deployments -n istio-system
+
+opm-println-info "=== Checking Istio HPA ==="
+kubectl get hpa -n istio-system
+
+opm-println-info "=== Checking Webhooks ==="
+kubectl get mutatingwebhookconfigurations | grep istio
+kubectl get validatingwebhookconfigurations | grep istio
+
+opm-println-info "=== Checking Istio ConfigMaps ==="
+kubectl get configmap -n istio-system
+
+opm-println-info "=== Waiting for all pods to be ready ==="
+kubectl wait --for=condition=ready pod --all -n istio-system --timeout=60s
