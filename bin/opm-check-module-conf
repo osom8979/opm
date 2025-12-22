@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v lsmod &> /dev/null; then
+    opm-println-error "Not found lsmod command"
+    exit 1
+fi
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} {conf1} {conf2} ... {confN}
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function opm_check_module_conf_main
+{
+    if [[ "${#@}" -eq 0 ]]; then
+        print_usage
+    fi
+
+    for conf in "$@"; do
+        grep -v '^#\|^$' "$conf" | while read -r module; do
+            if lsmod | grep -q "^${module}\s"; then
+                opm-println-info "✓ $module - LOADED"
+            else
+                opm-println-error "✗ $module - NOT LOADED"
+            fi
+        done
+    done
+}
+
+opm_check_module_conf_main "$@"
