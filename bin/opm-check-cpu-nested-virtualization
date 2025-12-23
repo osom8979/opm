@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Check CPU Nested Virtualization
+
+  Usage: ${BASH_SOURCE[0]} [options]
+
+Available options are:
+  -h, --help        Print this message.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  -s, --silent      Suppresses all messages.
+  --                Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function opm_check_cpu_nested_virtualization_main
+{
+    local verbose_flag=0
+    local silent_flag=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    if grep -qE '(vmx|svm)' /proc/cpuinfo; then
+        opm-println-info -s "✓ CPU supports virtualization"
+        opm-println -v "$(grep -E '(vmx|svm)' /proc/cpuinfo | head -1)"
+    else
+        opm-println-error "✗ CPU does not support virtualization"
+    fi
+
+    if command -v lsmod &> /dev/null; then
+        if lsmod | grep -q kvm; then
+            opm-println-info -s "✓ KVM module loaded"
+            opm-println -v "$(lsmod | grep kvm)"
+        else
+            opm-println-error -s "✗ KVM module not loaded"
+        fi
+    else
+        opm-println-warn -s "Not found lsmod command"
+    fi
+
+    if [ -e /dev/kvm ]; then
+        opm-println-info -s "✓ /dev/kvm exists"
+        opm-println -v "$(ls -la /dev/kvm)"
+    else
+        opm-println-error "✗ /dev/kvm does not exist"
+    fi
+
+    for mod in kvm_intel kvm_amd; do
+        if [ -f /sys/module/$mod/parameters/nested ]; then
+            status=$(cat /sys/module/$mod/parameters/nested)
+            opm-println -v "$mod: $status"
+        fi
+    done
+}
+
+opm_check_cpu_nested_virtualization_main "$@"
