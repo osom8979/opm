@@ -1,6 +1,8 @@
 {
   "permissions": {
-    "allow": [],
+    "allow": [
+      "WebFetch(domain:ui.shadcn.com)"
+    ],
     "deny": [],
     "ask": [
       "Bash(opn-npm --global install:*)",
