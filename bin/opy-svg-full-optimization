@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+OPTIMIZATION_FLAGS=(
+    --disable-simplify-colors
+    --disable-style-to-xml
+    --disable-group-collapsing
+    --strip-xml-prolog
+    --remove-titles
+    --remove-descriptions
+    --remove-metadata
+    --remove-descriptive-elements
+    --enable-comment-stripping
+    --enable-viewboxing
+    --indent=none
+    --nindent=0
+    --no-line-breaks
+    --strip-xml-space
+    --enable-id-stripping
+)
+
+function opy_svg_full_optimization_main
+{
+    local input=$1
+    local output="${input%.svg}.min.svg"
+
+    opm-println-info "Input path: '$input'"
+    opm-println-info "Output path: '$output'"
+    opy-scour "$input" "$output" "${OPTIMIZATION_FLAGS[@]}"
+}
+
+opy_svg_full_optimization_main "$@"
