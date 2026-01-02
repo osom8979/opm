@@ -7,7 +7,7 @@
     "ask": [
       "Bash(opn-npm --global install:*)",
       "Bash(opn-npx:*)",
-      "Bash(opy -m pip install:*)",
+      "Bash(opy -m pip install:*)"
     ]
   },
   "statusLine": {
