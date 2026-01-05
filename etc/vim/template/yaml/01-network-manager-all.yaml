@@ -1,0 +1,18 @@
+# /etc/netplan/01-network-manager-all.yaml
+# Let NetworkManager manage all devices on this system
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    ens18:  # Actual interface name in use
+      addresses: # Static IP address to assign
+        - 192.168.0.90/24
+      routes:
+        - to: 0.0.0.0/0  # Default route for all traffic
+          via: 192.168.0.1  # Gateway IP address
+      nameservers:
+        addresses:
+          - 192.168.0.1
+          - 8.8.8.8
+          - 8.8.4.4
+          - 1.1.1.1
