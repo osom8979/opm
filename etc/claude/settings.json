@@ -1,6 +1,7 @@
 {
   "permissions": {
     "allow": [
+      "WebFetch(domain:news.hada.io)",
       "WebFetch(domain:ui.shadcn.com)"
     ],
     "deny": [],
