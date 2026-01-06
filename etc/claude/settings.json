@@ -1,10 +1,22 @@
 {
   "permissions": {
     "allow": [
+      "Bash(git diff --cached)",
+      "Bash(git log --oneline -10)",
       "WebFetch(domain:news.hada.io)",
-      "WebFetch(domain:ui.shadcn.com)"
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebFetch(domain:www.radix-ui.com)",
+      "WebFetch(domain:www.notion.so)",
+      "WebFetch(domain:www.notion.com)",
+      "WebFetch(domain:www.osom.run)",
+      "WebFetch(domain:app.osom.run)"
     ],
-    "deny": [],
+    "deny": [
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)"
+    ],
     "ask": [
       "Bash(opn-npm --global install:*)",
       "Bash(opn-npx:*)",
