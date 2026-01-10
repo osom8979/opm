@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# shellcheck disable=SC2038
+
+# VCS-aware Python script executor
+# 1. Find VCS directory (use git command)
+# 2. Look for executable 'python' script at the same depth
+# 3. Execute found script or fallback to opy command
+
+# Find VCS root directory
+if git rev-parse --show-toplevel &>/dev/null; then
+    vcs_root=$(git rev-parse --show-toplevel)
+
+    # If VCS root found, search for executable python script
+    if [[ -d "$vcs_root" ]]; then
+        vcs_python="$vcs_root/python"
+
+        if [[ -x "$vcs_python" ]]; then
+            # Execute the found script with all arguments
+            exec "$vcs_python" "$@"
+            exit $?
+        fi
+    fi
+fi
+
+# Fallback to opy/python3/python command
+if command -v opy &> /dev/null; then
+    exec opy "$@"
+elif command -v python3 &> /dev/null; then
+    exec python3 "$@"
+else
+    exec python "$@"
+fi
