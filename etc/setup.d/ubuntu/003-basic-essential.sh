@@ -15,17 +15,22 @@ PACKAGES=(
     ccls
     cmake
     curl
+    fuse
     fzf
     git
+    gnome-control-center
+    htop
     language-pack-ko
+    libfuse2
     libsecret-1-dev
+    lsof
     neovim
     net-tools
     network-manager
+    nmap
     shellcheck
     tmux
-    fuse
-    libfuse2
+    wireshark
 )
 
 apt-get -y install "${PACKAGES[@]}"

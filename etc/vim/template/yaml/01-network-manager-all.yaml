@@ -1,4 +1,5 @@
 # /etc/netplan/01-network-manager-all.yaml
+# Apply command: `sudo netplan apply`
 # Let NetworkManager manage all devices on this system
 network:
   version: 2

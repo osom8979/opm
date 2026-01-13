@@ -1,0 +1,215 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if [[ $(id -u) -ne 0 ]]; then
+    opm-println-error "Please run as root"
+    exit 1
+fi
+
+if ! command -v nmcli &> /dev/null; then
+    opm-println-error "Not found nmcli command"
+    exit 1
+fi
+
+if ! command -v ip &> /dev/null; then
+    opm-println-error "Not found ip command"
+    exit 1
+fi
+
+USAGE="
+Usage: opm-network-static-ip [options]
+
+Configure static IP address for network interface.
+
+Available options are:
+  -h, --help     Print this message.
+  --dry-run      Show commands without executing them.
+  --             Stop handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function network_static_ip_main
+{
+    local DRY_RUN=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --dry-run)
+            DRY_RUN=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error -s "Invalid flag: $1"
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $DRY_RUN -eq 1 ]]; then
+        opm-println-warn "DRY RUN MODE - No changes will be made"
+        echo ""
+    fi
+
+    # 1. List and select network interface
+    opm-println-info "Available network interfaces:"
+    echo ""
+
+    local interfaces=($(ip -o link show | awk -F': ' '{print $2}' | grep -v '^lo$'))
+
+    if [[ ${#interfaces[@]} -eq 0 ]]; then
+        opm-println-error "No network interfaces found"
+        return 1
+    fi
+
+    local index=1
+    for iface in "${interfaces[@]}"; do
+        local status=$(ip addr show "$iface" | grep -q "state UP" && echo "UP" || echo "DOWN")
+        local current_ip=$(ip addr show "$iface" | grep "inet " | awk '{print $2}' | head -n1)
+        echo "  [$index] $iface ($status)${current_ip:+ - Current IP: $current_ip}"
+        ((index++))
+    done
+
+    echo ""
+    read -r -p "Select interface number [1-${#interfaces[@]}]: " iface_num
+
+    if ! [[ "$iface_num" =~ ^[0-9]+$ ]] || [[ $iface_num -lt 1 ]] || [[ $iface_num -gt ${#interfaces[@]} ]]; then
+        opm-println-error "Invalid selection"
+        return 1
+    fi
+
+    local selected_iface="${interfaces[$((iface_num-1))]}"
+    opm-println-info "Selected interface: $selected_iface"
+    echo ""
+
+    # 2. Get IP address in CIDR format
+    read -r -p "Enter IP address (CIDR format, e.g., 192.168.1.100/24): " ip_cidr
+
+    if [[ ! "$ip_cidr" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+$ ]]; then
+        opm-println-error "Invalid IP address format. Expected format: xxx.xxx.xxx.xxx/xx"
+        return 1
+    fi
+
+    # 3. Get gateway address
+    read -r -p "Enter gateway address (e.g., 192.168.1.1): " gateway
+
+    if [[ ! "$gateway" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        opm-println-error "Invalid gateway address format"
+        return 1
+    fi
+
+    # 4. Get DNS servers (optional)
+    read -r -p "Enter DNS servers (comma-separated, default: 1.1.1.1,8.8.8.8): " dns_input
+
+    if [[ -z "$dns_input" ]]; then
+        dns_input="1.1.1.1,8.8.8.8"
+    fi
+
+    local dns_servers="${dns_input// /}"
+
+    # Summary
+    echo ""
+    opm-println-info "Configuration summary:"
+    echo "  Interface: $selected_iface"
+    echo "  IP/CIDR:   $ip_cidr"
+    echo "  Gateway:   $gateway"
+    echo "  DNS:       $dns_servers"
+    echo ""
+
+    read -r -p "Apply this configuration? (y/N) " confirm
+
+    case "$confirm" in
+    [yY]*)
+        ;;
+    *)
+        opm-println-warn "Configuration cancelled"
+        return 0
+        ;;
+    esac
+
+    # Check if connection already exists
+    local conn_name="static-$selected_iface"
+    local existing_conn=$(nmcli -t -f NAME connection show | grep "^$conn_name$")
+
+    if [[ -n "$existing_conn" ]]; then
+        opm-println-info "Deleting existing connection: $conn_name"
+        if [[ $DRY_RUN -eq 1 ]]; then
+            echo "  [DRY RUN] nmcli connection delete \"$conn_name\""
+        else
+            if ! nmcli connection delete "$conn_name"; then
+                opm-println-error "Failed to delete existing connection"
+                return 1
+            fi
+        fi
+    fi
+
+    # Create new static IP connection
+    opm-println-info "Creating static IP connection..."
+    echo ""
+
+    local add_cmd="nmcli connection add type ethernet con-name \"$conn_name\" ifname \"$selected_iface\" ipv4.method manual ipv4.addresses \"$ip_cidr\" ipv4.gateway \"$gateway\" ipv4.dns \"$dns_servers\""
+
+    if [[ $DRY_RUN -eq 1 ]]; then
+        echo "  [DRY RUN] $add_cmd"
+    else
+        if ! nmcli connection add \
+            type ethernet \
+            con-name "$conn_name" \
+            ifname "$selected_iface" \
+            ipv4.method manual \
+            ipv4.addresses "$ip_cidr" \
+            ipv4.gateway "$gateway" \
+            ipv4.dns "$dns_servers"; then
+            opm-println-error "Failed to create connection"
+            return 1
+        fi
+    fi
+
+    # Bring up the connection
+    echo ""
+    opm-println-info "Activating connection..."
+
+    if [[ $DRY_RUN -eq 1 ]]; then
+        echo "  [DRY RUN] nmcli connection up \"$conn_name\""
+    else
+        if ! nmcli connection up "$conn_name"; then
+            opm-println-error "Failed to activate connection"
+            return 1
+        fi
+    fi
+
+    echo ""
+    if [[ $DRY_RUN -eq 1 ]]; then
+        opm-println-warn "DRY RUN completed - No changes were made"
+    else
+        opm-println-info "Static IP configuration completed successfully!"
+    fi
+    echo ""
+
+    # Show current configuration
+    if [[ $DRY_RUN -eq 0 ]]; then
+        opm-println-info "Current IP configuration:"
+        ip addr show "$selected_iface" | grep "inet "
+    fi
+
+    return 0
+}
+
+network_static_ip_main "$@"
