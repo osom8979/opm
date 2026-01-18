@@ -3,13 +3,14 @@
     "allow": [
       "Bash(git diff --cached)",
       "Bash(git log --oneline -10)",
+      "WebFetch(domain:app.osom.run)",
+      "WebFetch(domain:arxiv.org)",
       "WebFetch(domain:news.hada.io)",
       "WebFetch(domain:ui.shadcn.com)",
-      "WebFetch(domain:www.radix-ui.com)",
-      "WebFetch(domain:www.notion.so)",
       "WebFetch(domain:www.notion.com)",
+      "WebFetch(domain:www.notion.so)",
       "WebFetch(domain:www.osom.run)",
-      "WebFetch(domain:app.osom.run)"
+      "WebFetch(domain:www.radix-ui.com)"
     ],
     "deny": [
       "Bash(git add:*)",
