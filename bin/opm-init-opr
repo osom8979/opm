@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+# - ref: https://www.rust-lang.org/
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+INSTALL_ROOT="$(opm-home)/var/rust/rustup"
+INSTALL_PATH="$(opm-home)/var/rust/cargo"
+
+# -------------
+# Install Rust
+# -------------
+
+function install_rustup_if_not_exist
+{
+    local rustup_home=$1
+    local cargo_home=$2
+    local rustup_exe="$cargo_home/bin/rustup"
+
+    if [[ -x "$rustup_exe" ]]; then
+        return 0
+    fi
+
+    opm-println "Could not find executable rustup command on path '$rustup_exe'"
+    opm-println "Download and install rustup ..."
+
+    mkdir -p "$rustup_home"
+    mkdir -p "$cargo_home"
+
+    local rustup_init="/tmp/rustup-init.sh"
+    local download_url="https://sh.rustup.rs"
+
+    opm-println "Downloading from $download_url ..."
+
+    if ! curl -fsSL -o "$rustup_init" "$download_url"; then
+        opm-println-error "Failed to download rustup-init from $download_url"
+        return 1
+    fi
+
+    chmod +x "$rustup_init"
+
+    opm-println "Running rustup-init ..."
+
+    RUSTUP_HOME="$rustup_home" CARGO_HOME="$cargo_home" \
+        "$rustup_init" -y --no-modify-path --default-toolchain none
+
+    local code=$?
+    rm -f "$rustup_init"
+
+    if [[ $code -ne 0 ]]; then
+        opm-println-error "rustup installation failed: $code"
+        return $code
+    fi
+
+    opm-println "rustup installed successfully"
+}
+
+function install_toolchain_if_not_exist
+{
+    local rustup_home=$1
+    local cargo_home=$2
+    local rust_version=$3
+    local rustup_exe="$cargo_home/bin/rustup"
+
+    export RUSTUP_HOME="$rustup_home"
+    export CARGO_HOME="$cargo_home"
+    export PATH="$cargo_home/bin:$PATH"
+
+    local installed_version
+    installed_version=$("$rustup_exe" run "$rust_version" rustc --version 2>/dev/null | awk '{print $2}')
+
+    if [[ "$installed_version" == "$rust_version" ]]; then
+        return 0
+    fi
+
+    if [[ -n "$installed_version" ]]; then
+        opm-println-warn \
+            "Mismatch rust version" \
+            "\n Expected: $rust_version" \
+            "\n Actually: $installed_version"
+        return 0
+    fi
+
+    opm-println "Installing Rust toolchain $rust_version ..."
+
+    if ! "$rustup_exe" toolchain install "$rust_version"; then
+        opm-println-error "Failed to install Rust toolchain $rust_version"
+        return 1
+    fi
+
+    opm-println "Rust $rust_version installed successfully"
+}
+
+# --------------
+# Activate Rust
+# --------------
+
+function active_rust
+{
+    local rustup_home=$1
+    local cargo_home=$2
+    local rust_version=$3
+
+    export RUSTUP_HOME="$rustup_home"
+    export CARGO_HOME="$cargo_home"
+    export RUSTUP_TOOLCHAIN="$rust_version"
+    export PATH="$cargo_home/bin:$PATH"
+}
+
+function print_rust_infos
+{
+    opm-println-info "[OSOM Rust Environment]"
+    opm-println-info "- Rust version: $(rustc --version 2>&1)"
+    opm-println-info "- Rust executable: $(which rustc)"
+    opm-println-info "- Cargo version: $(cargo --version 2>&1)"
+    opm-println-info "- RUSTUP_HOME: $RUSTUP_HOME"
+    opm-println-info "- CARGO_HOME: $CARGO_HOME"
+    opm-println-info "- RUSTUP_TOOLCHAIN: $RUSTUP_TOOLCHAIN"
+}
+
+function exit_on_error
+{
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        exit $code
+    fi
+}
+
+function opr_main
+{
+    local rust_version=$1
+    local rust_environ=$2
+    local rust_verbose=$3
+
+    local cargo_dir_name="opr-$(id -u -n)-${rust_version}-${rust_environ}"
+
+    local rustup_home="$INSTALL_ROOT"
+    local cargo_home="$INSTALL_PATH/$cargo_dir_name"
+
+    # Installation ...
+
+    install_rustup_if_not_exist "$rustup_home" "$cargo_home"
+    exit_on_error
+
+    install_toolchain_if_not_exist "$rustup_home" "$cargo_home" "$rust_version"
+    exit_on_error
+
+    # Activation ...
+
+    active_rust "$rustup_home" "$cargo_home" "$rust_version"
+    exit_on_error
+
+    # Information ...
+
+    if [[ $rust_verbose -ne 0 ]]; then
+        print_rust_infos
+    fi
+}
+
+OPR_VERSION=${OPR_VERSION:-$(opm-variable OPR_VERSION)}
+OPR_ENVIRON=${OPR_ENVIRON:-$(opm-variable OPR_ENVIRON)}
+OPR_VERBOSE=${OPR_VERBOSE:-$(opm-variable OPR_VERBOSE)}
+
+opr_main "$OPR_VERSION" "$OPR_ENVIRON" "$OPR_VERBOSE"
