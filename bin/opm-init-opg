@@ -4,3 +4,165 @@
 if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
+
+INSTALL_ROOT="$(opm-home)/var/go/root"
+INSTALL_PATH="$(opm-home)/var/go/path"
+
+# ----------
+# Install Go
+# ----------
+
+function get_machine_name
+{
+    local machine
+    machine=$(opm-distribution --machine)
+
+    case "$machine" in
+        x86_64)
+            echo "amd64"
+            ;;
+        aarch64|arm64)
+            echo "arm64"
+            ;;
+        *)
+            echo "$machine"
+            ;;
+    esac
+}
+
+function download_go_if_not_exist
+{
+    local go_version=$1
+    local kernel_name=$2
+    local machine_name=$3
+    local goroot_dir_name="go${go_version}.${kernel_name}-${machine_name}"
+    local goroot_dir="$INSTALL_ROOT/$goroot_dir_name"
+    local go_exe="$goroot_dir/go/bin/go"
+
+    if [[ -x "$go_exe" ]]; then
+        local actually_version
+        actually_version=$("$go_exe" version | awk '{print $3}' | sed 's/^go//g')
+
+        if [[ "$actually_version" != "$go_version" ]]; then
+            opm-println-warn \
+                "Mismatch go version" \
+                "\n Expected: $go_version" \
+                "\n Actually: $actually_version"
+        fi
+        return 0
+    fi
+
+    opm-println "Could not find executable go command on path '$go_exe'"
+    opm-println "Download and install Go $go_version ..."
+
+    local archive_name="${goroot_dir_name}.tar.gz"
+    local download_url="https://go.dev/dl/${archive_name}"
+    local tmp_archive="/tmp/${archive_name}"
+
+    opm-println "Downloading from $download_url ..."
+
+    if ! curl -fsSL -o "$tmp_archive" "$download_url"; then
+        opm-println-error "Failed to download Go from $download_url"
+        return 1
+    fi
+
+    opm-println "Extracting to $goroot_dir ..."
+
+    mkdir -p "$goroot_dir"
+    if ! tar -xzf "$tmp_archive" -C "$goroot_dir"; then
+        opm-println-error "Failed to extract Go archive"
+        rm -f "$tmp_archive"
+        return 1
+    fi
+
+    rm -f "$tmp_archive"
+    opm-println "Go $go_version installed successfully"
+}
+
+function create_gopath_if_not_exist
+{
+    local gopath_dir_name=$1
+    local gopath_dir="$INSTALL_PATH/$gopath_dir_name"
+
+    if [[ -d "$gopath_dir" ]]; then
+        return 0
+    fi
+
+    opm-println "Creating GOPATH directory: $gopath_dir"
+    mkdir -p "$gopath_dir"/{bin,pkg,src}
+}
+
+# -----------
+# Activate Go
+# -----------
+
+function active_go
+{
+    local goroot_dir=$1
+    local gopath_dir=$2
+
+    export GOROOT="$goroot_dir/go"
+    export GOPATH="$gopath_dir"
+    export PATH="$GOPATH/bin:$GOROOT/bin:$PATH"
+}
+
+function print_go_infos
+{
+    opm-println-info "[OSOM Go Environment]"
+    opm-println-info "- Go version: $(go version 2>&1)"
+    opm-println-info "- Go executable: $(which go)"
+    opm-println-info "- GOROOT: $GOROOT"
+    opm-println-info "- GOPATH: $GOPATH"
+}
+
+function exit_on_error
+{
+    local code=$?
+    if [[ $code -ne 0 ]]; then
+        exit $code
+    fi
+}
+
+function opg_main
+{
+    local go_version=$1
+    local go_environ=$2
+    local go_verbose=$3
+
+    local kernel_name
+    kernel_name=$(opm-distribution --kernel)
+
+    local machine_name
+    machine_name=$(get_machine_name)
+
+    local goroot_dir_name="go${go_version}.${kernel_name}-${machine_name}"
+    local gopath_dir_name="opg-$(id -u -n)-${go_version}-${go_environ}"
+
+    local goroot_dir="$INSTALL_ROOT/$goroot_dir_name"
+    local gopath_dir="$INSTALL_PATH/$gopath_dir_name"
+
+    # Installation ...
+
+    download_go_if_not_exist "$go_version" "$kernel_name" "$machine_name"
+    exit_on_error
+
+    create_gopath_if_not_exist "$gopath_dir_name"
+    exit_on_error
+
+    # Activation ...
+
+    active_go "$goroot_dir" "$gopath_dir"
+    exit_on_error
+
+    # Information ...
+
+    if [[ $go_verbose -ne 0 ]]; then
+        print_go_infos
+    fi
+}
+
+OPG_VERSION=${OPG_VERSION:-$(opm-variable OPG_VERSION)}
+OPG_ENVIRON=${OPG_ENVIRON:-$(opm-variable OPG_ENVIRON)}
+OPG_VERBOSE=${OPG_VERBOSE:-$(opm-variable OPG_VERBOSE)}
+
+opg_main "$OPG_VERSION" "$OPG_ENVIRON" "$OPG_VERBOSE"

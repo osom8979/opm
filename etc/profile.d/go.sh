@@ -20,8 +20,11 @@ fi
 GOROOT_DIR_NAME="go${OPG_VERSION}.${KERNEL_NAME}-${MACHINE_NAME}"
 GOPATH_DIR_NAME="opg-${USER_NAME}-${OPG_VERSION}-${OPG_ENVIRON}"
 
-if [[ -d "$HOME/.go" ]]; then
-    export GOROOT="$OPM_HOME/var/go/root/${GOROOT_DIR_NAME}/go"
-    export GOPATH="$OPM_HOME/var/go/path/${GOPATH_DIR_NAME}"
+GOROOT_DIR="$OPM_HOME/var/go/root/${GOROOT_DIR_NAME}/go"
+GOPATH_DIR="$OPM_HOME/var/go/path/${GOPATH_DIR_NAME}"
+
+if [[ -d "$GOROOT_DIR" ]]; then
+    export GOROOT="$GOROOT_DIR"
+    export GOPATH="$GOPATH_DIR"
     export PATH="$GOPATH/bin:$GOROOT/bin:$PATH"
 fi
