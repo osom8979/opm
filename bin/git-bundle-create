@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Create a git bundle file for offline transfer.
+
+  Usage: git-bundle-create [options] <start-commit>
+
+Available options are:
+  -h, --help        Print this message.
+  -o, --output      Specify output filename (default: auto-generated).
+  -b, --branch      Branch name to include in bundle (default: current branch).
+  --                Skip handling options.
+
+Examples:
+  git-bundle-create 789f9d9
+  git-bundle-create -o update.bundle abc1234
+  git-bundle-create -b main 789f9d9
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function git_bundle_create_main
+{
+    local output_file=""
+    local branch=""
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -o|--output)
+            output_file="$2"
+            shift 2
+            ;;
+        -b|--branch)
+            branch="$2"
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local start_commit="$1"
+
+    if [[ -z "$start_commit" ]]; then
+        opm-println-error "Start commit is required."
+        print_usage
+        return 1
+    fi
+
+    if ! git rev-parse --verify "$start_commit" &> /dev/null; then
+        opm-println-error "Invalid commit: $start_commit"
+        return 1
+    fi
+
+    local head_short
+    local start_short
+    head_short=$(git rev-parse --short HEAD)
+    start_short=$(git rev-parse --short "$start_commit")
+
+    if [[ -z "$output_file" ]]; then
+        local branch_name
+        branch_name=$(git rev-parse --abbrev-ref HEAD)
+        output_file="${branch_name}-${start_short}-to-${head_short}.bundle"
+    fi
+
+    local range="$start_commit..HEAD"
+    if [[ -n "$branch" ]]; then
+        range="$start_commit..$branch"
+    fi
+
+    echo "=== Git Bundle Create ==="
+    echo "Start commit: $start_commit ($start_short)"
+    echo "End commit: HEAD ($head_short)"
+    echo "Output file: $output_file"
+    echo ""
+
+    echo "Commits to be included:"
+    git log --oneline "$range"
+    echo ""
+
+    echo "Creating bundle..."
+    if ! git bundle create "$output_file" "$range"; then
+        opm-println-error "Failed to create bundle."
+        return 1
+    fi
+
+    echo ""
+    echo "Verifying bundle..."
+    if ! git bundle verify "$output_file"; then
+        opm-println-error "Bundle verification failed."
+        return 1
+    fi
+
+    echo ""
+    echo "=== Bundle Created ==="
+    ls -lh "$output_file"
+
+    echo ""
+    echo "=== How to apply on offline machine ==="
+    cat << EOF
+# 1. Copy bundle file to project directory
+cp /mnt/usb/$output_file .
+
+# 2. Verify bundle (optional)
+git bundle verify $output_file
+
+# 3. Pull changes from bundle
+git pull $output_file HEAD
+EOF
+}
+
+git_bundle_create_main "$@"

@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Apply a git bundle file to the current repository.
+
+  Usage: git-bundle-apply [options] <bundle-file>
+
+Available options are:
+  -h, --help        Print this message.
+  -y, --yes         Skip confirmation prompt.
+  -n, --dry-run     Show what would be done without applying.
+  --                Skip handling options.
+
+Examples:
+  git-bundle-apply update.bundle
+  git-bundle-apply -y master-abc1234-to-def5678.bundle
+  git-bundle-apply -n update.bundle
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function git_bundle_apply_main
+{
+    local skip_confirm=0
+    local dry_run=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -y|--yes)
+            skip_confirm=1
+            shift
+            ;;
+        -n|--dry-run)
+            dry_run=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local bundle_file="$1"
+
+    if [[ -z "$bundle_file" ]]; then
+        opm-println-error "Bundle file is required."
+        print_usage
+        return 1
+    fi
+
+    if [[ ! -f "$bundle_file" ]]; then
+        opm-println-error "File not found: $bundle_file"
+        return 1
+    fi
+
+    echo "=== Git Bundle Apply ==="
+    echo "Bundle file: $bundle_file"
+    echo "Current HEAD: $(git rev-parse --short HEAD)"
+    echo ""
+
+    echo "Verifying bundle..."
+    if ! git bundle verify "$bundle_file"; then
+        echo ""
+        opm-println-error "Bundle verification failed."
+        opm-println-error "Ensure your repository's commit matches the bundle's starting point."
+        return 1
+    fi
+
+    echo ""
+    echo "Commits in bundle:"
+    git bundle list-heads "$bundle_file"
+
+    if [[ $dry_run -eq 1 ]]; then
+        echo ""
+        echo "Dry run mode - no changes applied."
+        return 0
+    fi
+
+    if [[ $skip_confirm -eq 0 ]]; then
+        echo ""
+        read -p "Apply changes? (y/N): " confirm
+        if [[ "$confirm" != "y" ]] && [[ "$confirm" != "Y" ]]; then
+            echo "Cancelled."
+            return 0
+        fi
+    fi
+
+    echo ""
+    echo "Applying changes..."
+    if ! git pull "$bundle_file" HEAD; then
+        opm-println-error "Failed to apply bundle."
+        return 1
+    fi
+
+    echo ""
+    echo "=== Apply Complete ==="
+    echo "Current HEAD: $(git rev-parse --short HEAD)"
+    git log --oneline -5
+}
+
+git_bundle_apply_main "$@"
