@@ -15,13 +15,12 @@ PACKAGES=(
     ccls
     cmake
     curl
-    fuse
+    # fuse libfuse2 -- Installing on Ubuntu 24.04 causes Gnome Desktop to not display. Use fuse3 instead.
     fzf
     git
     gnome-control-center
     htop
     language-pack-ko
-    libfuse2
     libsecret-1-dev
     lsof
     neovim
@@ -30,7 +29,6 @@ PACKAGES=(
     nmap
     shellcheck
     tmux
-    wireshark
 )
 
 apt-get -y install "${PACKAGES[@]}"

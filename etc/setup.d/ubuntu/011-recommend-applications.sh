@@ -11,7 +11,7 @@ if ! command -v apt-get &> /dev/null; then
 fi
 
 PACKAGES=(
-    conky
+    # conky -- Not available on Ubuntu 24.04.
     ffmpeg
     gimp
     imagemagick
@@ -21,6 +21,7 @@ PACKAGES=(
     simplescreenrecorder
     speedcrunch
     vlc
+    wireshark
 )
 
 apt-get -y install "${PACKAGES[@]}"
