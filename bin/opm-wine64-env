@@ -5,9 +5,11 @@ PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 if ! command -v wine64 &> /dev/null; then
-    opm-println-error "Not found wine64 executable"
-    opm-println-error "Try this command: apt install wine64"
-    exit 1
+    if [[ ! -f /usr/lib/wine/wine64 ]]; then
+        opm-println-error "Not found wine64 executable"
+        opm-println-error "Try this command: apt install wine64"
+        exit 1
+    fi
 fi
 
 export LANG=ko_KR.utf8

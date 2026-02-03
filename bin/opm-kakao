@@ -5,12 +5,17 @@ PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
 WINEPREFIX=$(source opm-wine64-env && echo -n "$WINEPREFIX")
-KAKAO_SUFFIX="Program Files (x86)/Kakao/KakaoTalk/KakaoTalk.exe"
-KAKAO_PATH="$WINEPREFIX/drive_c/$KAKAO_SUFFIX"
+if [[ -z $WINEPREFIX ]]; then
+    opm-println-error "Not found wine prefix"
+    exit 1
+fi
 
+KAKAO_SUFFIX="Program Files/Kakao/KakaoTalk/KakaoTalk.exe"
+KAKAO_PATH="$WINEPREFIX/drive_c/$KAKAO_SUFFIX"
 TEMP_DIR="$WINEPREFIX/temp"
 # SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe"
-SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/under_win10/KakaoTalk_Setup.exe"
+# SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/under_win10/KakaoTalk_Setup.exe"
+SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/x64/KakaoTalk_Setup.exe"
 SETUP_PATH="$TEMP_DIR/KakaoTalk_Setup.exe"
 
 if [[ ! -f "$KAKAO_PATH" ]]; then

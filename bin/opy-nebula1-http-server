@@ -15,10 +15,13 @@ if ! command -v grep &> /dev/null; then
 fi
 
 if ! ADDRESS=$(ip -4 addr show nebula1 | grep --color=never -oP '(?<=inet\s)\d+(\.\d+){3}'); then
+    opm-println-error "Not found nebula1 address"
     exit 1
 fi
 
-opm-println-info "Serving HTTP on https://test0.osom.run/"
+LAST_OCTET="${ADDRESS##*.}"
+
+opm-println-info "Serving HTTP on https://$LAST_OCTET.test.osom.run/"
 
 opy -m http.server \
     -b "$ADDRESS" \
