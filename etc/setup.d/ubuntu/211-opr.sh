@@ -16,8 +16,7 @@ fi
 
 PACKAGES=(
     alacritty
+    typst-cli
 )
 
-for pkg in "${PACKAGES[@]}"; do
-    cargo install "$pkg"
-done
+cargo install "${PACKAGES[@]}"

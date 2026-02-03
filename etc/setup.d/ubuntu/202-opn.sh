@@ -13,6 +13,7 @@ fi
 PACKAGES=(
     @anthropic-ai/claude-code@latest
     @google/gemini-cli@latest
+    @marp-team/marp-cli@latest
     neovim@latest
     prettier@latest
     typescript@latest
