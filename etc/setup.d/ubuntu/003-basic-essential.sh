@@ -11,11 +11,11 @@ if ! command -v apt-get &> /dev/null; then
 fi
 
 PACKAGES=(
+    # fuse libfuse2 -- Installing on Ubuntu 24.04 causes Gnome Desktop to not display. Use fuse3 instead.
     build-essential
     ccls
     cmake
     curl
-    # fuse libfuse2 -- Installing on Ubuntu 24.04 causes Gnome Desktop to not display. Use fuse3 instead.
     fzf
     git
     gnome-control-center
@@ -23,12 +23,12 @@ PACKAGES=(
     language-pack-ko
     libsecret-1-dev
     lsof
-    neovim
     net-tools
     network-manager
     nmap
     shellcheck
     tmux
+    xclip
 )
 
 apt-get -y install "${PACKAGES[@]}"

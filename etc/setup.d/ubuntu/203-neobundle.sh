@@ -10,8 +10,8 @@ if ! command -v git &> /dev/null; then
     exit 1
 fi
 
-if ! command -v vim &> /dev/null; then
-    echo "Not found vim executable" 1>&2
+if ! command -v nvim &> /dev/null; then
+    echo "Not found nvim executable" 1>&2
     exit 1
 fi
 
@@ -38,5 +38,5 @@ ARGS=(
     -s  # Silent mode
 )
 
-vim "${ARGS[@]}" 2>&1 | grep -v "^not found in"
+nvim "${ARGS[@]}" 2>&1 | grep -v "^not found in"
 echo -n -e "\n"
