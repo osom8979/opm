@@ -26,6 +26,7 @@ PACKAGES=(
     net-tools
     network-manager
     nmap
+    podman
     shellcheck
     tmux
     xclip
