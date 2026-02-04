@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v strace &> /dev/null; then
+    opm-println-error "Not found strace executable"
+    exit 1
+fi
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} [options] -- program [args...]
+
+Trace file open/close system calls of a program.
+
+Available options are:
+  -h, --help     Print this message.
+  -o FILE        Output file (default: trace-<datetime>.log)
+  -f             Follow forks (default: enabled)
+  -t             Print timestamp
+  -tt            Print timestamp with microseconds
+  -T             Show time spent in syscalls
+  --             End of options, start of program
+
+Example:
+  ${BASH_SOURCE[0]} -- ./my_program arg1 arg2
+  ${BASH_SOURCE[0]} -o output.log -- ls -la
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function strace_file_ops_main
+{
+    local strace_opts=(-e "trace=openat,open,close")
+    local output_file="trace-$(date +%Y%m%d-%H%M%S).log"
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -o)
+            output_file=$2
+            shift 2
+            ;;
+        -f)
+            shift
+            ;;
+        -t)
+            strace_opts+=(-t)
+            shift
+            ;;
+        -tt)
+            strace_opts+=(-tt)
+            shift
+            ;;
+        -T)
+            strace_opts+=(-T)
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error -s "Invalid flag: $1"
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "No program specified"
+        print_usage
+        return 1
+    fi
+
+    strace "${strace_opts[@]}" -o "$output_file" "$@"
+    opm-println-info "Trace saved to: $output_file"
+}
+
+strace_file_ops_main "$@"
