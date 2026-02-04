@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if [[ $(id -u) -ne 0 ]]; then
+    opm-println-error "Please run as root"
+    exit 1
+fi
+
+if ! command -v tcpdump &> /dev/null; then
+    opm-println-error "Not found tcpdump executable"
+    exit 1
+fi
+
+DEFAULT_INTERFACE=eno1
+DEFAULT_ROTATE_SECONDS=3600
+
+if command -v nmcli &> /dev/null; then
+    DEFAULT_INTERFACE=$(nmcli -t -f DEVICE,TYPE,STATE device status | grep --color=never -E ':(ethernet|wifi):connected' | cut -d: -f1 | head -1)
+else
+    opm-println-warn "Not found tcpdump executable"
+fi
+
+USAGE="
+Usage: ${BASH_SOURCE[0]} [options] [interface]
+
+Capture TCP packets and save to pcap files with hourly rotation.
+
+Available options are:
+  -h, --help     Print this message.
+  --             Skip handling options
+
+Arguments:
+  interface      Network interface (default: auto-detect via nmcli)
+
+Output:
+  Files are saved as: <interface>_%Y-%m-%d_%H-%M.pcap
+  Rotation: every 3600 seconds (1 hour)
+
+Default interface: $DEFAULT_INTERFACE
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function tcpdump_simple_tcp_main
+{
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error -s "Invalid flag: $1"
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    local interface=${1:-$DEFAULT_INTERFACE}
+    local rotate_seconds=${1:-$DEFAULT_ROTATE_SECONDS}
+
+    if [[ -z "$interface" ]]; then
+        opm-println-error "No network interface found"
+        return 1
+    fi
+
+    tcpdump -i "$interface" -w "${interface}_%Y-%m-%d_%H-%M.pcap" -G "$rotate_seconds" tcp
+}
+
+tcpdump_simple_tcp_main "$@"
