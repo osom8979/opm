@@ -4,11 +4,6 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-if [[ $(id -u) -ne 0 ]]; then
-    opm-println-error "Please run as root"
-    exit 1
-fi
-
 if ! command -v tcpdump &> /dev/null; then
     opm-println-error "Not found tcpdump executable"
     exit 1
@@ -30,6 +25,15 @@ Capture TCP packets and save to pcap files with hourly rotation.
 
 Available options are:
   -h, --help     Print this message.
+  -G SECONDS     Rotate dump file every SECONDS (default: $DEFAULT_ROTATE_SECONDS)
+  -t             Don't print timestamp
+  -tt            Print Unix epoch timestamp
+  -v             Verbose output
+  -vv            More verbose output
+  -x             Print packet data in hex
+  -xx            Print packet data in hex (including link level header)
+  -X             Print packet data in hex and ASCII
+  -XX            Print packet data in hex and ASCII (including link level header)
   --             Skip handling options
 
 Arguments:
@@ -37,7 +41,6 @@ Arguments:
 
 Output:
   Files are saved as: <interface>_%Y-%m-%d_%H-%M.pcap
-  Rotation: every 3600 seconds (1 hour)
 
 Default interface: $DEFAULT_INTERFACE
 "
@@ -49,12 +52,22 @@ function print_usage
 
 function tcpdump_simple_tcp_main
 {
+    local tcpdump_opts=()
+    local rotate_seconds=$DEFAULT_ROTATE_SECONDS
 
     while [[ -n $1 ]]; do
         case $1 in
         -h|--help)
             print_usage
             return 0
+            ;;
+        -G)
+            rotate_seconds=$2
+            shift 2
+            ;;
+        -t|-tt|-v|-vv|-x|-xx|-X|-XX)
+            tcpdump_opts+=("$1")
+            shift
             ;;
         --)
             shift
@@ -71,14 +84,18 @@ function tcpdump_simple_tcp_main
     done
 
     local interface=${1:-$DEFAULT_INTERFACE}
-    local rotate_seconds=${1:-$DEFAULT_ROTATE_SECONDS}
 
     if [[ -z "$interface" ]]; then
         opm-println-error "No network interface found"
         return 1
     fi
 
-    tcpdump -i "$interface" -w "${interface}_%Y-%m-%d_%H-%M.pcap" -G "$rotate_seconds" tcp
+    if [[ $(id -u) -ne 0 ]]; then
+        opm-println-error "Please run as root"
+        exit 1
+    fi
+
+    tcpdump -i "$interface" -w "${interface}_%Y-%m-%d_%H-%M.pcap" -G "$rotate_seconds" "${tcpdump_opts[@]}" tcp
 }
 
 tcpdump_simple_tcp_main "$@"
