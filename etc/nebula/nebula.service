@@ -1,0 +1,10 @@
+[Unit]
+Description=Nebula VPN
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/nebula -config /etc/nebula/config.yml
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
