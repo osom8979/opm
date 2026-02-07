@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_INTERVAL=0.1
+
+USAGE_MESSAGE="
+Display established connections with optional process information.
+
+  Usage: opm-ss-established [options]
+
+Available options are:
+  -h, --help                Print this message.
+  -w, --watch               Watch mode.
+  -n, --interval=seconds    Set watch interval (default: ${DEFAULT_INTERVAL}s).
+  -p, --process             Show process information.
+  -t, --tcp                 Show only TCP sockets (default).
+  -u, --udp                 Show UDP sockets as well.
+  --port=PORT               Filter by local port number.
+  --                        Skip handling options.
+
+Examples:
+  opm-ss-established                # Show all TCP established connections
+  opm-ss-established -w             # Watch mode
+  opm-ss-established -p             # With process info
+  opm-ss-established --port=22      # SSH connections only
+  opm-ss-established -w -p          # Watch with process info
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function opm_ss_established_main
+{
+    local watch_mode=0
+    local interval=$DEFAULT_INTERVAL
+    local show_process=0
+    local tcp_only=1
+    local include_udp=0
+    local port_filter=""
+    local extra_args=(
+        -n  # numeric: display addresses and ports as numbers (no DNS lookup)
+    )
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -w|--watch)
+            watch_mode=1
+            shift
+            ;;
+        -n)
+            interval=$2
+            shift 2
+            ;;
+        --interval=*)
+            interval=${1:11}
+            shift
+            ;;
+        -p|--process)
+            show_process=1
+            shift
+            ;;
+        -t|--tcp)
+            tcp_only=1
+            shift
+            ;;
+        -u|--udp)
+            include_udp=1
+            shift
+            ;;
+        --port=*)
+            port_filter=${1:7}
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            extra_args+=("$1")
+            shift
+            ;;
+        esac
+    done
+
+    # Add remaining arguments
+    while [[ -n $1 ]]; do
+        extra_args+=("$1")
+        shift
+    done
+
+    # Add process flag if requested
+    if [[ $show_process -eq 1 ]]; then
+        extra_args=(-p "${extra_args[@]}")
+    fi
+
+    # Add protocol filters
+    if [[ $include_udp -eq 1 ]]; then
+        extra_args=(-t -u "${extra_args[@]}")
+    else
+        extra_args=(-t "${extra_args[@]}")
+    fi
+
+    # Add state filter
+    extra_args+=(state established)
+
+    # Add port filter if specified
+    if [[ -n $port_filter ]]; then
+        extra_args+=("(" sport = ":$port_filter" or dport = ":$port_filter" ")")
+    fi
+
+    if ! command -v ss &> /dev/null; then
+        opm-println-error "ss command is not available"
+        return 1
+    fi
+
+    if [[ $watch_mode -eq 1 ]]; then
+        watch -n "$interval" "ss ${extra_args[*]}"
+    else
+        ss "${extra_args[@]}"
+    fi
+}
+
+opm_ss_established_main "$@"
