@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_INTERVAL=0.1
+
+USAGE_MESSAGE="
+Display listening sockets with process information.
+
+  Usage: opm-ss-listen [options]
+
+Available options are:
+  -h, --help                Print this message.
+  -w, --watch               Watch mode.
+  -n, --interval=seconds    Set watch interval (default: ${DEFAULT_INTERVAL}s).
+  -t, --tcp                 Show only TCP sockets.
+  -u, --udp                 Show only UDP sockets.
+  --                        Skip handling options.
+
+Examples:
+  opm-ss-listen             # Show all listening sockets
+  opm-ss-listen -w          # Watch mode
+  opm-ss-listen -t          # TCP only
+  opm-ss-listen -w -n 1     # Watch with 1 second interval
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function opm_ss_listen_main
+{
+    local watch_mode=0
+    local interval=$DEFAULT_INTERVAL
+    local tcp_only=0
+    local udp_only=0
+    local extra_args=(
+        -l  # listening: show only listening sockets
+        -n  # numeric: display addresses and ports as numbers (no DNS lookup)
+        -p  # processes: show process using socket
+    )
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -w|--watch)
+            watch_mode=1
+            shift
+            ;;
+        -n)
+            interval=$2
+            shift 2
+            ;;
+        --interval=*)
+            interval=${1:11}
+            shift
+            ;;
+        -t|--tcp)
+            tcp_only=1
+            shift
+            ;;
+        -u|--udp)
+            udp_only=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            extra_args+=("$1")
+            shift
+            ;;
+        esac
+    done
+
+    # Add remaining arguments
+    while [[ -n $1 ]]; do
+        extra_args+=("$1")
+        shift
+    done
+
+    # Add protocol filters
+    if [[ $tcp_only -eq 1 && $udp_only -eq 1 ]]; then
+        # Both specified, show both
+        extra_args=(-t -u "${extra_args[@]}")
+    elif [[ $tcp_only -eq 1 ]]; then
+        # TCP only
+        extra_args=(-t "${extra_args[@]}")
+    elif [[ $udp_only -eq 1 ]]; then
+        # UDP only
+        extra_args=(-u "${extra_args[@]}")
+    else
+        # Default: both TCP and UDP
+        extra_args=(-t -u "${extra_args[@]}")
+    fi
+
+    if ! command -v ss &> /dev/null; then
+        opm-println-error "ss command is not available"
+        return 1
+    fi
+
+    if [[ $watch_mode -eq 1 ]]; then
+        watch -n "$interval" "ss ${extra_args[*]}"
+    else
+        ss "${extra_args[@]}"
+    fi
+}
+
+opm_ss_listen_main "$@"
