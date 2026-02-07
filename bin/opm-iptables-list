@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_INTERVAL=0.1
+
+USAGE_MESSAGE="
+Display iptables rules with verbose output and line numbers.
+
+  Usage: opm-iptables [options]
+
+Available options are:
+  -h, --help                Print this message.
+  -w, --watch               Watch mode.
+  -n, --interval=seconds    Set watch interval (default: ${DEFAULT_INTERVAL}s).
+  --                        Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function opm_iptables_main
+{
+    local watch_mode=0
+    local interval=$DEFAULT_INTERVAL
+    local extra_args=(
+        -n                 # numeric: display IP addresses and ports as numbers (no DNS lookup)
+        -v                 # verbose: show detailed information (packet/byte counters, interfaces)
+        -L                 # list: list all rules in the selected chain (default: all chains)
+        --line-numbers     # display line numbers for each rule (useful for deletion/insertion)
+    )
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -w|--watch)
+            watch_mode=1
+            shift
+            ;;
+        -n)
+            interval=$2
+            shift 2
+            ;;
+        --interval=*)
+            interval=${1:11}
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            extra_args+=("$1")
+            shift
+            ;;
+        esac
+    done
+
+    # Add remaining arguments
+    while [[ -n $1 ]]; do
+        extra_args+=("$1")
+        shift
+    done
+
+    if [[ $(id -u) -ne 0 ]]; then
+        opm-println-error "Please run as root"
+        exit 1
+    fi
+
+    if [[ $watch_mode -eq 1 ]]; then
+        watch -n "$interval" "iptables ${extra_args[*]}"
+    else
+        iptables "${extra_args[@]}"
+    fi
+}
+
+opm_iptables_main "$@"
