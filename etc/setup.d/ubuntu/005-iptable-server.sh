@@ -182,6 +182,13 @@ IPTABLES_SERVER_FILTER="
 -A INPUT -i nebula1 -j ACCEPT
 -A OUTPUT -o nebula1 -j ACCEPT
 
+# Accept Docker FORWARD
+-A FORWARD -i docker0 -j ACCEPT
+-A FORWARD -o docker0 -j ACCEPT
+
+# Allow Docker OUTPUT (docker-proxy -> container)
+-A OUTPUT -d 172.16.0.0/12 -j ACCEPT
+
 # Allow Nebula Network (Lighthouse communication)
 -A INPUT -i $ETHERNET_NAME -p udp --dport 4242 -j ACCEPT
 -A OUTPUT -o $ETHERNET_NAME -p udp --dport 4242 -j ACCEPT
@@ -190,10 +197,14 @@ IPTABLES_SERVER_FILTER="
 -A OUTPUT -o $ETHERNET_NAME -p udp --dport 67:68 --sport 67:68 -j ACCEPT
 
 # Allow inbound SSH
--A INPUT -i $ETHERNET_NAME -p tcp -m tcp --dport 22 -m state --state NEW  -j ACCEPT
+-A INPUT -i $ETHERNET_NAME -p tcp -m tcp --dport 22 -m state --state NEW -j ACCEPT
+
+# Allow inbound OpenClaw
+-A INPUT -i $ETHERNET_NAME -p tcp -m tcp --dport 18789 -m state --state NEW -j ACCEPT
+-A INPUT -i $ETHERNET_NAME -p tcp -m tcp --dport 18790 -m state --state NEW -j ACCEPT
 
 # Allow outbound email
--A OUTPUT -o $ETHERNET_NAME -p tcp -m tcp --dport 25 -m state --state NEW  -j ACCEPT
+-A OUTPUT -o $ETHERNET_NAME -p tcp -m tcp --dport 25 -m state --state NEW -j ACCEPT
 
 # Outbound DNS lookups
 -A OUTPUT -o $ETHERNET_NAME -p udp -m udp --dport 53 -j ACCEPT
