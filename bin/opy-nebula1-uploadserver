@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v ip &> /dev/null; then
+    opm-println-error "Not found ip command"
+    exit 1
+fi
+
+if ! command -v grep &> /dev/null; then
+    opm-println-error "Not found grep command"
+    exit 1
+fi
+
+if ! opy -m pip show uploadserver &> /dev/null; then
+    opm-println-info "Installing uploadserver ..."
+    opy -m pip install -U uploadserver
+fi
+
+if ! ADDRESS=$(ip -4 addr show nebula1 | grep --color=never -oP '(?<=inet\s)\d+(\.\d+){3}'); then
+    opm-println-error "Not found nebula1 address"
+    exit 1
+fi
+
+LAST_OCTET="${ADDRESS##*.}"
+
+opm-println-info "Serving HTTP on https://$LAST_OCTET.test.osom.run/"
+
+opy -m uploadserver \
+    --bind "$ADDRESS" \
+    48888

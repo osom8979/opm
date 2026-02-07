@@ -21,6 +21,7 @@ PACKAGES=(
     neovim
     numpy
     pudb
+    uploadserver
 )
 
 opy -m pip install --upgrade pip
