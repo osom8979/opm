@@ -27,6 +27,7 @@ PACKAGES=(
     network-manager
     nmap
     podman
+    postgresql-client
     shellcheck
     tmux
     xclip

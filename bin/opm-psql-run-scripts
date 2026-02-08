@@ -1,0 +1,177 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Run all SQL scripts in a directory sequentially (sorted by filename).
+PostgreSQL connection can be configured via an env file or environment variables.
+
+  Usage: opm-psql-run-scripts [options] <sql-dir>
+
+Environment variables (standard Docker PostgreSQL variables):
+  POSTGRES_HOST       Database host (default: localhost)
+  POSTGRES_PORT       Database port (default: 5432)
+  POSTGRES_DB         Database name
+  POSTGRES_USER       Database user
+  POSTGRES_PASSWORD   Database password
+
+Available options are:
+  -h, --help             Print this message.
+  -e, --env-file=file    Load environment variables from file.
+  -v, --verbose          Print each SQL file name before execution.
+  -n, --dry-run          Show which scripts would run without executing.
+  --                     Skip handling options.
+
+Examples:
+  opm-psql-run-scripts ./migrations
+  opm-psql-run-scripts -e .env ./migrations
+  opm-psql-run-scripts -v -e production.env ./sql
+  opm-psql-run-scripts --dry-run ./seeds
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function opm_psql_run_scripts_main
+{
+    local verbose=0
+    local dry_run=0
+    local env_file=""
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -e)
+            env_file=$2
+            shift 2
+            ;;
+        --env-file=*)
+            env_file=${1#--env-file=}
+            shift
+            ;;
+        -v|--verbose)
+            verbose=1
+            shift
+            ;;
+        -n|--dry-run)
+            dry_run=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error "Unknown option: $1"
+            print_usage
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $# -lt 1 ]]; then
+        opm-println-error "Missing required argument: <sql-dir>"
+        print_usage
+        return 1
+    fi
+
+    local sql_dir=$1
+
+    # Load environment variables from env file if specified
+    if [[ -n "$env_file" ]]; then
+        if [[ ! -f "$env_file" ]]; then
+            opm-println-error "Env file not found: $env_file"
+            return 1
+        fi
+        set -a
+        # shellcheck disable=SC1090
+        source <(grep -E '^POSTGRES_' "$env_file" | grep -v '^#')
+        set +a
+    fi
+
+    if [[ ! -d "$sql_dir" ]]; then
+        opm-println-error "SQL directory not found: $sql_dir"
+        return 1
+    fi
+
+    local host=${POSTGRES_HOST:-localhost}
+    local port=${POSTGRES_PORT:-5432}
+    local db=${POSTGRES_DB}
+    local user=${POSTGRES_USER}
+
+    if [[ -z "$db" ]]; then
+        opm-println-error "POSTGRES_DB is not set"
+        return 1
+    fi
+
+    if [[ -z "$user" ]]; then
+        opm-println-error "POSTGRES_USER is not set"
+        return 1
+    fi
+
+    if ! command -v psql &> /dev/null; then
+        opm-println-error "psql is not installed"
+        return 1
+    fi
+
+    # Collect and sort SQL files
+    local sql_files=()
+    while IFS= read -r -d '' f; do
+        sql_files+=("$f")
+    done < <(find "$sql_dir" -maxdepth 1 -name '*.sql' -print0 | sort -z)
+
+    if [[ ${#sql_files[@]} -eq 0 ]]; then
+        opm-println-warn "No .sql files found in $sql_dir"
+        return 0
+    fi
+
+    if [[ $dry_run -eq 1 ]]; then
+        opm-println-info "[dry-run] Target: $user@$host:$port/$db"
+        for f in "${sql_files[@]}"; do
+            opm-println "  $(basename "$f")"
+        done
+        return 0
+    fi
+
+    if [[ $verbose -eq 1 ]]; then
+        opm-println-info "Target: $user@$host:$port/$db"
+        opm-println-info "Scripts: ${#sql_files[@]} file(s)"
+    fi
+
+    export PGPASSWORD="$POSTGRES_PASSWORD"
+
+    local failed=0
+    for f in "${sql_files[@]}"; do
+        if [[ $verbose -eq 1 ]]; then
+            opm-println-info "Running: $(basename "$f")"
+        fi
+
+        if ! psql -h "$host" -p "$port" -U "$user" -d "$db" -f "$f"; then
+            opm-println-error "Failed: $(basename "$f")"
+            failed=1
+            break
+        fi
+    done
+
+    unset PGPASSWORD
+
+    if [[ $failed -ne 0 ]]; then
+        return 1
+    fi
+
+    if [[ $verbose -eq 1 ]]; then
+        opm-println-info "All scripts executed successfully"
+    fi
+}
+
+opm_psql_run_scripts_main "$@"
