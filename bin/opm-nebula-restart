@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Restart the Nebula service.
+
+  Usage: opm-nebula-restart [options]
+
+Available options are:
+  -h, --help        Print this message.
+  --                Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function opm_nebula_restart_main
+{
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            opm-println-error "Invalid option: $1"
+            return 1
+            ;;
+        esac
+    done
+
+    if [[ $EUID -ne 0 ]]; then
+        opm-println-error "This script must be run as root"
+        return 1
+    fi
+
+    opm-println-info "Restarting nebula.service ..."
+    systemctl restart nebula.service
+
+    if [[ $? -ne 0 ]]; then
+        opm-println-error "Failed to restart nebula.service"
+        return 1
+    fi
+
+    opm-println-info "nebula.service restarted successfully"
+
+    sleep 1
+
+    opm-println-info "nebula1 interface:"
+    ip addr show nebula1 2>/dev/null
+
+    if [[ $? -ne 0 ]]; then
+        opm-println-warn "nebula1 interface not found"
+    fi
+}
+
+opm_nebula_restart_main "$@"
