@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Restore deleted files from git history.
+
+  Usage: git-restore-deleted [options] <file> [<file> ...]
+
+Available options are:
+  -h, --help        Print this message.
+  -l, --list        List all deleted files in the repository.
+  -n, --dry-run     Show what would be restored without restoring.
+  --                Skip handling options.
+
+Examples:
+  git-restore-deleted deleted/file/path/file1.txt
+  git-restore-deleted deleted/file/path/file1.txt deleted/file/path/file2.txt
+  git-restore-deleted -l
+  git-restore-deleted -n deleted/file/path/file1.txt
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function list_deleted_files
+{
+    git log --diff-filter=D --summary --format="%H %ai %s" -- | \
+        grep --color=never -E '^ delete mode' | \
+        sed 's/ delete mode [0-9]* /  /'
+}
+
+function restore_file
+{
+    local file="$1"
+    local dry_run=$2
+
+    local delete_commit
+    delete_commit=$(git log --diff-filter=D --format="%H" -1 -- "$file")
+
+    if [[ -z "$delete_commit" ]]; then
+        opm-println-error "No deletion record found for: $file"
+        return 1
+    fi
+
+    local short_commit
+    short_commit=$(git rev-parse --short "$delete_commit")
+
+    if [[ $dry_run -eq 1 ]]; then
+        echo "  [dry-run] $file (deleted in $short_commit)"
+        return 0
+    fi
+
+    local dir
+    dir=$(dirname "$file")
+    if [[ ! -d "$dir" ]]; then
+        mkdir -p "$dir"
+    fi
+
+    if git checkout "${delete_commit}~1" -- "$file" 2>/dev/null; then
+        opm-println-info "  Restored: $file (from ${short_commit}~1)"
+    else
+        opm-println-error "Failed to restore: $file"
+        return 1
+    fi
+}
+
+function git_restore_deleted_main
+{
+    local dry_run=0
+    local list_mode=0
+    local files=()
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -l|--list)
+            list_mode=1
+            shift
+            ;;
+        -n|--dry-run)
+            dry_run=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            files+=("$1")
+            shift
+            ;;
+        esac
+    done
+
+    while [[ -n $1 ]]; do
+        files+=("$1")
+        shift
+    done
+
+    git rev-parse --git-dir &> /dev/null || {
+        opm-println-error "Not a git repository"
+        return 1
+    }
+
+    if [[ $list_mode -eq 1 ]]; then
+        echo "Deleted files in git history:"
+        list_deleted_files
+        return 0
+    fi
+
+    if [[ ${#files[@]} -eq 0 ]]; then
+        opm-println-error "No files specified."
+        print_usage
+        return 1
+    fi
+
+    local failed=0
+    for file in "${files[@]}"; do
+        if ! restore_file "$file" "$dry_run"; then
+            failed=1
+        fi
+    done
+
+    return $failed
+}
+
+git_restore_deleted_main "$@"
