@@ -16,6 +16,7 @@ PACKAGES=(
     ccls
     cmake
     curl
+    exuberant-ctags
     fzf
     git
     gnome-control-center
