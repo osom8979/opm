@@ -1,0 +1,204 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v kubectl &> /dev/null; then
+    opm-println-error "Not found kubectl executable"
+    exit 1
+fi
+
+USAGE_MESSAGE="
+Print Kubernetes cluster connection environment variables to stdout.
+Auto-detects API server and token via kubectl if not specified.
+
+  Usage: ${BASH_SOURCE[0]} [options]
+
+Available options are:
+  -h, --help                    Print this message.
+  -s, --server=URL              API server URL (auto-detect via kubectl).
+  -a, --account=NAME            Service account name (default: k8s-api-client).
+  -n, --namespace=NS            Namespace (default: default).
+  -t, --token=TOKEN             Authentication token (auto-detect via kubectl).
+  -k, --insecure                Skip TLS verification (default: false).
+  --ca-cert-file=PATH           CA certificate file path.
+  --ca-cert-data=DATA           CA certificate data (base64 encoded).
+                                Auto-detect via kubectl if not specified.
+  -v, --verbose                 Print details to stderr.
+  --                            Skip handling options.
+
+Examples:
+  opm-k8s-env
+  opm-k8s-env -n kube-system
+  opm-k8s-env --server=https://10.0.0.1:6443 --insecure
+  eval \"\$(opm-k8s-env -a my-sa -n production)\"
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function resolve_api_server
+{
+    kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}' 2>/dev/null
+}
+
+function resolve_token
+{
+    local account=$1
+    local namespace=$2
+
+    # Check if the service account exists
+    if ! kubectl get serviceaccount "$account" -n "$namespace" &>/dev/null; then
+        opm-println-info -v -2 "Creating service account '$account' in namespace '$namespace' ..."
+        kubectl create serviceaccount "$account" -n "$namespace" >&2 || return 1
+        kubectl create clusterrolebinding "${account}-binding" \
+            --clusterrole=cluster-admin \
+            --serviceaccount="${namespace}:${account}" >&2 || return 1
+    fi
+
+    kubectl create token "$account" -n "$namespace" 2>/dev/null
+}
+
+function opm_k8s_env_main
+{
+    local server=""
+    local account="k8s-api-client"
+    local namespace="default"
+    local token=""
+    local insecure="false"
+    local ca_cert_file=""
+    local ca_cert_data=""
+    local verbose=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --server=*)
+            server=${1#--server=}
+            shift
+            ;;
+        -s)
+            server=$2
+            shift 2
+            ;;
+        --account=*)
+            account=${1#--account=}
+            shift
+            ;;
+        -a)
+            account=$2
+            shift 2
+            ;;
+        --namespace=*)
+            namespace=${1#--namespace=}
+            shift
+            ;;
+        -n)
+            namespace=$2
+            shift 2
+            ;;
+        --token=*)
+            token=${1#--token=}
+            shift
+            ;;
+        -t)
+            token=$2
+            shift 2
+            ;;
+        -k|--insecure)
+            insecure="true"
+            shift
+            ;;
+        --ca-cert-file=*)
+            ca_cert_file=${1#--ca-cert-file=}
+            shift
+            ;;
+        --ca-cert-data=*)
+            ca_cert_data=${1#--ca-cert-data=}
+            shift
+            ;;
+        -v|--verbose)
+            verbose=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error "Unknown option: $1"
+            print_usage
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+
+    # Resolve API server
+    if [[ -z "$server" ]]; then
+        opm-println-info -v -2 "Detecting API server via kubectl ..."
+        server=$(resolve_api_server)
+
+        if [[ -z "$server" ]]; then
+            opm-println-error "Failed to detect API server. Specify with -s/--server."
+            return 1
+        fi
+
+        opm-println-info -v -2 "API server: $server"
+    fi
+
+    # Resolve token
+    if [[ -z "$token" ]]; then
+        opm-println-info -v -2 "Resolving token for service account '$account' in namespace '$namespace' ..."
+        token=$(resolve_token "$account" "$namespace")
+
+        if [[ -z "$token" ]]; then
+            opm-println-error "Failed to resolve token for '$account'. Specify with -t/--token."
+            return 1
+        fi
+
+        opm-println-info -v -2 "Token acquired (${#token} chars)"
+    fi
+
+    # Resolve CA cert data
+    if [[ -z "$ca_cert_file" && -z "$ca_cert_data" ]]; then
+        opm-println-info -v -2 "Detecting CA certificate data via kubectl ..."
+        ca_cert_data=$(kubectl config view --raw -o jsonpath='{.clusters[0].cluster.certificate-authority-data}' 2>/dev/null)
+
+        if [[ -n "$ca_cert_data" ]]; then
+            opm-println-info -v -2 "CA certificate data acquired (${#ca_cert_data} chars)"
+        else
+            local ca_path
+            ca_path=$(kubectl config view --raw -o jsonpath='{.clusters[0].cluster.certificate-authority}' 2>/dev/null)
+
+            if [[ -n "$ca_path" ]]; then
+                ca_cert_file="$ca_path"
+                opm-println-info -v -2 "CA certificate file: $ca_cert_file"
+            else
+                opm-println-info -v -2 "No CA certificate found (consider using --insecure)"
+            fi
+        fi
+    fi
+
+    echo "K8S_API_SERVER=$server"
+    echo "K8S_TOKEN=$token"
+    echo "K8S_NAMESPACE=$namespace"
+    echo "K8S_INSECURE=$insecure"
+    echo "K8S_CA_CERT_FILE=$ca_cert_file"
+    echo "K8S_CA_CERT_DATA=$ca_cert_data"
+}
+
+opm_k8s_env_main "$@"
