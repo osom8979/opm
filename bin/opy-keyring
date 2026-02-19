@@ -8,5 +8,9 @@ export OPY_SUFFIX=keyring
 export OPY_VERSION=${OPY_VERSION:-$(opm-variable OPY_VERSION)}
 export OPY_VERBOSE=${OPY_VERBOSE:-$(opm-variable OPY_VERBOSE)}
 
-opy-checked-install sagecipher keyring || exit $?
+opy-checked-install keyring || exit $?
+
+export XDG_DATA_HOME=${XDG_DATA_HOME:-$(opm-home)/var/keyring/data}
+export XDG_CONFIG_HOME=${XDG_CONFIG_HOME:-$(opm-home)/var/keyring/config}
+
 opy -m keyring "$@"
