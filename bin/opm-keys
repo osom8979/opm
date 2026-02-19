@@ -4,28 +4,20 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-# shellcheck disable=SC2155
-STORAGE_DIR=$(opm-home)/var/keys
+DEFAULT_SERVICE="opm"
 
 USAGE="
-Usage: opm-keys [options] {get|set|rget|rset|has|rm|ls} key [value]
+Usage: opm-keys [options] {get|set|rm} key
 
 Commands:
-  get       Decrypt and obtain the value. (Use 'opy-sagecipher')
-  set       Encrypt and save the value. (Use 'opy-sagecipher')
-  rget      Raw get (without decrypt)
-  rset      Raw set (without encrypt)
-  has       Check if key exists
+  get       Obtain the value from keyring.
+  set       Save the value to keyring.
   rm        Remove key
-  ls        List key
 
 Available options are:
-  -h, --help    Print this message.
-  -s {dir}, --storage {dir}
-                Change storage directory
-  --            Skip handling options
-
-Default storage directory: '$STORAGE_DIR'
+  -h, --help              Print this message.
+  --service {name}        Keyring service name (default: '$DEFAULT_SERVICE')
+  --                      Skip handling options
 "
 
 function print_usage
@@ -35,127 +27,63 @@ function print_usage
 
 function opm_keys_get
 {
-    local storage=$1
-    local raw=$2
-    local key=$3
-    local file="$storage/$key"
+    local service=$1
+    local key=$2
 
     if [[ -z "$key" ]]; then
         opm-println-error "The key argument is required."
         return 1
     fi
 
-    if [[ -z "$raw" ]]; then
-        opm-println-error "The raw argument is required. (script error)"
+    if ! opy-keyring get "$service" "$key"; then
+        opm-println-error "Failed to get key from keyring."
         return 1
-    fi
-
-    if [[ ! -f "$file" ]]; then
-        opm-println-error "Not found key file."
-        return 1
-    fi
-
-    if [[ $raw -eq 0 ]]; then
-        if ! opy-sagecipher decrypt < "$file"; then
-            opm-println-error "Decryption failed."
-            return 1
-        fi
-    else
-        cat "$file"
     fi
 }
 
 function opm_keys_set
 {
-    local storage=$1
-    local raw=$2
-    local key=$3
-    local value=$4
-    local file="$storage/$key"
-
-    if [[ -z "$key" ]]; then
-        opm-println-error "The key argument is required."
-        return 1
-    fi
-
-    if [[ -z "$raw" ]]; then
-        opm-println-error "The raw argument is required. (script error)"
-        return 1
-    fi
-
-    if [[ -f "$file" ]]; then
-        opm-println-error "This key file already exists."
-        return 1
-    fi
-
-    if [[ -z "$value" ]]; then
-        if [[ $raw -eq 0 ]]; then
-            if ! opy-sagecipher encrypt > "$file"; then
-                opm-println-error "Encryption failed."
-                return 1
-            fi
-        else
-            cat > "$file"
-        fi
-    else
-        if [[ $raw -eq 0 ]]; then
-            if ! opy-sagecipher encrypt "$value" > "$file"; then
-                opm-println-error "Encryption failed."
-                return 1
-            fi
-        else
-            echo "$value" > "$file"
-        fi
-    fi
-}
-
-function opm_keys_has
-{
-    local storage=$1
+    local service=$1
     local key=$2
-    local file="$storage/$key"
+    local value=$3
 
     if [[ -z "$key" ]]; then
         opm-println-error "The key argument is required."
         return 1
     fi
 
-    if [[ -f "$file" ]]; then
-        return 0
+    if [[ -n "$value" ]]; then
+        if ! echo "$value" | opy-keyring set "$service" "$key"; then
+            opm-println-error "Failed to set key in keyring."
+            return 1
+        fi
     else
-        return 1
+        if ! opy-keyring set "$service" "$key"; then
+            opm-println-error "Failed to set key in keyring."
+            return 1
+        fi
     fi
 }
 
 function opm_keys_rm
 {
-    local storage=$1
+    local service=$1
     local key=$2
-    local file="$storage/$key"
 
     if [[ -z "$key" ]]; then
         opm-println-error "The key argument is required."
         return 1
     fi
 
-    if [[ ! -f "$file" ]]; then
-        opm-println-error "Not found key file."
+    if ! opy-keyring del "$service" "$key"; then
+        opm-println-error "Failed to remove key from keyring."
         return 1
     fi
-
-    rm "$file"
-}
-
-function opm_keys_ls
-{
-    local storage=$1
-
-    find "$storage" -mindepth 1 -maxdepth 1 -type f -printf "%f\n" | grep -v -E '^\..*'
 }
 
 function opm_keys_main
 {
-    local storage="$STORAGE_DIR"
+    local service="$DEFAULT_SERVICE"
 
     while [[ -n $1 ]]; do
         case $1 in
@@ -163,12 +91,12 @@ function opm_keys_main
             print_usage
             return 0
             ;;
-        -s|--storage)
-            storage="$2"
+        --service)
+            service="$2"
             shift 2
             ;;
-        --storage=*)
-            storage="${1:10}"
+        --service=*)
+            service="${1#*=}"
             shift
             ;;
         --)
@@ -181,9 +109,9 @@ function opm_keys_main
         esac
     done
 
-    if [[ ! -d "$storage" ]]; then
-        opm-println-error "Not found storage directory: '$storage'"
-        return 1
+    if [[ $# -eq 0 ]]; then
+        print_usage
+        return 0
     fi
 
     local op=$1
@@ -191,25 +119,13 @@ function opm_keys_main
 
     case $op in
     g|get)
-        opm_keys_get "$storage" 0 "$1"
+        opm_keys_get "$service" "$1"
         ;;
     s|set)
-        opm_keys_set "$storage" 0 "$1" "$2"
-        ;;
-    rget)
-        opm_keys_get "$storage" 1 "$1"
-        ;;
-    rset)
-        opm_keys_set "$storage" 1 "$1" "$2"
-        ;;
-    h|has|e|exist|exists)
-        opm_keys_has "$storage" "$1"
+        opm_keys_set "$service" "$1" "$2"
         ;;
     d|del|delete|r|rm|remove)
-        opm_keys_rm "$storage" "$1"
-        ;;
-    l|ls|list)
-        opm_keys_ls "$storage"
+        opm_keys_rm "$service" "$1"
         ;;
     *)
         print_usage
