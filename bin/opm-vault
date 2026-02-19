@@ -110,6 +110,7 @@ function resolve_env
 function require_vault_addr
 {
     resolve_env VAULT_ADDR "$DEFAULT_ADDR"
+    VAULT_ADDR="${VAULT_ADDR%/}"
 }
 
 function require_vault_token
