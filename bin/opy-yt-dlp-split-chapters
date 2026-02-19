@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+opy-yt-dlp \
+    --split-chapters \
+    -o "chapter:%(title)s/%(section_number)03d - %(section_title)s.%(ext)s" \
+    "$@"
