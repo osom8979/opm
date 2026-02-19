@@ -1,0 +1,499 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v curl &> /dev/null; then
+    opm-println-error "Not found curl command"
+    exit 1
+fi
+
+if ! command -v jq &> /dev/null; then
+    opm-println-error "Not found jq command"
+    exit 1
+fi
+
+DEFAULT_ADDR="http://localhost:8200"
+DEFAULT_MOUNT="secret"
+DEFAULT_PATH="default"
+
+USAGE="
+Usage: opm-vault [options] {add|get|has|rm|ls|seal|unseal|seal-state} [key=value ...]
+
+Commands:
+  add           Add or update a secret (key=value pairs as arguments)
+  get           Get a secret
+  has           Check if a secret exists
+  rm            Remove a secret
+  ls            List secrets at path
+  seal          Seal the vault
+  unseal        Unseal the vault
+  seal-state    Get the seal status
+
+Available options are:
+  -h, --help        Print this message.
+  -j, --json        If possible, pretty print it in JSON format.
+  -p, --path {path} Secret path (default: '$DEFAULT_PATH')
+  -s, --silent      Suppresses all messages.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  -m, --mount {path}
+                    KV secrets engine mount path (default: '$DEFAULT_MOUNT')
+  --                Skip handling options
+
+Environment variables:
+  VAULT_ADDR        Vault server address (default: '$DEFAULT_ADDR')
+  VAULT_TOKEN       Vault access token (required for most operations)
+  VAULT_UNSEAL_KEY  Vault unseal key (required for unseal)
+
+Examples:
+  Add a secret:
+    opm-vault -p my/secret add username=admin password=s3cret
+
+  Get a secret:
+    opm-vault -p my/secret get
+
+  List secrets:
+    opm-vault -p my/ ls
+
+  Check seal status:
+    opm-vault seal-state
+
+  Unseal the vault:
+    opm-vault unseal
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function require_vault_addr
+{
+    if [[ -z "${VAULT_ADDR:-}" ]]; then
+        VAULT_ADDR="$DEFAULT_ADDR"
+        opm-println-debug -v "VAULT_ADDR not set, using default: $DEFAULT_ADDR"
+    fi
+}
+
+function require_vault_token
+{
+    if [[ -z "${VAULT_TOKEN:-}" ]]; then
+        opm-println-error "VAULT_TOKEN environment variable is not set."
+        return 1
+    fi
+}
+
+function require_vault_unseal_key
+{
+    if [[ -z "${VAULT_UNSEAL_KEY:-}" ]]; then
+        opm-println-error "VAULT_UNSEAL_KEY environment variable is not set."
+        return 1
+    fi
+}
+
+function check_response_errors
+{
+    local response=$1
+    local errors
+    errors=$(echo "$response" | jq -r '.errors // empty | .[]' 2>/dev/null)
+    if [[ -n "$errors" ]]; then
+        opm-println-error "$errors"
+        return 1
+    fi
+}
+
+function opm_vault_add
+{
+    local json_flag=$1
+    local mount=$2
+    local path=$3
+    shift 3
+
+    require_vault_addr || return $?
+    require_vault_token || return $?
+
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "At least one key=value pair is required."
+        return 1
+    fi
+
+    local json_data="{}"
+    local kv
+    for kv in "$@"; do
+        if [[ "$kv" != *"="* ]]; then
+            opm-println-error "Invalid key=value format: '$kv'"
+            return 1
+        fi
+        local k="${kv%%=*}"
+        local v="${kv#*=}"
+        json_data=$(echo "$json_data" | jq --arg k "$k" --arg v "$v" '. + {($k): $v}')
+    done
+
+    local api_url="${VAULT_ADDR}/v1/${mount}/data/${path}"
+    local payload
+    payload=$(jq -n --argjson data "$json_data" '{"data": $data}')
+
+    opm-println-debug -v "POST $api_url"
+
+    local response
+    response=$(
+        curl -s \
+        --location "$api_url" \
+        --request POST \
+        --header "X-Vault-Token: $VAULT_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data "$payload"
+    )
+
+    if [[ $? -ne 0 ]]; then
+        opm-println-error "Request failed"
+        return 1
+    fi
+
+    check_response_errors "$response" || return $?
+
+    if [[ $json_flag -ne 0 ]]; then
+        echo "$response" | jq
+    else
+        opm-println "Secret written to: $path"
+    fi
+}
+
+function opm_vault_get
+{
+    local json_flag=$1
+    local mount=$2
+    local path=$3
+
+    require_vault_addr || return $?
+    require_vault_token || return $?
+
+    local api_url="${VAULT_ADDR}/v1/${mount}/data/${path}"
+
+    opm-println-debug -v "GET $api_url"
+
+    local response
+    response=$(
+        curl -s \
+        --location "$api_url" \
+        --request GET \
+        --header "X-Vault-Token: $VAULT_TOKEN"
+    )
+
+    if [[ $? -ne 0 ]]; then
+        opm-println-error "Request failed"
+        return 1
+    fi
+
+    check_response_errors "$response" || return $?
+
+    if [[ $json_flag -ne 0 ]]; then
+        echo "$response" | jq '.data.data'
+    else
+        echo "$response" | jq -r '.data.data | to_entries[] | "\(.key)=\(.value)"'
+    fi
+}
+
+function opm_vault_has
+{
+    local mount=$1
+    local path=$2
+
+    require_vault_addr || return $?
+    require_vault_token || return $?
+
+    local api_url="${VAULT_ADDR}/v1/${mount}/data/${path}"
+
+    opm-println-debug -v "GET $api_url"
+
+    local http_code
+    http_code=$(
+        curl -s -o /dev/null -w "%{http_code}" \
+        --location "$api_url" \
+        --request GET \
+        --header "X-Vault-Token: $VAULT_TOKEN"
+    )
+
+    if [[ "$http_code" == "200" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+function opm_vault_rm
+{
+    local mount=$1
+    local path=$2
+
+    require_vault_addr || return $?
+    require_vault_token || return $?
+
+    local api_url="${VAULT_ADDR}/v1/${mount}/metadata/${path}"
+
+    opm-println-debug -v "DELETE $api_url"
+
+    local http_code
+    http_code=$(
+        curl -s -o /dev/null -w "%{http_code}" \
+        --location "$api_url" \
+        --request DELETE \
+        --header "X-Vault-Token: $VAULT_TOKEN"
+    )
+
+    if [[ "$http_code" == "204" ]]; then
+        opm-println "Secret removed: $path"
+    else
+        opm-println-error "Failed to remove secret (HTTP $http_code)"
+        return 1
+    fi
+}
+
+function opm_vault_ls
+{
+    local json_flag=$1
+    local mount=$2
+    local path=${3:-}
+
+    require_vault_addr || return $?
+    require_vault_token || return $?
+
+    local api_url="${VAULT_ADDR}/v1/${mount}/metadata/${path}"
+
+    opm-println-debug -v "LIST $api_url"
+
+    local response
+    response=$(
+        curl -s \
+        --location "$api_url" \
+        --request LIST \
+        --header "X-Vault-Token: $VAULT_TOKEN"
+    )
+
+    if [[ $? -ne 0 ]]; then
+        opm-println-error "Request failed"
+        return 1
+    fi
+
+    check_response_errors "$response" || return $?
+
+    if [[ $json_flag -ne 0 ]]; then
+        echo "$response" | jq '.data.keys'
+    else
+        echo "$response" | jq -r '.data.keys[]'
+    fi
+}
+
+function opm_vault_seal
+{
+    local json_flag=$1
+
+    require_vault_addr || return $?
+    require_vault_token || return $?
+
+    local api_url="${VAULT_ADDR}/v1/sys/seal"
+
+    opm-println-debug -v "PUT $api_url"
+
+    local http_code
+    http_code=$(
+        curl -s -o /dev/null -w "%{http_code}" \
+        --location "$api_url" \
+        --request PUT \
+        --header "X-Vault-Token: $VAULT_TOKEN"
+    )
+
+    if [[ "$http_code" == "204" ]]; then
+        opm-println "Vault sealed."
+    else
+        opm-println-error "Failed to seal vault (HTTP $http_code)"
+        return 1
+    fi
+}
+
+function opm_vault_unseal
+{
+    local json_flag=$1
+
+    require_vault_addr || return $?
+    require_vault_unseal_key || return $?
+
+    local api_url="${VAULT_ADDR}/v1/sys/unseal"
+    local payload
+    payload=$(jq -n --arg key "$VAULT_UNSEAL_KEY" '{"key": $key}')
+
+    opm-println-debug -v "PUT $api_url"
+
+    local response
+    response=$(
+        curl -s \
+        --location "$api_url" \
+        --request PUT \
+        --header "Content-Type: application/json" \
+        --data "$payload"
+    )
+
+    if [[ $? -ne 0 ]]; then
+        opm-println-error "Request failed"
+        return 1
+    fi
+
+    check_response_errors "$response" || return $?
+
+    local sealed
+    sealed=$(echo "$response" | jq -r '.sealed')
+
+    if [[ $json_flag -ne 0 ]]; then
+        echo "$response" | jq
+    else
+        if [[ "$sealed" == "false" ]]; then
+            opm-println "Vault unsealed."
+        else
+            local threshold progress
+            threshold=$(echo "$response" | jq -r '.t')
+            progress=$(echo "$response" | jq -r '.progress')
+            opm-println "Unseal in progress ($progress/$threshold)"
+        fi
+    fi
+}
+
+function opm_vault_seal_state
+{
+    local json_flag=$1
+
+    require_vault_addr || return $?
+
+    local api_url="${VAULT_ADDR}/v1/sys/seal-status"
+
+    opm-println-debug -v "GET $api_url"
+
+    local response
+    response=$(
+        curl -s \
+        --location "$api_url" \
+        --request GET
+    )
+
+    if [[ $? -ne 0 ]]; then
+        opm-println-error "Request failed"
+        return 1
+    fi
+
+    check_response_errors "$response" || return $?
+
+    if [[ $json_flag -ne 0 ]]; then
+        echo "$response" | jq
+    else
+        local sealed type_val initialized
+        sealed=$(echo "$response" | jq -r '.sealed')
+        type_val=$(echo "$response" | jq -r '.type')
+        initialized=$(echo "$response" | jq -r '.initialized')
+        echo "Initialized: $initialized"
+        echo "Sealed: $sealed"
+        echo "Type: $type_val"
+    fi
+}
+
+function opm_vault_main
+{
+    local json_flag=0
+    local silent_flag=0
+    local verbose_flag=0
+    local mount="$DEFAULT_MOUNT"
+    local path="$DEFAULT_PATH"
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -j|--json)
+            json_flag=1
+            shift
+            ;;
+        -p|--path)
+            path="$2"
+            shift 2
+            ;;
+        --path=*)
+            path="${1#*=}"
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -m|--mount)
+            mount="$2"
+            shift 2
+            ;;
+        --mount=*)
+            mount="${1#*=}"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    if [[ $# -eq 0 ]]; then
+        print_usage
+        return 0
+    fi
+
+    local op=$1
+    shift
+
+    case $op in
+    add)
+        opm_vault_add "$json_flag" "$mount" "$path" "$@"
+        ;;
+    get)
+        opm_vault_get "$json_flag" "$mount" "$path"
+        ;;
+    has)
+        opm_vault_has "$mount" "$path"
+        ;;
+    rm)
+        opm_vault_rm "$mount" "$path"
+        ;;
+    ls|list)
+        opm_vault_ls "$json_flag" "$mount" "$path"
+        ;;
+    seal)
+        opm_vault_seal "$json_flag"
+        ;;
+    unseal)
+        opm_vault_unseal "$json_flag"
+        ;;
+    seal-state|seal-status)
+        opm_vault_seal_state "$json_flag"
+        ;;
+    *)
+        opm-println-error "Unknown command: $op"
+        return 1
+        ;;
+    esac
+}
+
+opm_vault_main "$@"

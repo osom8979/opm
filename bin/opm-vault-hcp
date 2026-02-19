@@ -269,7 +269,7 @@ function opm_vault_request
     fi
 }
 
-function opm_vault_main
+function opm_vault_hcp_main
 {
     local json_flag=0
     local auto_yes=0
@@ -357,4 +357,4 @@ function opm_vault_main
     esac
 }
 
-opm_vault_main "$@"
+opm_vault_hcp_main "$@"
