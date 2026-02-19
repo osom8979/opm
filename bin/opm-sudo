@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v sudo &> /dev/null; then
+    opm-println-error "Not found sudo command"
+    exit 1
+fi
+
+sudo env "PATH=$PATH" "$@"
