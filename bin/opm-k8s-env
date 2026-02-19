@@ -62,6 +62,51 @@ function resolve_token
     kubectl create token "$account" -n "$namespace" 2>/dev/null
 }
 
+function check_token_expiry
+{
+    local token=$1
+
+    # Extract payload (second part of JWT)
+    local payload
+    payload=$(echo "$token" | cut -d. -f2)
+
+    # URL-safe base64 to standard base64
+    payload=$(echo "$payload" | tr '_-' '/+')
+
+    # Add padding if needed
+    local mod=$(( ${#payload} % 4 ))
+    if [[ $mod -eq 2 ]]; then
+        payload="${payload}=="
+    elif [[ $mod -eq 3 ]]; then
+        payload="${payload}="
+    fi
+
+    # Decode and extract exp
+    local decoded
+    decoded=$(echo "$payload" | base64 -d 2>/dev/null) || return 1
+
+    local exp
+    exp=$(echo "$decoded" | grep -o '"exp":[0-9]*' | grep -o '[0-9]*')
+
+    if [[ -z "$exp" ]]; then
+        return 1
+    fi
+
+    local now
+    now=$(date +%s)
+
+    local exp_date
+    exp_date=$(date -d "@$exp" '+%Y-%m-%d %H:%M:%S' 2>/dev/null || date -r "$exp" '+%Y-%m-%d %H:%M:%S' 2>/dev/null)
+
+    if [[ "$now" -ge "$exp" ]]; then
+        opm-println-warn "Token expired at $exp_date"
+        return 1
+    fi
+
+    opm-println-info -v -2 "Token expires at $exp_date"
+    return 0
+}
+
 function opm_k8s_env_main
 {
     local server=""
@@ -172,6 +217,8 @@ function opm_k8s_env_main
 
         opm-println-info -v -2 "Token acquired (${#token} chars)"
     fi
+
+    check_token_expiry "$token"
 
     # Resolve CA cert data
     if [[ -z "$ca_cert_file" && -z "$ca_cert_data" ]]; then
