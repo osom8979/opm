@@ -17,6 +17,8 @@ fi
 DEFAULT_ADDR="http://localhost:8200"
 DEFAULT_MOUNT="secret"
 DEFAULT_PATH="default"
+DEFAULT_KEYRING_SERVICE="opm-vault"
+KEYRING_KEYS=(VAULT_ADDR VAULT_TOKEN VAULT_UNSEAL_KEY)
 
 USAGE="
 Usage: opm-vault [options] {add|get|has|rm|ls|seal|unseal|seal-state} [key=value ...]
@@ -27,9 +29,14 @@ Commands:
   has           Check if a secret exists
   rm            Remove a secret
   ls            List secrets at path
+  enable        Enable KV v2 secrets engine at mount path
+  disable       Disable secrets engine at mount path
   seal          Seal the vault
   unseal        Unseal the vault
   seal-state    Get the seal status
+  set-keys      Save VAULT_* credentials to keyring
+  get-keys      Show VAULT_* credentials from keyring
+  del-keys      Remove VAULT_* credentials from keyring
 
 Available options are:
   -h, --help        Print this message.
@@ -68,28 +75,48 @@ function print_usage
     echo "$USAGE"
 }
 
+function resolve_env
+{
+    local name=$1
+    local default_value=${2:-}
+    local current_value="${!name:-}"
+
+    if [[ -n "$current_value" ]]; then
+        opm-println-debug -v "$name from environment"
+        return 0
+    fi
+
+    local keyring_value
+    keyring_value=$(opm-keys --service "$DEFAULT_KEYRING_SERVICE" get "$name" 2>/dev/null)
+    if [[ -n "$keyring_value" ]]; then
+        export "$name=$keyring_value"
+        opm-println-debug -v "$name from keyring"
+        return 0
+    fi
+
+    if [[ -n "$default_value" ]]; then
+        export "$name=$default_value"
+        opm-println-debug -v "$name from default: $default_value"
+        return 0
+    fi
+
+    opm-println-error "$name is not set."
+    return 1
+}
+
 function require_vault_addr
 {
-    if [[ -z "${VAULT_ADDR:-}" ]]; then
-        VAULT_ADDR="$DEFAULT_ADDR"
-        opm-println-debug -v "VAULT_ADDR not set, using default: $DEFAULT_ADDR"
-    fi
+    resolve_env VAULT_ADDR "$DEFAULT_ADDR"
 }
 
 function require_vault_token
 {
-    if [[ -z "${VAULT_TOKEN:-}" ]]; then
-        opm-println-error "VAULT_TOKEN environment variable is not set."
-        return 1
-    fi
+    resolve_env VAULT_TOKEN
 }
 
 function require_vault_unseal_key
 {
-    if [[ -z "${VAULT_UNSEAL_KEY:-}" ]]; then
-        opm-println-error "VAULT_UNSEAL_KEY environment variable is not set."
-        return 1
-    fi
+    resolve_env VAULT_UNSEAL_KEY
 }
 
 function check_response_errors
@@ -285,6 +312,74 @@ function opm_vault_ls
     fi
 }
 
+function opm_vault_enable
+{
+    local json_flag=$1
+    local mount=$2
+
+    require_vault_addr || return $?
+    require_vault_token || return $?
+
+    local api_url="${VAULT_ADDR}/v1/sys/mounts/${mount}"
+    local payload='{"type":"kv","options":{"version":"2"}}'
+
+    opm-println-debug -v "POST $api_url"
+
+    local response
+    response=$(
+        curl -s -w "\n%{http_code}" \
+        --location "$api_url" \
+        --post301 \
+        --request POST \
+        --header "X-Vault-Token: $VAULT_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data "$payload"
+    )
+
+    local http_code
+    http_code=$(echo "$response" | tail -1)
+    response=$(echo "$response" | sed '$d')
+
+    if [[ "$http_code" == "204" || "$http_code" == "200" ]]; then
+        if [[ $json_flag -ne 0 && -n "$response" ]]; then
+            echo "$response" | jq
+        else
+            opm-println "KV v2 secrets engine enabled at: $mount"
+        fi
+    else
+        check_response_errors "$response" || return $?
+        opm-println-error "Failed to enable secrets engine (HTTP $http_code)"
+        return 1
+    fi
+}
+
+function opm_vault_disable
+{
+    local mount=$1
+
+    require_vault_addr || return $?
+    require_vault_token || return $?
+
+    local api_url="${VAULT_ADDR}/v1/sys/mounts/${mount}"
+
+    opm-println-debug -v "DELETE $api_url"
+
+    local http_code
+    http_code=$(
+        curl -s -o /dev/null -w "%{http_code}" \
+        --location "$api_url" \
+        --request DELETE \
+        --header "X-Vault-Token: $VAULT_TOKEN"
+    )
+
+    if [[ "$http_code" == "204" ]]; then
+        opm-println "Secrets engine disabled at: $mount"
+    else
+        opm-println-error "Failed to disable secrets engine (HTTP $http_code)"
+        return 1
+    fi
+}
+
 function opm_vault_seal
 {
     local json_flag=$1
@@ -395,6 +490,42 @@ function opm_vault_seal_state
     fi
 }
 
+function opm_vault_set_keys
+{
+    local key
+    for key in "${KEYRING_KEYS[@]}"; do
+        local value
+        read -r -p "$key? " value
+        if [[ -n "$value" ]]; then
+            opm-keys --service "$DEFAULT_KEYRING_SERVICE" set "$key" "$value"
+        fi
+    done
+}
+
+function opm_vault_get_keys
+{
+    local key
+    for key in "${KEYRING_KEYS[@]}"; do
+        local value
+        value=$(opm-keys --service "$DEFAULT_KEYRING_SERVICE" get "$key" 2>/dev/null)
+        if [[ -n "$value" ]]; then
+            echo "$key=$value"
+        else
+            echo "$key=(not set)"
+        fi
+    done
+}
+
+function opm_vault_del_keys
+{
+    local key
+    for key in "${KEYRING_KEYS[@]}"; do
+        if opm-keys --service "$DEFAULT_KEYRING_SERVICE" rm "$key" 2>/dev/null; then
+            opm-println "$key removed"
+        fi
+    done
+}
+
 function opm_vault_main
 {
     local json_flag=0
@@ -480,6 +611,12 @@ function opm_vault_main
     ls|list)
         opm_vault_ls "$json_flag" "$mount" "$path"
         ;;
+    enable)
+        opm_vault_enable "$json_flag" "$mount"
+        ;;
+    disable)
+        opm_vault_disable "$mount"
+        ;;
     seal)
         opm_vault_seal "$json_flag"
         ;;
@@ -488,6 +625,15 @@ function opm_vault_main
         ;;
     seal-state|seal-status)
         opm_vault_seal_state "$json_flag"
+        ;;
+    set-keys)
+        opm_vault_set_keys
+        ;;
+    get-keys)
+        opm_vault_get_keys
+        ;;
+    del-keys)
+        opm_vault_del_keys
         ;;
     *)
         opm-println-error "Unknown command: $op"
