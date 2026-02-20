@@ -20,14 +20,12 @@ Available options are:
 Auto-detection:
   SSH session (SSH_CONNECTION set) → opm-keys-age
   Otherwise                        → opm-keys-keyring
-
-All other options are forwarded to the selected backend.
 "
 
 function print_usage
 {
     echo "$USAGE"
-    echo "Current backend: $(opm_keys_detect_backend)"
+    echo "Current backend: '$(opm_keys_detect_backend)'"
 }
 
 function opm_keys_detect_backend
@@ -71,6 +69,11 @@ function opm_keys_main
             ;;
         esac
     done
+
+    if [[ $# -eq 0 ]]; then
+        print_usage
+        return 0
+    fi
 
     if [[ -z "$backend" ]]; then
         backend=$(opm_keys_detect_backend)
