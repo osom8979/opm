@@ -23,34 +23,39 @@ KEYRING_KEYS=(VAULT_ADDR VAULT_TOKEN VAULT_UNSEAL_KEY)
 USAGE="
 Usage: opm-vault [options] <command> [key=value ...]
 
-Commands:
-  set           Set a secret (key=value pairs as arguments)
-  get           Get a secret
-  has           Check if a secret exists
-  rm            Remove a secret
-  ls            List secrets at path
-  ls-mount      List mounted secrets engines
-  get-envs      Get all secrets as key=value lines (for .env export)
-  set-envs      Set secrets from key=value lines (file, stdin, or pipe)
-  up            Enable KV v2 secrets engine at mount path
-  down          Disable secrets engine at mount path
-  seal          Seal the vault
-  unseal        Unseal the vault
-  seal-state    Get the seal status
-  set-keys      Save VAULT_* credentials to keyring
-  set-json-keys   Import VAULT_TOKEN and VAULT_UNSEAL_KEY from init JSON file
-  get-keys      Show VAULT_* credentials from keyring
-  del-keys      Remove VAULT_* credentials from keyring
+Secret commands:
+  set  [k=v ...]    Set a secret (overwrites all keys at path)
+  push [k=v ...]    Add/update keys in a secret (keeps existing keys)
+  get               Get a secret
+  pop  [key ...]    Remove specific keys from a secret
+  purge             Remove all data and versions at path
+  import            Import secrets from key=value lines (file, stdin, or pipe)
 
-Available options are:
-  -h, --help        Print this message.
-  -j, --json        If possible, pretty print it in JSON format.
+Management commands:
+  ls-mount          List mounted secrets engines
+  up                Enable KV v2 secrets engine at mount path
+  down              Disable secrets engine at mount path
+
+Seal commands:
+  seal              Seal the vault
+  unseal            Unseal the vault
+  seal-state        Get the seal status
+
+Keyring commands:
+  set-keys          Save VAULT credentials to keyring
+  import-keys       Import VAULT_TOKEN and VAULT_UNSEAL_KEY from init JSON file
+  get-keys          Show VAULT credentials from keyring
+  del-keys          Remove VAULT credentials from keyring
+
+Available options:
+  -h, --help        Print this message
+  -j, --json        Pretty print output in JSON format
   -p, --path {path} Secret path (default: '$DEFAULT_PATH')
-  -s, --silent      Suppresses all messages.
-  -v, --verbose     Be more verbose/talkative during the operation.
   -m, --mount {path}
                     KV secrets engine mount path (default: '$DEFAULT_MOUNT')
-  --                Skip handling options
+  -s, --silent      Suppress all messages
+  -v, --verbose     Be more verbose during the operation
+  --                Stop handling options
 
 Environment variables:
   VAULT_ADDR        Vault server address (default: '$DEFAULT_ADDR')
@@ -58,17 +63,26 @@ Environment variables:
   VAULT_UNSEAL_KEY  Vault unseal key (required for unseal)
 
 Examples:
-  Set a secret:
+  Set a secret (replaces all keys):
     opm-vault -p my/secret set username=admin password=s3cret
+
+  Add a key to existing secret:
+    opm-vault -p my/secret push email=admin@example.com
 
   Get a secret:
     opm-vault -p my/secret get
 
-  List secrets:
-    opm-vault -p my/ ls
+  Remove a specific key:
+    opm-vault -p my/secret pop username
 
-  Check seal status:
-    opm-vault seal-state
+  Remove all data at path:
+    opm-vault -p my/secret purge
+
+  Import from .env file:
+    opm-vault -p my/secret import .env
+
+  List mounted secrets engines:
+    opm-vault ls-mount
 
   Unseal the vault:
     opm-vault unseal
@@ -133,10 +147,14 @@ function check_response_errors
         return 1
     fi
 
-    local errors
-    errors=$(echo "$response" | jq -r '.errors // empty | .[]' 2>/dev/null)
-    if [[ -n "$errors" ]]; then
-        opm-println-error "$errors"
+    if echo "$response" | jq -e 'has("errors")' &>/dev/null; then
+        local errors
+        errors=$(echo "$response" | jq -r '.errors | .[]' 2>/dev/null)
+        if [[ -n "$errors" ]]; then
+            opm-println-error "$errors"
+        else
+            opm-println-error "Request failed (empty error response)"
+        fi
         return 1
     fi
 }
@@ -201,6 +219,65 @@ function opm_vault_set
     fi
 }
 
+function opm_vault_push
+{
+    local json_flag=$1
+    local mount=$2
+    local path=$3
+    shift 3
+
+    require_vault_addr || return $?
+    require_vault_token || return $?
+
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "At least one key=value pair is required."
+        return 1
+    fi
+
+    local json_data="{}"
+    local kv
+    for kv in "$@"; do
+        if [[ "$kv" != *"="* ]]; then
+            opm-println-error "Invalid key=value format: '$kv'"
+            return 1
+        fi
+        local k="${kv%%=*}"
+        local v="${kv#*=}"
+        json_data=$(printf '%s' "$json_data" | jq -c --arg k "$k" --arg v "$v" '. + {($k): $v}')
+    done
+
+    local api_url="${VAULT_ADDR}/v1/${mount}/data/${path}"
+    local payload
+    payload=$(jq -cn --argjson data "$json_data" '{"data": $data}')
+
+    opm-println-debug -v "> PATCH $api_url"
+    opm-println-debug -v "> $payload"
+
+    local response
+    response=$(
+        curl -s \
+        --location "$api_url" \
+        --request PATCH \
+        --header "X-Vault-Token: $VAULT_TOKEN" \
+        --header "Content-Type: application/merge-patch+json" \
+        --data "$payload"
+    )
+
+    if [[ $? -ne 0 ]]; then
+        opm-println-error "Request failed"
+        return 1
+    fi
+
+    opm-println-debug -v "< $response"
+    check_response_errors "$response" || return $?
+
+    if [[ $json_flag -ne 0 ]]; then
+        echo "$response" | jq
+    else
+        opm-println "Secret patched to: $path"
+    fi
+}
+
 function opm_vault_get
 {
     local json_flag=$1
@@ -237,36 +314,90 @@ function opm_vault_get
     fi
 }
 
-function opm_vault_has
+function opm_vault_pop
 {
-    local mount=$1
-    local path=$2
+    local json_flag=$1
+    local mount=$2
+    local path=$3
+    shift 3
 
     require_vault_addr || return $?
     require_vault_token || return $?
+
+    if [[ $# -eq 0 ]]; then
+        opm-println-error "At least one key is required."
+        return 1
+    fi
 
     local api_url="${VAULT_ADDR}/v1/${mount}/data/${path}"
 
     opm-println-debug -v "> GET $api_url"
 
-    local http_code
-    http_code=$(
-        curl -s -o /dev/null -w "%{http_code}" \
+    local response
+    response=$(
+        curl -s \
         --location "$api_url" \
         --request GET \
         --header "X-Vault-Token: $VAULT_TOKEN"
     )
 
-    opm-println-debug -v "< HTTP $http_code"
-
-    if [[ "$http_code" == "200" ]]; then
-        return 0
-    else
+    if [[ $? -ne 0 ]]; then
+        opm-println-error "Request failed"
         return 1
+    fi
+
+    opm-println-debug -v "< $response"
+    check_response_errors "$response" || return $?
+
+    local existing
+    existing=$(echo "$response" | jq -c '.data.data // {}')
+
+    local delete_keys='[]'
+    local key
+    for key in "$@"; do
+        if ! echo "$existing" | jq -e --arg k "$key" 'has($k)' &>/dev/null; then
+            opm-println-error "Key not found: $key"
+            return 1
+        fi
+        delete_keys=$(printf '%s' "$delete_keys" | jq -c --arg k "$key" '. + [$k]')
+    done
+
+    local new_data
+    new_data=$(printf '%s' "$existing" | jq -c --argjson keys "$delete_keys" 'delpaths([$keys[] | [.]])')
+
+    local payload
+    payload=$(jq -cn --argjson data "$new_data" '{"data": $data}')
+
+    opm-println-debug -v "> POST $api_url"
+    opm-println-debug -v "> $payload"
+
+    local write_response
+    write_response=$(
+        curl -s \
+        --location "$api_url" \
+        --post301 \
+        --request POST \
+        --header "X-Vault-Token: $VAULT_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data "$payload"
+    )
+
+    if [[ $? -ne 0 ]]; then
+        opm-println-error "Request failed"
+        return 1
+    fi
+
+    opm-println-debug -v "< $write_response"
+    check_response_errors "$write_response" || return $?
+
+    if [[ $json_flag -ne 0 ]]; then
+        echo "$write_response" | jq
+    else
+        opm-println "Keys removed from $path: $*"
     fi
 }
 
-function opm_vault_rm
+function opm_vault_purge
 {
     local mount=$1
     local path=$2
@@ -296,43 +427,7 @@ function opm_vault_rm
     fi
 }
 
-function opm_vault_ls
-{
-    local json_flag=$1
-    local mount=$2
-    local path=${3:-}
-
-    require_vault_addr || return $?
-    require_vault_token || return $?
-
-    local api_url="${VAULT_ADDR}/v1/${mount}/metadata/${path}"
-
-    opm-println-debug -v "> LIST $api_url"
-
-    local response
-    response=$(
-        curl -s \
-        --location "$api_url" \
-        --request LIST \
-        --header "X-Vault-Token: $VAULT_TOKEN"
-    )
-
-    if [[ $? -ne 0 ]]; then
-        opm-println-error "Request failed"
-        return 1
-    fi
-
-    opm-println-debug -v "< $response"
-    check_response_errors "$response" || return $?
-
-    if [[ $json_flag -ne 0 ]]; then
-        echo "$response" | jq '.data.keys // []'
-    else
-        echo "$response" | jq -r '.data.keys // [] | .[]'
-    fi
-}
-
-function opm_vault_set_envs
+function opm_vault_import
 {
     local json_flag=$1
     local mount=$2
@@ -396,63 +491,6 @@ function opm_vault_set_envs
     else
         opm-println "Secret written to: $path ($count keys)"
     fi
-}
-
-function opm_vault_get_envs
-{
-    local mount=$1
-    local path=${2:-}
-
-    require_vault_addr || return $?
-    require_vault_token || return $?
-
-    local list_url="${VAULT_ADDR}/v1/${mount}/metadata/${path}"
-    local response
-    response=$(
-        curl -s \
-        --location "$list_url" \
-        --request LIST \
-        --header "X-Vault-Token: $VAULT_TOKEN"
-    )
-
-    if [[ $? -ne 0 ]]; then
-        opm-println-error "Request failed" >&2
-        return 1
-    fi
-
-    opm-println-debug -v "> LIST $list_url"
-    opm-println-debug -v "< $response"
-
-    if ! echo "$response" | jq empty 2>/dev/null; then
-        opm-println-error "Invalid response (not JSON)" >&2
-        return 1
-    fi
-
-    local keys
-    keys=$(echo "$response" | jq -r '.data.keys // [] | .[]' 2>/dev/null)
-
-    if [[ -z "$keys" ]]; then
-        return 0
-    fi
-
-    local key
-    while IFS= read -r key; do
-        if [[ "$key" == */ ]]; then
-            opm_vault_get_envs "$mount" "${path}${key}"
-        else
-            local data_url="${VAULT_ADDR}/v1/${mount}/data/${path}${key}"
-            local data_response
-            data_response=$(
-                curl -s \
-                --location "$data_url" \
-                --request GET \
-                --header "X-Vault-Token: $VAULT_TOKEN"
-            )
-            opm-println-debug -v "> GET $data_url"
-            opm-println-debug -v "< $data_response"
-            echo "$data_response" | jq -r '.data.data // {} | to_entries[] | "\(.key)=\(.value)"' 2>/dev/null
-        fi
-    done <<< "$keys"
 }
 
 function opm_vault_ls_mount
@@ -692,12 +730,12 @@ function opm_vault_set_keys
     done
 }
 
-function opm_vault_set_json_keys
+function opm_vault_import_keys
 {
     local file=$1
 
     if [[ -z "$file" ]]; then
-        opm-println-error "Usage: opm-vault set-json-keys <json-file>"
+        opm-println-error "Usage: opm-vault import-keys <json-file>"
         return 1
     fi
 
@@ -820,26 +858,23 @@ function opm_vault_main
     shift
 
     case $op in
-    set|add)
+    set)
         opm_vault_set "$json_flag" "$mount" "$path" "$@"
+        ;;
+    push)
+        opm_vault_push "$json_flag" "$mount" "$path" "$@"
         ;;
     get)
         opm_vault_get "$json_flag" "$mount" "$path"
         ;;
-    has)
-        opm_vault_has "$mount" "$path"
+    import)
+        opm_vault_import "$json_flag" "$mount" "$path" "$@"
         ;;
-    rm)
-        opm_vault_rm "$mount" "$path"
+    pop)
+        opm_vault_pop "$json_flag" "$mount" "$path" "$@"
         ;;
-    ls|list)
-        opm_vault_ls "$json_flag" "$mount" "$path"
-        ;;
-    set-envs)
-        opm_vault_set_envs "$json_flag" "$mount" "$path" "$@"
-        ;;
-    get-envs)
-        opm_vault_get_envs "$mount" "$path"
+    purge)
+        opm_vault_purge "$mount" "$path"
         ;;
     ls-mount|ls-mounts)
         opm_vault_ls_mount "$json_flag"
@@ -862,8 +897,8 @@ function opm_vault_main
     set-keys)
         opm_vault_set_keys
         ;;
-    set-json-keys)
-        opm_vault_set_json_keys "$@"
+    import-keys)
+        opm_vault_import_keys "$@"
         ;;
     get-keys)
         opm_vault_get_keys
