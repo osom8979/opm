@@ -4,13 +4,25 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
+DEFAULT_ENV_FILE="$PWD/.env"
+DEFAULT_POSTGRES_HOST="localhost"
+DEFAULT_POSTGRES_PORT="5432"
+
 USAGE_MESSAGE="
-Run all SQL scripts in a directory sequentially (sorted by filename).
-PostgreSQL connection can be configured via an env file or environment variables.
+Run SQL scripts against a PostgreSQL database.
+Accepts directories (recursively finds *.sql files) and/or individual files.
+All collected files are sorted and executed in order.
 
-  Usage: opm-psql-run-scripts [options] <sql-dir>
+  Usage: opm-psql-run-scripts [options] <path>...
 
-Environment variables (standard Docker PostgreSQL variables):
+  <path>  Directory (recursively finds *.sql) or an individual file.
+          Multiple paths can be specified.
+
+Connection:
+  Uses POSTGRES_URL if set, otherwise builds from individual variables.
+
+Environment variables:
+  POSTGRES_URL        Full connection string (takes precedence)
   POSTGRES_HOST       Database host (default: localhost)
   POSTGRES_PORT       Database port (default: 5432)
   POSTGRES_DB         Database name
@@ -20,15 +32,17 @@ Environment variables (standard Docker PostgreSQL variables):
 Available options are:
   -h, --help             Print this message.
   -e, --env-file=file    Load environment variables from file.
+                         Default: \$PWD/.env (if it exists)
+  -y, --yes              Skip confirmation prompt.
   -v, --verbose          Print each SQL file name before execution.
   -n, --dry-run          Show which scripts would run without executing.
   --                     Skip handling options.
 
 Examples:
   opm-psql-run-scripts ./migrations
-  opm-psql-run-scripts -e .env ./migrations
-  opm-psql-run-scripts -v -e production.env ./sql
-  opm-psql-run-scripts --dry-run ./seeds
+  opm-psql-run-scripts -e .env ./01-tables ./02-functions
+  opm-psql-run-scripts -v schema.sql ./seeds
+  opm-psql-run-scripts --dry-run ./sql/01-types ./sql/02-tables init.sql
 "
 
 function print_usage
@@ -36,13 +50,25 @@ function print_usage
     echo "$USAGE_MESSAGE"
 }
 
+function load_postgres_env
+{
+    local file=$1
+    set -a
+    # shellcheck disable=SC1090
+    source <(grep -E '^(POSTGRES_)' "$file" | grep -v '^#')
+    set +a
+}
+
 function opm_psql_run_scripts_main
 {
     local verbose=0
     local dry_run=0
+    local skip_confirm=0
     local env_file=""
+    local env_file_set=0
+    local paths=()
 
-    while [[ -n $1 ]]; do
+    while [[ $# -gt 0 ]]; do
         case $1 in
         -h|--help)
             print_usage
@@ -50,10 +76,16 @@ function opm_psql_run_scripts_main
             ;;
         -e)
             env_file=$2
+            env_file_set=1
             shift 2
             ;;
         --env-file=*)
             env_file=${1#--env-file=}
+            env_file_set=1
+            shift
+            ;;
+        -y|--yes)
+            skip_confirm=1
             shift
             ;;
         -v|--verbose)
@@ -74,96 +106,115 @@ function opm_psql_run_scripts_main
             return 1
             ;;
         *)
-            break
+            paths+=("$1")
+            shift
             ;;
         esac
     done
 
-    if [[ $# -lt 1 ]]; then
-        opm-println-error "Missing required argument: <sql-dir>"
+    # Remaining args after -- are also paths
+    while [[ $# -gt 0 ]]; do
+        paths+=("$1")
+        shift
+    done
+
+    if [[ ${#paths[@]} -eq 0 ]]; then
+        opm-println-error "Missing required argument: <path>..."
         print_usage
         return 1
     fi
 
-    local sql_dir=$1
-
-    # Load environment variables from env file if specified
-    if [[ -n "$env_file" ]]; then
+    # Load env file: explicit (-e) or default ($PWD/.env)
+    if [[ $env_file_set -eq 1 ]]; then
         if [[ ! -f "$env_file" ]]; then
             opm-println-error "Env file not found: $env_file"
             return 1
         fi
-        set -a
-        # shellcheck disable=SC1090
-        source <(grep -E '^POSTGRES_' "$env_file" | grep -v '^#')
-        set +a
+        load_postgres_env "$env_file"
+    elif [[ -f "$DEFAULT_ENV_FILE" ]]; then
+        load_postgres_env "$DEFAULT_ENV_FILE"
     fi
 
-    if [[ ! -d "$sql_dir" ]]; then
-        opm-println-error "SQL directory not found: $sql_dir"
-        return 1
+    # Collect SQL files from all paths
+    local sql_files=()
+    for p in "${paths[@]}"; do
+        if [[ -f "$p" ]]; then
+            sql_files+=("$(cd "$(dirname "$p")" && pwd)/$(basename "$p")")
+        elif [[ -d "$p" ]]; then
+            while IFS= read -r -d '' f; do
+                sql_files+=("$f")
+            done < <(find "$p" -name '*.sql' -print0 | sort -z)
+        else
+            opm-println-error "Path not found: $p"
+            return 1
+        fi
+    done
+
+    if [[ ${#sql_files[@]} -eq 0 ]]; then
+        opm-println-warn "No .sql files found"
+        return 0
     fi
 
-    local host=${POSTGRES_HOST:-localhost}
-    local port=${POSTGRES_PORT:-5432}
-    local db=${POSTGRES_DB}
-    local user=${POSTGRES_USER}
+    # Build connection string
+    local db_url="${POSTGRES_URL:-}"
+    if [[ -z "$db_url" ]]; then
+        local host=${POSTGRES_HOST:-$DEFAULT_POSTGRES_HOST}
+        local port=${POSTGRES_PORT:-$DEFAULT_POSTGRES_PORT}
+        local db=${POSTGRES_DB:-}
+        local user=${POSTGRES_USER:-}
+        local password=${POSTGRES_PASSWORD:-}
 
-    if [[ -z "$db" ]]; then
-        opm-println-error "POSTGRES_DB is not set"
-        return 1
+        if [[ -z "$db" ]]; then
+            opm-println-error "POSTGRES_DB is not set"
+            return 1
+        fi
+        if [[ -z "$user" ]]; then
+            opm-println-error "POSTGRES_USER is not set"
+            return 1
+        fi
+
+        db_url="postgresql://${user}:${password}@${host}:${port}/${db}"
     fi
 
-    if [[ -z "$user" ]]; then
-        opm-println-error "POSTGRES_USER is not set"
-        return 1
-    fi
+    # Display target info
+    local display_host
+    display_host=$(echo "$db_url" | sed 's|.*@||;s|/.*||')
 
     if ! command -v psql &> /dev/null; then
         opm-println-error "psql is not installed"
         return 1
     fi
 
-    # Collect and sort SQL files
-    local sql_files=()
-    while IFS= read -r -d '' f; do
-        sql_files+=("$f")
-    done < <(find "$sql_dir" -maxdepth 1 -name '*.sql' -print0 | sort -z)
+    # Show file list and confirm
+    opm-println-info "Target: $display_host"
+    opm-println-info "Scripts: ${#sql_files[@]} file(s)"
+    for f in "${sql_files[@]}"; do
+        opm-println "  $f"
+    done
+    echo ""
 
-    if [[ ${#sql_files[@]} -eq 0 ]]; then
-        opm-println-warn "No .sql files found in $sql_dir"
-        return 0
+    if [[ $skip_confirm -eq 0 ]]; then
+        if ! opm-yes-or-no "Proceed?"; then
+            opm-println-warn "Aborted"
+            return 0
+        fi
+        echo ""
     fi
-
-    if [[ $dry_run -eq 1 ]]; then
-        opm-println-info "[dry-run] Target: $user@$host:$port/$db"
-        for f in "${sql_files[@]}"; do
-            opm-println "  $(basename "$f")"
-        done
-        return 0
-    fi
-
-    if [[ $verbose -eq 1 ]]; then
-        opm-println-info "Target: $user@$host:$port/$db"
-        opm-println-info "Scripts: ${#sql_files[@]} file(s)"
-    fi
-
-    export PGPASSWORD="$POSTGRES_PASSWORD"
 
     local failed=0
     for f in "${sql_files[@]}"; do
         if [[ $verbose -eq 1 ]]; then
-            opm-println-info "Running: $(basename "$f")"
+            opm-println-info "Running: $f"
         fi
 
-        if ! psql -h "$host" -p "$port" -U "$user" -d "$db" -f "$f"; then
-            opm-println-error "Failed: $(basename "$f")"
+        if [[ $dry_run -eq 1 ]]; then
+            opm-println "[dry-run] psql -f $f"
+        elif ! PGDATABASE="$db_url" psql -f "$f" --quiet --set ON_ERROR_STOP=1; then
+            opm-println-error "Failed: $f"
             failed=1
             break
         fi
     done
-
-    unset PGPASSWORD
 
     if [[ $failed -ne 0 ]]; then
         return 1
