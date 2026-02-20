@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_SERVICE="opm"
+
+USAGE="
+Usage: opm-keys [options] {get|set|rm} key [value]
+
+Dispatcher for key storage backends.
+
+Available options are:
+  -h, --help              Print this message.
+  -b, --backend {name}    Backend: 'age' or 'keyring' (default: auto-detect)
+  --service {name}        Service namespace (default: '$DEFAULT_SERVICE')
+  --                      Skip handling options
+
+Auto-detection:
+  SSH session (SSH_CONNECTION set) → opm-keys-age
+  Otherwise                        → opm-keys-keyring
+
+All other options are forwarded to the selected backend.
+"
+
+function print_usage
+{
+    echo "$USAGE"
+    echo "Current backend: $(opm_keys_detect_backend)"
+}
+
+function opm_keys_detect_backend
+{
+    if [[ -n "$SSH_CONNECTION" ]]; then
+        echo "age"
+    else
+        echo "keyring"
+    fi
+}
+
+function opm_keys_main
+{
+    local backend=""
+    local service="$DEFAULT_SERVICE"
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -b|--backend)
+            backend="$2"
+            shift 2
+            ;;
+        --backend=*)
+            backend="${1#*=}"
+            shift
+            ;;
+        --service)
+            service="$2"
+            shift 2
+            ;;
+        --service=*)
+            service="${1#*=}"
+            shift
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ -z "$backend" ]]; then
+        backend=$(opm_keys_detect_backend)
+    fi
+
+    case $backend in
+    age)
+        opm-keys-age --service "$service" "$@"
+        ;;
+    keyring)
+        opm-keys-keyring --service "$service" "$@"
+        ;;
+    *)
+        opm-println-error "Unknown backend: $backend"
+        return 1
+        ;;
+    esac
+}
+
+opm_keys_main "$@"
