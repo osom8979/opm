@@ -38,6 +38,7 @@ Commands:
   unseal        Unseal the vault
   seal-state    Get the seal status
   set-keys      Save VAULT_* credentials to keyring
+  set-json-keys   Import VAULT_TOKEN and VAULT_UNSEAL_KEY from init JSON file
   get-keys      Show VAULT_* credentials from keyring
   del-keys      Remove VAULT_* credentials from keyring
 
@@ -689,6 +690,40 @@ function opm_vault_set_keys
     done
 }
 
+function opm_vault_set_json_keys
+{
+    local file=$1
+
+    if [[ -z "$file" ]]; then
+        opm-println-error "Usage: opm-vault set-json-keys <json-file>"
+        return 1
+    fi
+
+    if [[ ! -f "$file" ]]; then
+        opm-println-error "File not found: $file"
+        return 1
+    fi
+
+    local token unseal_key
+    token=$(jq -r '.root_token // empty' "$file")
+    unseal_key=$(jq -r '.keys[0] // empty' "$file")
+
+    if [[ -z "$token" ]]; then
+        opm-println-error "root_token not found in $file"
+        return 1
+    fi
+    if [[ -z "$unseal_key" ]]; then
+        opm-println-error "keys[0] not found in $file"
+        return 1
+    fi
+
+    opm-keys --service "$DEFAULT_KEYRING_SERVICE" set VAULT_TOKEN "$token"
+    opm-println "VAULT_TOKEN set"
+
+    opm-keys --service "$DEFAULT_KEYRING_SERVICE" set VAULT_UNSEAL_KEY "$unseal_key"
+    opm-println "VAULT_UNSEAL_KEY set"
+}
+
 function opm_vault_get_keys
 {
     local key
@@ -824,6 +859,9 @@ function opm_vault_main
         ;;
     set-keys)
         opm_vault_set_keys
+        ;;
+    set-json-keys)
+        opm_vault_set_json_keys "$@"
         ;;
     get-keys)
         opm_vault_get_keys
