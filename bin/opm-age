@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if ! command -v age &> /dev/null; then
+    opm-println-error "Not found age command"
+    exit 1
+fi
+
+if ! command -v age-keygen &> /dev/null; then
+    opm-println-error "Not found age-keygen command"
+    exit 1
+fi
+
+DEFAULT_KEY_NAME="default"
+DEFAULT_KEY_DIR="$(opm-home)/var/age"
+
+USAGE="
+Usage: opm-age [options] <command> [data]
+
+Commands:
+  keygen              Generate a new age key
+  encrypt             Encrypt data (argv or stdin)
+  decrypt             Decrypt data (argv or stdin)
+
+Available options are:
+  -h, --help          Print this message
+  -k, --key <name>    Key name (default: '$DEFAULT_KEY_NAME')
+  --                  Skip handling options
+
+Command aliases:
+  kg        keygen
+  e|enc     encrypt
+  d|dec     decrypt
+
+Examples:
+  Generate a key:
+    opm-age keygen
+    opm-age -k mykey keygen
+
+  Encrypt/decrypt (argv):
+    opm-age encrypt \"hello world\"
+    opm-age decrypt \"<base64_output>\"
+
+  Encrypt/decrypt (pipe):
+    echo \"hello world\" | opm-age encrypt
+    echo \"<base64_output>\" | opm-age decrypt
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function opm_age_keygen
+{
+    local key_name=$1
+    local key_file="${DEFAULT_KEY_DIR}/${key_name}.key"
+
+    if [[ -f "$key_file" ]]; then
+        opm-println-error "Key already exists: $key_file"
+        return 1
+    fi
+
+    mkdir -p "$DEFAULT_KEY_DIR"
+    age-keygen -o "$key_file" 2>&1
+    chmod 600 "$key_file"
+    opm-println "Key generated: $key_file"
+}
+
+function opm_age_get_pubkey
+{
+    local key_file=$1
+    grep "public key:" "$key_file" | awk '{print $NF}'
+}
+
+function opm_age_encrypt
+{
+    local key_name=$1
+    local data=$2
+    local key_file="${DEFAULT_KEY_DIR}/${key_name}.key"
+
+    if [[ ! -f "$key_file" ]]; then
+        opm-println-error "Key not found: $key_file"
+        return 1
+    fi
+
+    local pubkey
+    pubkey=$(opm_age_get_pubkey "$key_file")
+    if [[ -z "$pubkey" ]]; then
+        opm-println-error "Failed to extract public key from: $key_file"
+        return 1
+    fi
+
+    if [[ -n "$data" ]]; then
+        echo -n "$data" | age -r "$pubkey" | base64 -w 0
+    else
+        age -r "$pubkey" | base64 -w 0
+    fi
+    echo
+}
+
+function opm_age_decrypt
+{
+    local key_name=$1
+    local data=$2
+    local key_file="${DEFAULT_KEY_DIR}/${key_name}.key"
+
+    if [[ ! -f "$key_file" ]]; then
+        opm-println-error "Key not found: $key_file"
+        return 1
+    fi
+
+    if [[ -n "$data" ]]; then
+        echo "$data" | base64 -d | age -d -i "$key_file"
+    else
+        base64 -d | age -d -i "$key_file"
+    fi
+}
+
+function opm_age_main
+{
+    local key_name="$DEFAULT_KEY_NAME"
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -k|--key)
+            key_name="$2"
+            shift 2
+            ;;
+        --key=*)
+            key_name="${1#*=}"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $# -eq 0 ]]; then
+        print_usage
+        return 0
+    fi
+
+    local op=$1
+    shift
+
+    case $op in
+    kg|keygen)
+        opm_age_keygen "$key_name"
+        ;;
+    e|enc|encrypt)
+        opm_age_encrypt "$key_name" "$1"
+        ;;
+    d|dec|decrypt)
+        opm_age_decrypt "$key_name" "$1"
+        ;;
+    *)
+        opm-println-error "Unknown command: $op"
+        return 1
+        ;;
+    esac
+}
+
+opm_age_main "$@"
