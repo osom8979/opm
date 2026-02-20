@@ -7,7 +7,7 @@ fi
 DEFAULT_SERVICE="opm"
 
 USAGE="
-Usage: opm-keys [options] {get|set|rm} key
+Usage: opm-keys-keyring [options] {get|set|rm} key
 
 Commands:
   get       Obtain the value from keyring.
@@ -25,7 +25,7 @@ function print_usage
     echo "$USAGE"
 }
 
-function opm_keys_get
+function opm_keys_keyring_get
 {
     local service=$1
     local key=$2
@@ -41,7 +41,7 @@ function opm_keys_get
     fi
 }
 
-function opm_keys_set
+function opm_keys_keyring_set
 {
     local service=$1
     local key=$2
@@ -65,7 +65,7 @@ function opm_keys_set
     fi
 }
 
-function opm_keys_rm
+function opm_keys_keyring_rm
 {
     local service=$1
     local key=$2
@@ -81,7 +81,7 @@ function opm_keys_rm
     fi
 }
 
-function opm_keys_main
+function opm_keys_keyring_main
 {
     local service="$DEFAULT_SERVICE"
 
@@ -119,13 +119,13 @@ function opm_keys_main
 
     case $op in
     g|get)
-        opm_keys_get "$service" "$1"
+        opm_keys_keyring_get "$service" "$1"
         ;;
     s|set)
-        opm_keys_set "$service" "$1" "$2"
+        opm_keys_keyring_set "$service" "$1" "$2"
         ;;
     d|del|delete|r|rm|remove)
-        opm_keys_rm "$service" "$1"
+        opm_keys_keyring_rm "$service" "$1"
         ;;
     *)
         print_usage
@@ -133,4 +133,4 @@ function opm_keys_main
     esac
 }
 
-opm_keys_main "$@"
+opm_keys_keyring_main "$@"
