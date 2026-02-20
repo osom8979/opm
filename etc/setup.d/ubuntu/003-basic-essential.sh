@@ -21,6 +21,7 @@ PACKAGES=(
     git
     gnome-control-center
     htop
+    jq
     language-pack-ko
     libsecret-1-dev
     lsof
