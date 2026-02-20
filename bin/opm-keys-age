@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_SERVICE="opm"
+DEFAULT_KEY_NAME="default"
+DEFAULT_KEYS_DIR="$(opm-home)/var/keys"
+
+USAGE="
+Usage: opm-keys-age [options] {get|set|rm} key [value]
+
+Commands:
+  get       Obtain the value (decrypt from age-encrypted file).
+  set       Save the value (encrypt and store with age).
+  rm        Remove key
+
+Available options are:
+  -h, --help              Print this message.
+  -k, --key {name}        Age key name (default: '$DEFAULT_KEY_NAME')
+  --service {name}        Service namespace (default: '$DEFAULT_SERVICE')
+  --                      Skip handling options
+"
+
+function print_usage
+{
+    echo "$USAGE"
+}
+
+function opm_keys_age_get
+{
+    local age_key=$1
+    local service=$2
+    local key=$3
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    local key_file="${DEFAULT_KEYS_DIR}/${service}/${key}.enc"
+    if [[ ! -f "$key_file" ]]; then
+        opm-println-error "Key not found: ${service}/${key}"
+        return 1
+    fi
+
+    local encrypted
+    encrypted=$(< "$key_file")
+    if ! opm-age -k "$age_key" decrypt "$encrypted"; then
+        opm-println-error "Failed to decrypt key: ${service}/${key}"
+        return 1
+    fi
+}
+
+function opm_keys_age_set
+{
+    local age_key=$1
+    local service=$2
+    local key=$3
+    local value=$4
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    local service_dir="${DEFAULT_KEYS_DIR}/${service}"
+    mkdir -p "$service_dir"
+
+    local encrypted
+    if [[ -n "$value" ]]; then
+        encrypted=$(echo -n "$value" | opm-age -k "$age_key" encrypt)
+    else
+        encrypted=$(opm-age -k "$age_key" encrypt)
+    fi
+
+    if [[ -z "$encrypted" ]]; then
+        opm-println-error "Failed to encrypt value for key: ${service}/${key}"
+        return 1
+    fi
+
+    local key_file="${service_dir}/${key}.enc"
+    echo "$encrypted" > "$key_file"
+    chmod 600 "$key_file"
+}
+
+function opm_keys_age_rm
+{
+    local service=$1
+    local key=$2
+
+    if [[ -z "$key" ]]; then
+        opm-println-error "The key argument is required."
+        return 1
+    fi
+
+    local key_file="${DEFAULT_KEYS_DIR}/${service}/${key}.enc"
+    if [[ ! -f "$key_file" ]]; then
+        opm-println-error "Key not found: ${service}/${key}"
+        return 1
+    fi
+
+    rm -f "$key_file"
+}
+
+function opm_keys_age_main
+{
+    local service="$DEFAULT_SERVICE"
+    local age_key="$DEFAULT_KEY_NAME"
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -k|--key)
+            age_key="$2"
+            shift 2
+            ;;
+        --key=*)
+            age_key="${1#*=}"
+            shift
+            ;;
+        --service)
+            service="$2"
+            shift 2
+            ;;
+        --service=*)
+            service="${1#*=}"
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $# -eq 0 ]]; then
+        print_usage
+        return 0
+    fi
+
+    local op=$1
+    shift
+
+    case $op in
+    g|get)
+        opm_keys_age_get "$age_key" "$service" "$1"
+        ;;
+    s|set)
+        opm_keys_age_set "$age_key" "$service" "$1" "$2"
+        ;;
+    d|del|delete|r|rm|remove)
+        opm_keys_age_rm "$service" "$1"
+        ;;
+    *)
+        print_usage
+        return 1
+    esac
+}
+
+opm_keys_age_main "$@"
