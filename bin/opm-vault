@@ -682,8 +682,10 @@ function opm_vault_set_keys
 {
     local key
     for key in "${KEYRING_KEYS[@]}"; do
+        local current
+        current=$(opm-keys --service "$DEFAULT_KEYRING_SERVICE" get "$key" 2>/dev/null)
         local value
-        read -r -p "$key? " value
+        read -r -e -i "$current" -p "$key? " value
         if [[ -n "$value" ]]; then
             opm-keys --service "$DEFAULT_KEYRING_SERVICE" set "$key" "$value"
         fi
