@@ -7,6 +7,8 @@ fi
 DEFAULT_ENV_FILE="$PWD/.env"
 DEFAULT_POSTGRES_HOST="localhost"
 DEFAULT_POSTGRES_PORT="5432"
+DEFAULT_POSTGRES_DB="postgres"
+DEFAULT_POSTGRES_USER="postgres"
 
 USAGE_MESSAGE="
 Run SQL scripts against a PostgreSQL database.
@@ -23,10 +25,10 @@ Connection:
 
 Environment variables:
   POSTGRES_URL        Full connection string (takes precedence)
-  POSTGRES_HOST       Database host (default: localhost)
-  POSTGRES_PORT       Database port (default: 5432)
-  POSTGRES_DB         Database name
-  POSTGRES_USER       Database user
+  POSTGRES_HOST       Database host (default: $DEFAULT_POSTGRES_HOST)
+  POSTGRES_PORT       Database port (default: $DEFAULT_POSTGRES_PORT)
+  POSTGRES_DB         Database name (default: $DEFAULT_POSTGRES_DB)
+  POSTGRES_USER       Database user (default: $DEFAULT_POSTGRES_USER)
   POSTGRES_PASSWORD   Database password
 
 Available options are:
@@ -155,14 +157,33 @@ function opm_psql_run_scripts_main
         return 0
     fi
 
-    # Build connection string
+    # Build connection parameters (password passed via PGPASSWORD, not in args)
+    local pg_password=""
+    local pg_args=()
+    local display_host
+
     local db_url="${POSTGRES_URL:-}"
-    if [[ -z "$db_url" ]]; then
+    if [[ -n "$db_url" ]]; then
+        local userinfo_and_rest=${db_url#*://}
+        local userinfo=${userinfo_and_rest%%@*}
+        local host_and_rest=${userinfo_and_rest#*@}
+        local scheme=${db_url%%://*}
+
+        if [[ "$userinfo" == *:* ]]; then
+            pg_password=${userinfo#*:}
+            local url_user=${userinfo%%:*}
+            pg_args=("${scheme}://${url_user}@${host_and_rest}")
+        else
+            pg_args=("$db_url")
+        fi
+
+        display_host=${host_and_rest%%/*}
+    else
         local host=${POSTGRES_HOST:-$DEFAULT_POSTGRES_HOST}
         local port=${POSTGRES_PORT:-$DEFAULT_POSTGRES_PORT}
-        local db=${POSTGRES_DB:-}
-        local user=${POSTGRES_USER:-}
-        local password=${POSTGRES_PASSWORD:-}
+        local db=${POSTGRES_DB:-$DEFAULT_POSTGRES_DB}
+        local user=${POSTGRES_USER:-$DEFAULT_POSTGRES_USER}
+        pg_password=${POSTGRES_PASSWORD:-}
 
         if [[ -z "$db" ]]; then
             opm-println-error "POSTGRES_DB is not set"
@@ -173,12 +194,11 @@ function opm_psql_run_scripts_main
             return 1
         fi
 
-        db_url="postgresql://${user}:${password}@${host}:${port}/${db}"
+        pg_args=(-h "$host" -p "$port" -d "$db" -U "$user")
+        display_host="$host:$port"
     fi
 
-    # Display target info
-    local display_host
-    display_host=$(echo "$db_url" | sed 's|.*@||;s|/.*||')
+    pg_args+=(--quiet --set ON_ERROR_STOP=1)
 
     if ! command -v psql &> /dev/null; then
         opm-println-error "psql is not installed"
@@ -188,9 +208,12 @@ function opm_psql_run_scripts_main
     # Show file list and confirm
     opm-println-info "Target: $display_host"
     opm-println-info "Scripts: ${#sql_files[@]} file(s)"
-    for f in "${sql_files[@]}"; do
-        opm-println "  $f"
-    done
+
+    if [[ $verbose -eq 1 ]]; then
+        for f in "${sql_files[@]}"; do
+            opm-println "  $f"
+        done
+    fi
     echo ""
 
     if [[ $skip_confirm -eq 0 ]]; then
@@ -204,15 +227,15 @@ function opm_psql_run_scripts_main
     local failed=0
     for f in "${sql_files[@]}"; do
         if [[ $verbose -eq 1 ]]; then
-            opm-println-info "Running: $f"
+            opm-println "psql ${pg_args[*]} -f \"$f\""
         fi
 
-        if [[ $dry_run -eq 1 ]]; then
-            opm-println "[dry-run] psql -f $f"
-        elif ! PGDATABASE="$db_url" psql -f "$f" --quiet --set ON_ERROR_STOP=1; then
-            opm-println-error "Failed: $f"
-            failed=1
-            break
+        if [[ $dry_run -eq 0 ]]; then
+            if ! PGPASSWORD="$pg_password" psql "${pg_args[@]}" -f "$f"; then
+                opm-println-error "Failed: $f"
+                failed=1
+                break
+            fi
         fi
     done
 
