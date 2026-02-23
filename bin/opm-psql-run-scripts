@@ -201,7 +201,8 @@ function opm_psql_run_scripts_main
     pg_args+=(--quiet --set ON_ERROR_STOP=1)
 
     if ! command -v psql &> /dev/null; then
-        opm-println-error "psql is not installed"
+        opm-println-error "Not found psql command"
+        opm-println-error "Install: sudo apt install postgresql-client"
         return 1
     fi
 
