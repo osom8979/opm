@@ -1,0 +1,150 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_ENV_FILE="$PWD/.env"
+DEFAULT_POSTGRES_HOST="localhost"
+DEFAULT_POSTGRES_PORT="5432"
+DEFAULT_POSTGRES_DB="postgres"
+DEFAULT_POSTGRES_USER="postgres"
+
+USAGE_MESSAGE="
+Thin wrapper around psql that loads connection settings from environment
+variables (or a .env file) and forwards everything else to psql.
+
+  Usage: opm-psql [options] [-- psql-args...]
+
+Connection:
+  Uses POSTGRES_URL if set, otherwise builds from individual variables.
+
+Environment variables:
+  POSTGRES_URL        Full connection string (takes precedence)
+  POSTGRES_HOST       Database host (default: $DEFAULT_POSTGRES_HOST)
+  POSTGRES_PORT       Database port (default: $DEFAULT_POSTGRES_PORT)
+  POSTGRES_DB         Database name (default: $DEFAULT_POSTGRES_DB)
+  POSTGRES_USER       Database user (default: $DEFAULT_POSTGRES_USER)
+  POSTGRES_PASSWORD   Database password
+
+Available options are:
+  -h, --help             Print this message.
+  -e, --env-file=file    Load environment variables from file.
+                         Default: \$PWD/.env (if it exists)
+  --                     Pass remaining arguments directly to psql.
+
+Examples:
+  opm-psql
+  opm-psql -e .env.production
+  opm-psql -- -c 'SELECT 1'
+  opm-psql -- -f schema.sql
+  opm-psql -- -l
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function load_postgres_env
+{
+    local file=$1
+    set -a
+    # shellcheck disable=SC1090
+    source <(grep -E '^(POSTGRES_)' "$file" | grep -v '^#')
+    set +a
+}
+
+function opm_psql_main
+{
+    local env_file=""
+    local env_file_set=0
+    local psql_args=()
+
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -e)
+            env_file=$2
+            env_file_set=1
+            shift 2
+            ;;
+        --env-file=*)
+            env_file=${1#--env-file=}
+            env_file_set=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    # Remaining args are forwarded to psql
+    psql_args=("$@")
+
+    # Load env file: explicit (-e) or default ($PWD/.env)
+    if [[ $env_file_set -eq 1 ]]; then
+        if [[ ! -f "$env_file" ]]; then
+            opm-println-error "Env file not found: $env_file"
+            return 1
+        fi
+        load_postgres_env "$env_file"
+    elif [[ -f "$DEFAULT_ENV_FILE" ]]; then
+        load_postgres_env "$DEFAULT_ENV_FILE"
+    fi
+
+    # Build connection parameters
+    local pg_password=""
+    local pg_args=()
+
+    local db_url="${POSTGRES_URL:-}"
+    if [[ -n "$db_url" ]]; then
+        local userinfo_and_rest=${db_url#*://}
+        local userinfo=${userinfo_and_rest%%@*}
+        local host_and_rest=${userinfo_and_rest#*@}
+        local scheme=${db_url%%://*}
+
+        if [[ "$userinfo" == *:* ]]; then
+            pg_password=${userinfo#*:}
+            local url_user=${userinfo%%:*}
+            pg_args=("${scheme}://${url_user}@${host_and_rest}")
+        else
+            pg_args=("$db_url")
+        fi
+    else
+        local host=${POSTGRES_HOST:-$DEFAULT_POSTGRES_HOST}
+        local port=${POSTGRES_PORT:-$DEFAULT_POSTGRES_PORT}
+        local db=${POSTGRES_DB:-$DEFAULT_POSTGRES_DB}
+        local user=${POSTGRES_USER:-$DEFAULT_POSTGRES_USER}
+        pg_password=${POSTGRES_PASSWORD:-}
+
+        if [[ -z "$db" ]]; then
+            opm-println-error "POSTGRES_DB is not set"
+            return 1
+        fi
+        if [[ -z "$user" ]]; then
+            opm-println-error "POSTGRES_USER is not set"
+            return 1
+        fi
+
+        pg_args=(-h "$host" -p "$port" -d "$db" -U "$user")
+    fi
+
+    if ! command -v psql &> /dev/null; then
+        opm-println-error "Not found psql command"
+        opm-println-error "Install: sudo apt install postgresql-client"
+        return 1
+    fi
+
+    PGPASSWORD="$pg_password" exec psql "${pg_args[@]}" "${psql_args[@]}"
+}
+
+opm_psql_main "$@"
