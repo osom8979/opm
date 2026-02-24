@@ -4,47 +4,37 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-DEFAULT_ENV_FILE="$PWD/.env"
-DEFAULT_POSTGRES_HOST="localhost"
-DEFAULT_POSTGRES_PORT="5432"
-DEFAULT_POSTGRES_DB="postgres"
-DEFAULT_POSTGRES_USER="postgres"
+DEFAULT_PATTERN="*.sql"
 
 USAGE_MESSAGE="
 Run SQL scripts against a PostgreSQL database.
-Accepts directories (recursively finds *.sql files) and/or individual files.
+Accepts directories (recursively finds files by pattern) and/or individual files.
 All collected files are sorted and executed in order.
 
   Usage: opm-psql-run-scripts [options] <path>...
 
-  <path>  Directory (recursively finds *.sql) or an individual file.
+  <path>  Directory (recursively finds files by pattern) or an individual file.
           Multiple paths can be specified.
 
 Connection:
-  Uses POSTGRES_URL if set, otherwise builds from individual variables.
-
-Environment variables:
-  POSTGRES_URL        Full connection string (takes precedence)
-  POSTGRES_HOST       Database host (default: $DEFAULT_POSTGRES_HOST)
-  POSTGRES_PORT       Database port (default: $DEFAULT_POSTGRES_PORT)
-  POSTGRES_DB         Database name (default: $DEFAULT_POSTGRES_DB)
-  POSTGRES_USER       Database user (default: $DEFAULT_POSTGRES_USER)
-  POSTGRES_PASSWORD   Database password
+  Delegates to opm-psql. See opm-psql --help for connection details.
 
 Available options are:
   -h, --help             Print this message.
   -e, --env-file=file    Load environment variables from file.
                          Default: \$PWD/.env (if it exists)
+  --no-env               Skip loading any .env file.
+  --show-command         Print the psql command before executing.
   -y, --yes              Skip confirmation prompt.
   -v, --verbose          Print each SQL file name before execution.
-  -n, --dry-run          Show which scripts would run without executing.
+  -p, --pattern=glob     File pattern for directory search (default: $DEFAULT_PATTERN).
+  -x, --exclude=glob     Exclude files matching glob (repeatable).
   --                     Skip handling options.
 
 Examples:
   opm-psql-run-scripts ./migrations
   opm-psql-run-scripts -e .env ./01-tables ./02-functions
   opm-psql-run-scripts -v schema.sql ./seeds
-  opm-psql-run-scripts --dry-run ./sql/01-types ./sql/02-tables init.sql
 "
 
 function print_usage
@@ -52,22 +42,15 @@ function print_usage
     echo "$USAGE_MESSAGE"
 }
 
-function load_postgres_env
-{
-    local file=$1
-    set -a
-    # shellcheck disable=SC1090
-    source <(grep -E '^(POSTGRES_)' "$file" | grep -v '^#')
-    set +a
-}
-
 function opm_psql_run_scripts_main
 {
     local verbose=0
-    local dry_run=0
     local skip_confirm=0
     local env_file=""
-    local env_file_set=0
+    local env_file_set="auto"
+    local show_command=0
+    local file_pattern="$DEFAULT_PATTERN"
+    local exclude_patterns=()
     local paths=()
 
     while [[ $# -gt 0 ]]; do
@@ -78,12 +61,20 @@ function opm_psql_run_scripts_main
             ;;
         -e)
             env_file=$2
-            env_file_set=1
+            env_file_set="explicit"
             shift 2
             ;;
         --env-file=*)
             env_file=${1#--env-file=}
-            env_file_set=1
+            env_file_set="explicit"
+            shift
+            ;;
+        --no-env)
+            env_file_set="skip"
+            shift
+            ;;
+        --show-command)
+            show_command=1
             shift
             ;;
         -y|--yes)
@@ -94,8 +85,20 @@ function opm_psql_run_scripts_main
             verbose=1
             shift
             ;;
-        -n|--dry-run)
-            dry_run=1
+        -p)
+            file_pattern=$2
+            shift 2
+            ;;
+        --pattern=*)
+            file_pattern=${1#--pattern=}
+            shift
+            ;;
+        -x)
+            exclude_patterns+=("$2")
+            shift 2
+            ;;
+        --exclude=*)
+            exclude_patterns+=("${1#--exclude=}")
             shift
             ;;
         --)
@@ -126,96 +129,61 @@ function opm_psql_run_scripts_main
         return 1
     fi
 
-    # Load env file: explicit (-e) or default ($PWD/.env)
-    if [[ $env_file_set -eq 1 ]]; then
-        if [[ ! -f "$env_file" ]]; then
-            opm-println-error "Env file not found: $env_file"
-            return 1
-        fi
-        load_postgres_env "$env_file"
-    elif [[ -f "$DEFAULT_ENV_FILE" ]]; then
-        load_postgres_env "$DEFAULT_ENV_FILE"
+    local opm_psql_args=()
+    if [[ $env_file_set == "explicit" ]]; then
+        opm_psql_args+=(-e "$env_file")
+    elif [[ $env_file_set == "skip" ]]; then
+        opm_psql_args+=(--no-env)
+    fi
+    if [[ $show_command -eq 1 ]]; then
+        opm_psql_args+=(--show-command)
     fi
 
     # Collect SQL files from all paths
     local sql_files=()
     for p in "${paths[@]}"; do
         if [[ -f "$p" ]]; then
-            sql_files+=("$(cd "$(dirname "$p")" && pwd)/$(basename "$p")")
+            sql_files+=("$(realpath -s "$p")")
         elif [[ -d "$p" ]]; then
             while IFS= read -r -d '' f; do
                 sql_files+=("$f")
-            done < <(find "$p" -name '*.sql' -print0 | sort -z)
+            done < <(find "$p" -name "$file_pattern" -print0 | sort -z)
         else
             opm-println-error "Path not found: $p"
             return 1
         fi
     done
 
+    # Filter out excluded patterns
+    if [[ ${#exclude_patterns[@]} -gt 0 ]]; then
+        local filtered=()
+        for f in "${sql_files[@]}"; do
+            local excluded=0
+            local basename=${f##*/}
+            for pat in "${exclude_patterns[@]}"; do
+                # shellcheck disable=SC2254
+                case "$basename" in $pat) excluded=1; break ;; esac
+            done
+            if [[ $excluded -eq 0 ]]; then
+                filtered+=("$f")
+            fi
+        done
+        sql_files=("${filtered[@]}")
+    fi
+
     if [[ ${#sql_files[@]} -eq 0 ]]; then
-        opm-println-warn "No .sql files found"
+        opm-println-warn "No files found matching: $file_pattern"
         return 0
     fi
 
-    # Build connection parameters (password passed via PGPASSWORD, not in args)
-    local pg_password=""
-    local pg_args=()
-    local display_host
-
-    local db_url="${POSTGRES_URL:-}"
-    if [[ -n "$db_url" ]]; then
-        local userinfo_and_rest=${db_url#*://}
-        local userinfo=${userinfo_and_rest%%@*}
-        local host_and_rest=${userinfo_and_rest#*@}
-        local scheme=${db_url%%://*}
-
-        if [[ "$userinfo" == *:* ]]; then
-            pg_password=${userinfo#*:}
-            local url_user=${userinfo%%:*}
-            pg_args=("${scheme}://${url_user}@${host_and_rest}")
-        else
-            pg_args=("$db_url")
-        fi
-
-        display_host=${host_and_rest%%/*}
-    else
-        local host=${POSTGRES_HOST:-$DEFAULT_POSTGRES_HOST}
-        local port=${POSTGRES_PORT:-$DEFAULT_POSTGRES_PORT}
-        local db=${POSTGRES_DB:-$DEFAULT_POSTGRES_DB}
-        local user=${POSTGRES_USER:-$DEFAULT_POSTGRES_USER}
-        pg_password=${POSTGRES_PASSWORD:-}
-
-        if [[ -z "$db" ]]; then
-            opm-println-error "POSTGRES_DB is not set"
-            return 1
-        fi
-        if [[ -z "$user" ]]; then
-            opm-println-error "POSTGRES_USER is not set"
-            return 1
-        fi
-
-        pg_args=(-h "$host" -p "$port" -d "$db" -U "$user")
-        display_host="$host:$port"
-    fi
-
-    pg_args+=(--quiet --set ON_ERROR_STOP=1)
-
-    if ! command -v psql &> /dev/null; then
-        opm-println-error "Not found psql command"
-        opm-println-error "Install: sudo apt install postgresql-client"
-        return 1
-    fi
-
     # Show file list and confirm
-    opm-println-info "Target: $display_host"
-    opm-println-info "Scripts: ${#sql_files[@]} file(s)"
-
     if [[ $verbose -eq 1 ]]; then
+        opm-println "Scripts: ${#sql_files[@]} file(s)"
         for f in "${sql_files[@]}"; do
             opm-println "  $f"
         done
+        echo ""
     fi
-    echo ""
 
     if [[ $skip_confirm -eq 0 ]]; then
         if ! opm-yes-or-no "Proceed?"; then
@@ -228,15 +196,13 @@ function opm_psql_run_scripts_main
     local failed=0
     for f in "${sql_files[@]}"; do
         if [[ $verbose -eq 1 ]]; then
-            opm-println "psql ${pg_args[*]} -f \"$f\""
+            opm-println "opm-psql ${opm_psql_args[*]} -- --quiet --set ON_ERROR_STOP=1 -f \"$f\""
         fi
 
-        if [[ $dry_run -eq 0 ]]; then
-            if ! PGPASSWORD="$pg_password" psql "${pg_args[@]}" -f "$f"; then
-                opm-println-error "Failed: $f"
-                failed=1
-                break
-            fi
+        if ! opm-psql "${opm_psql_args[@]}" -- --quiet --set ON_ERROR_STOP=1 -f "$f"; then
+            opm-println-error "Failed: $f"
+            failed=1
+            break
         fi
     done
 
