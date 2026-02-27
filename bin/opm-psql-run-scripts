@@ -176,14 +176,15 @@ function opm_psql_run_scripts_main
         return 0
     fi
 
+    opm-println "Scripts: ${#sql_files[@]} file(s)"
+
     # Show file list and confirm
     if [[ $verbose -eq 1 ]]; then
-        opm-println "Scripts: ${#sql_files[@]} file(s)"
         for f in "${sql_files[@]}"; do
             opm-println "  $f"
         done
-        echo ""
     fi
+    echo ""
 
     if [[ $skip_confirm -eq 0 ]]; then
         if ! opm-yes-or-no "Proceed?"; then
