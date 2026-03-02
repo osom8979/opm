@@ -11,6 +11,7 @@ endif
 " Global extension names to install when they aren't installed.
 let g:coc_global_extensions = [
     \ 'coc-clangd',
+    \ 'coc-deno',
     \ 'coc-go',
     \ 'coc-java',
     \ 'coc-jedi',
