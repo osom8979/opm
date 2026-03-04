@@ -32,8 +32,12 @@ services:
       - "${MLFLOW_PORT:-5000}:5000"
     environment:
       - TZ=Asia/Seoul
+      - MLFLOW_HOST=${MLFLOW_HOST:?err}
+      - MLFLOW_PORT=${MLFLOW_PORT:?err}
       - MLFLOW_BACKEND_STORE_URI=postgresql://${POSTGRES_USER:?err}:${POSTGRES_PASSWORD:?err}@postgres:5432/${POSTGRES_DB:?err}
-      - MLFLOW_ARTIFACTS_DESTINATION=/mlartifacts
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=${MLFLOW_DEFAULT_ARTIFACT_ROOT:?err}
+      - MLFLOW_SERVE_ARTIFACTS=${MLFLOW_SERVE_ARTIFACTS:?err}
+      - MLFLOW_SERVER_ALLOWED_HOSTS=${MLFLOW_SERVER_ALLOWED_HOSTS:?err}
     volumes:
       - ./mlartifacts/:/mlartifacts
     logging:
