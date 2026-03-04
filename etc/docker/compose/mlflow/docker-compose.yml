@@ -1,0 +1,44 @@
+version: "3.3"
+
+services:
+  postgres:
+    image: postgres:16
+    restart: always
+    user: ${USER_UID:?err}:${USER_GID:?err}
+    environment:
+      - TZ=Asia/Seoul
+      - POSTGRES_USER=${POSTGRES_USER:?err}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
+      - POSTGRES_DB=${POSTGRES_DB:?err}
+    volumes:
+      - ./postgres/:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 8s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+
+  mlflow:
+    build: .
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    environment:
+      - TZ=Asia/Seoul
+      - MLFLOW_BACKEND_STORE_URI=postgresql://${POSTGRES_USER:?err}:${POSTGRES_PASSWORD:?err}@postgres:5432/${POSTGRES_DB:?err}
+      - MLFLOW_ARTIFACTS_DESTINATION=/mlartifacts
+    volumes:
+      - ./mlartifacts/:/mlartifacts
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
