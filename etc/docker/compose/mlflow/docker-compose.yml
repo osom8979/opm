@@ -6,9 +6,11 @@ services:
     restart: always
     environment:
       - TZ=Asia/Seoul
+      - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_USER=${POSTGRES_USER:?err}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?err}
       - POSTGRES_DB=${POSTGRES_DB:?err}
+    user: ${USER_UID:?err}:${USER_GID:?err}
     volumes:
       - ./postgres/:/var/lib/postgresql/data
     healthcheck:
@@ -38,6 +40,7 @@ services:
       - MLFLOW_DEFAULT_ARTIFACT_ROOT=${MLFLOW_DEFAULT_ARTIFACT_ROOT:?err}
       - MLFLOW_SERVE_ARTIFACTS=${MLFLOW_SERVE_ARTIFACTS:?err}
       - MLFLOW_SERVER_ALLOWED_HOSTS=${MLFLOW_SERVER_ALLOWED_HOSTS:?err}
+    user: ${USER_UID:?err}:${USER_GID:?err}
     volumes:
       - ./mlartifacts/:/mlartifacts
     logging:
