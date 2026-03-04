@@ -4,7 +4,6 @@ services:
   postgres:
     image: postgres:16
     restart: always
-    user: ${USER_UID:?err}:${USER_GID:?err}
     environment:
       - TZ=Asia/Seoul
       - POSTGRES_USER=${POSTGRES_USER:?err}
