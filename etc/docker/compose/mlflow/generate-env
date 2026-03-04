@@ -21,11 +21,13 @@ fi
 POSTGRES_PASSWORD="$(openssl rand -hex 32)"
 USER_UID="$(id -u)"
 USER_GID="$(id -g)"
+MLFLOW_SERVER_ALLOWED_HOSTS="$(hostname)"
 
 sed \
     -e "s/@USER_UID@/$USER_UID/g" \
     -e "s/@USER_GID@/$USER_GID/g" \
     -e "s/@POSTGRES_PASSWORD@/$POSTGRES_PASSWORD/g" \
+    -e "s/@MLFLOW_SERVER_ALLOWED_HOSTS@/$MLFLOW_SERVER_ALLOWED_HOSTS/g" \
     "$TEMPLATE_FILE" > "$ENV_FILE"
 
 if [[ $? -eq 0 ]]; then
