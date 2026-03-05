@@ -20,8 +20,16 @@ if ! ADDRESS=$(ip -4 addr show nebula1 | grep --color=never -oP '(?<=inet\s)\d+(
 fi
 
 LAST_OCTET="${ADDRESS##*.}"
+SERVER_ADDRESS="https://$LAST_OCTET.test.osom.run/"
 
-opm-println-info "Serving HTTP on https://$LAST_OCTET.test.osom.run/"
+opm-println-info "Serving HTTP on $SERVER_ADDRESS"
+
+if command -v qrencode &> /dev/null; then
+    qrencode -t ANSIUTF8 "$SERVER_ADDRESS"
+else
+    opm-println-warn -s "Not found qrencode command"
+    opm-println-warn -s "Install: sudo apt install qrencode"
+fi
 
 opy -m http.server \
     -b "$ADDRESS" \
