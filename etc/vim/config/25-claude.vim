@@ -8,6 +8,6 @@ if !neobundle#is_installed(s:plugin_name)
     finish
 endif
 
-let g:claude_cursor_executable = 'opn-claude'
+let g:claude_cursor_executable = 'claude'
 let g:claude_cursor_terminal_width = 80
 
