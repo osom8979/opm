@@ -39,6 +39,6 @@ export LANG=en_US.UTF-8
 fi
 
 for cursor in "$OPM_HOME/etc/profile.d"/*.sh; do
-    # shellcheck disable=SC1090
+    # shellcheck disable=SC1090,SC1091
     source "$cursor"
 done
