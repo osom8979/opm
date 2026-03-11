@@ -12,8 +12,8 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+    # ports:
+    #   - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -30,9 +30,9 @@ services:
       RUSTFS_ACCESS_KEY: ${AWS_ACCESS_KEY_ID:-s3admin}
       RUSTFS_SECRET_KEY: ${AWS_SECRET_ACCESS_KEY:-s3admin}
       RUSTFS_CONSOLE_ENABLE: ${RUSTFS_CONSOLE_ENABLE:-true}
-    ports:
-      - "9000:9000"
-      - "9001:9001"
+    # ports:
+    #   - "9000:9000"
+    #   - "9001:9001"
     volumes:
       - storage-data:/data
     restart: unless-stopped
