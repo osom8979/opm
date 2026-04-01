@@ -1,0 +1,26 @@
+services:
+  mediawiki-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mediawiki-mcp-server:latest
+    container_name: mediawiki-mcp-server
+    restart: unless-stopped
+    environment:
+      MCP_TRANSPORT: http
+      PORT: "8080"
+      CONFIG: /app/config.json
+    ports:
+      - "${MCP_PORT:-8090}:8080"
+    volumes:
+      - ./config.json:/app/config.json:ro
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (res) => process.exit(res.statusCode == 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+networks:
+  default:
+    name: mediawiki-mcp-network
