@@ -199,6 +199,8 @@ call quickui#menu#install("&Edit", [
             \ ])
 
 call quickui#menu#install("&Navigation", [
+            \ [ "NERDTreeFind", ":NERDTreeFind", "Reveal the current file in the NERDTree sidebar." ],
+            \ [ "--", "" ],
             \ [ "File (<cword>)", ":call AsyncRunGrepCwordCurrentFile()" ],
             \ [ "File (pattern?)", ":call AsyncRunGrepCurrentFile()" ],
             \ [ "File IgnoreCase (<cword>)", ":call AsyncRunGrepCwordCurrentFileIgnoreCase()" ],
