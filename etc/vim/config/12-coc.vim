@@ -11,12 +11,17 @@ endif
 " Global extension names to install when they aren't installed.
 let g:coc_global_extensions = [
     \ 'coc-clangd',
+    \ 'coc-css',
     \ 'coc-deno',
+    \ 'coc-eslint',
     \ 'coc-go',
+    \ 'coc-html',
     \ 'coc-java',
     \ 'coc-jedi',
+    \ 'coc-json',
     \ 'coc-metals',
     \ 'coc-omnisharp',
+    \ 'coc-prettier',
     \ 'coc-rls',
     \ 'coc-sh',
     \ 'coc-snippets',
