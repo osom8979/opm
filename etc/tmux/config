@@ -88,8 +88,8 @@ set -g status-right-length 90
 
 set-environment -g TMUX_FZF_LAUNCH_KEY "C-f"
 set-environment -g TMUX_FZF_MENU \
-"Move OPM home\ncd ${OPM_HOME}\n"\
-"Move Projects\ncd ~/Project\n"
+'Move OPM home\nopm-tmux-cd-opm-home\n'\
+'Move Projects\nopm-tmux-cd-home-projects\n'
 
 #################
 # List of plugins
