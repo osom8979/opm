@@ -51,7 +51,7 @@ NeoBundle 'nathanaelkane/vim-indent-guides' " visually displaying indent levels 
 NeoBundle 'blueyed/vim-diminactive'         " dim inactive windows.
 NeoBundle 'chrisbra/unicode.vim'            " handling unicode and digraphs characters.
 NeoBundle 'diepm/vim-rest-console'          " a rest console for vim.
-NeoBundle 'KangOl/vim-pudb'                 " Manage pudb breakpoints.
+NeoBundle 'KangOl/vim-pudb'                 " manage pudb breakpoints.
 NeoBundle 'nanotech/jellybeans.vim'         " a colorful, dark color scheme for vim.
 NeoBundle 'puremourning/vimspector'         " a multi-language debugging system for Vim
 NeoBundle 'arthurxavierx/vim-caser'         " easily change word casing
@@ -63,7 +63,9 @@ NeoBundle 'jakerobers/vim-hexrgba'          " toggle between hex color codes and
 NeoBundle 'habamax/vim-godot'               " use vim and godot engine to make games
 NeoBundle 'amadeus/vim-convert-color-to'    " convert color strings to different formats.
 NeoBundle 'osom8979/claude-cursor.vim'      " seamless claude code integration for vim
-NeoBundle 'petertriho/nvim-scrollbar'       " Extensible neovim scrollbar
+NeoBundle 'kevinhwang91/nvim-hlslens'       " hlsearch Lens for neovim
+NeoBundle 'lewis6991/gitsigns.nvim'         " git integration for buffers
+NeoBundle 'petertriho/nvim-scrollbar'       " extensible neovim scrollbar
 
 " Semantic highlighting for python in neovim.
 " NeoBundle 'numirias/semshi', {

@@ -9,7 +9,7 @@ require("scrollbar").setup({
     handle = {
         text = "▒",
         blend = 30, -- Integer between 0 and 100. 0 for fully opaque and 100 to full transparent. Defaults to 30.
-        color = nil,
+        color = "#292e42",
         color_nr = nil, -- cterm
         highlight = "CursorColumn",
         hide_if_all_visible = true, -- Hides handle if all lines are visible
@@ -28,7 +28,7 @@ require("scrollbar").setup({
             text = { "-", "=" },
             priority = 1,
             gui = nil,
-            color = nil,
+            color = "#ff9e64",
             cterm = nil,
             color_nr = nil, -- cterm
             highlight = "Search",
@@ -37,7 +37,7 @@ require("scrollbar").setup({
             text = { "-", "=" },
             priority = 2,
             gui = nil,
-            color = nil,
+            color = "#db4b4b",
             cterm = nil,
             color_nr = nil, -- cterm
             highlight = "DiagnosticVirtualTextError",
@@ -46,7 +46,7 @@ require("scrollbar").setup({
             text = { "-", "=" },
             priority = 3,
             gui = nil,
-            color = nil,
+            color = "#e0af68",
             cterm = nil,
             color_nr = nil, -- cterm
             highlight = "DiagnosticVirtualTextWarn",
@@ -55,7 +55,7 @@ require("scrollbar").setup({
             text = { "-", "=" },
             priority = 4,
             gui = nil,
-            color = nil,
+            color = "#0db9d7",
             cterm = nil,
             color_nr = nil, -- cterm
             highlight = "DiagnosticVirtualTextInfo",
@@ -64,7 +64,7 @@ require("scrollbar").setup({
             text = { "-", "=" },
             priority = 5,
             gui = nil,
-            color = nil,
+            color = "#1abc9c",
             cterm = nil,
             color_nr = nil, -- cterm
             highlight = "DiagnosticVirtualTextHint",
@@ -73,7 +73,7 @@ require("scrollbar").setup({
             text = { "-", "=" },
             priority = 6,
             gui = nil,
-            color = nil,
+            color = "#9d7cd8",
             cterm = nil,
             color_nr = nil, -- cterm
             highlight = "Normal",
@@ -82,7 +82,7 @@ require("scrollbar").setup({
             text = "┆",
             priority = 7,
             gui = nil,
-            color = nil,
+            color = "#9ece6a",
             cterm = nil,
             color_nr = nil, -- cterm
             highlight = "GitSignsAdd",
@@ -91,7 +91,7 @@ require("scrollbar").setup({
             text = "┆",
             priority = 7,
             gui = nil,
-            color = nil,
+            color = "#7aa2f7",
             cterm = nil,
             color_nr = nil, -- cterm
             highlight = "GitSignsChange",
@@ -100,7 +100,7 @@ require("scrollbar").setup({
             text = "▁",
             priority = 7,
             gui = nil,
-            color = nil,
+            color = "#db4b4b",
             cterm = nil,
             color_nr = nil, -- cterm
             highlight = "GitSignsDelete",
@@ -147,3 +147,9 @@ require("scrollbar").setup({
         ale = false, -- Requires ALE
     },
 })
+
+require("scrollbar.handlers.search").setup({
+    override_lens = function() end,
+})
+
+require("scrollbar.handlers.gitsigns").setup()
