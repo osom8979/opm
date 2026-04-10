@@ -273,8 +273,23 @@ call quickui#menu#install("&Debug", [
             \ ])
 
 call quickui#menu#install("&Tools", [
+            \ [ "Git &status", ':Git' ],
             \ [ "Git &log", ':Git log' ],
+            \ [ "Git &diff", ':Git diff' ],
             \ [ "Git &blame", ':Git blame' ],
+            \ [ "Git &commit", ':Git commit' ],
+            \ [ "Git &push", ':Git push' ],
+            \ [ "Git pu&ll", ':Git pull' ],
+            \ [ "Git s&tash", ':Git stash' ],
+            \ [ "Git stash p&op", ':Git stash pop' ],
+            \ [ "Git b&rowse", ':GBrowse' ],
+            \ [ "--", "" ],
+            \ [ "Gitsigns toggle line b&lame", ':Gitsigns toggle_current_line_blame' ],
+            \ [ "Gitsigns preview &hunk", ':Gitsigns preview_hunk' ],
+            \ [ "Gitsigns stage hun&k", ':Gitsigns stage_hunk' ],
+            \ [ "Gitsigns &undo stage hunk", ':Gitsigns undo_stage_hunk' ],
+            \ [ "Gitsigns &reset hunk", ':Gitsigns reset_hunk' ],
+            \ [ "Gitsigns diff t&his", ':Gitsigns diffthis' ],
             \ [ "--", "" ],
             \ [ "Claude Code Autocomplete\t<leader><Space>", ':call OpmClaudeCodeAutocomplete()' ],
             \ ])
