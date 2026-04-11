@@ -1,0 +1,188 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+PANE_TITLE="system-monitor"
+
+# --- Display functions ---
+
+W=0   # terminal width (set in run_display)
+IW=0  # inner width between borders (W - 2)
+
+# Repeat a character N times
+repeat_char() { printf '%*s' "$2" '' | tr ' ' "$1"; }
+
+# Print a bordered line: ║ content (padded) ║
+pl() {
+    local text="$1"
+    local pad=$(( IW - ${#text} ))
+    (( pad < 0 )) && pad=0
+    printf "\033[K║%s%*s║\n" "$text" "$pad" ""
+}
+
+# Print a horizontal border: ╔═══╗ / ╠═══╣ / ╚═══╝
+border() {
+    local left="$1" fill="$2" right="$3"
+    printf "\033[K%s%s%s\n" "$left" "$(repeat_char "$fill" "$IW")" "$right"
+}
+
+display_header() {
+    border "╔" "═" "╗"
+    local title="SYSTEM MONITOR"
+    local lpad=$(( (IW - ${#title}) / 2 ))
+    local rpad=$(( IW - ${#title} - lpad ))
+    printf "\033[K║%*s%s%*s║\n" "$lpad" "" "$title" "$rpad" ""
+    border "╠" "═" "╣"
+}
+
+display_datetime() {
+    pl " $(date '+%Y-%m-%d %a %H:%M:%S')"
+    pl ""
+}
+
+display_uptime() {
+    pl " UP $(uptime -p | sed 's/up //')"
+    pl ""
+}
+
+display_cpu() {
+    local cpu load
+    cpu=$(top -bn1 | grep 'Cpu(s)' | awk '{printf "%.1f%%", $2 + $4}')
+    load=$(awk '{print $1, $2, $3}' /proc/loadavg)
+    pl " CPU: $cpu"
+    pl " LOAD: $load"
+    pl ""
+}
+
+display_memory() {
+    local mem_info swap_info
+    mem_info=$(free -h | awk '/Mem/{printf "%s / %s (%.0f%%)", $3, $2, $3/$2*100}')
+    swap_info=$(free -h | awk '/Swap/{if($2 != "0B" && $2 != "0") printf "%s / %s", $3, $2; else print "N/A"}')
+    pl " MEM: $mem_info"
+    pl " SWAP: $swap_info"
+    pl ""
+}
+
+display_disk() {
+    pl " DISK:"
+    df -h --output=target,used,size,pcent / /home 2>/dev/null | \
+        tail -n +2 | sort -u | while read -r target used size pcent; do
+        pl "$(printf '  %-6s %s/%s %s' "$target" "$used" "$size" "$pcent")"
+    done
+    pl ""
+}
+
+display_network() {
+    local iface ip_addr
+    iface=$(ip route | awk '/default/{print $5; exit}')
+    if [[ -n "$iface" ]]; then
+        ip_addr=$(ip -4 addr show "$iface" | awk '/inet/{print $2; exit}')
+        pl " NET: $iface"
+        pl "  IP: $ip_addr"
+    fi
+    pl ""
+}
+
+display_top_processes() {
+    local sort_key="$1" label="$2" col="$3" max_len=$(( IW - 2 ))
+    pl " TOP PROCS ($label):"
+    ps aux --sort="$sort_key" | awk -v c="$col" \
+        'NR>1 && NR<=4{printf "  %5.1f%% %s\n", $c, $11}' | \
+        cut -c1-"$max_len" | while IFS= read -r line; do pl "$line"; done
+}
+
+display_footer() {
+    border "╚" "═" "╝"
+}
+
+# --- Display mode: monitor loop running inside the sidebar pane ---
+
+run_display() {
+    local interval="${1:-2}"
+
+    tput civis
+    trap 'tput cnorm' EXIT
+    clear
+
+    while true; do
+        # Recalculate width each frame (handles resize)
+        W=$(tput cols)
+        IW=$(( W - 2 ))
+
+        printf '\033[H'
+
+        display_header
+        display_datetime
+        display_uptime
+        display_cpu
+        display_memory
+        display_disk
+        display_network
+        display_top_processes -%cpu CPU 3
+        pl ""
+        display_top_processes -%mem MEM 4
+        display_footer
+
+        # Clear remaining lines below from previous frame
+        printf '\033[J'
+
+        sleep "$interval"
+    done
+}
+
+# --- Sidebar management ---
+
+find_existing_sidebar() {
+    tmux list-panes -F '#{pane_id} #{pane_title}' | \
+        grep "$PANE_TITLE" | awk '{print $1}'
+}
+
+toggle_sidebar() {
+    local existing
+    existing=$(find_existing_sidebar)
+    if [[ -n "$existing" ]]; then
+        tmux kill-pane -t "$existing"
+        return 0
+    fi
+    return 1
+}
+
+create_sidebar() {
+    local width="$1" interval="$2" self pane_id
+    self="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+    # Create sidebar pane (-d: keep focus, -P: return pane ID)
+    pane_id=$(tmux split-window -h -l "$width" -d -P -F '#{pane_id}' \
+        "$self --display $interval")
+
+    # Set pane title (used as toggle identifier)
+    tmux select-pane -t "$pane_id" -T "$PANE_TITLE"
+
+    # Disable input
+    tmux select-pane -t "$pane_id" -d
+
+    # Hook: bounce focus back when sidebar is selected
+    tmux set-hook -w after-select-pane \
+        "if -F '#{==:#{pane_id},$pane_id}' 'select-pane -l'"
+
+    # Hook: clean up hooks when sidebar pane exits
+    tmux set-hook -w pane-exited \
+        "if -F '#{==:#{pane_id},$pane_id}' 'set-hook -wu after-select-pane; set-hook -wu pane-exited'"
+}
+
+# --- Main ---
+
+if [[ "$1" == "--display" ]]; then
+    run_display "$2"
+    exit 0
+fi
+
+if [[ -z "$TMUX" ]]; then
+    opm-println-error "Not inside a tmux session"
+    exit 1
+fi
+
+toggle_sidebar && exit 0
+create_sidebar "${1:-30}" "${2:-2}"
