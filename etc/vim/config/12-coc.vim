@@ -228,8 +228,17 @@ call coc#config('suggest', {
     \   'noselect': v:true,
     \})
 
+let s:coc_python_path = g:opy3_python_path
+if executable(getcwd() . '/python')
+    let s:coc_python_path = getcwd() . '/python'
+elseif filereadable(getcwd() . '/uv.lock')
+    let s:coc_python_path = trim(system('cd ' . getcwd() . ' && uv run which python'))
+elseif executable(getcwd() . '/.venv/bin/python')
+    let s:coc_python_path = getcwd() . '/.venv/bin/python'
+endif
+
 call coc#config('python', {
-    \   'pythonPath': g:opy3_python_path,
+    \   'pythonPath': s:coc_python_path,
     \   'jediEnabled': v:false,
     \   'autoComplete': {
     \       'extraPaths': [getcwd()],
