@@ -17,7 +17,7 @@ let g:coc_global_extensions = [
     \ 'coc-go',
     \ 'coc-html',
     \ 'coc-java',
-    \ 'coc-jedi',
+    \ 'coc-pyright',
     \ 'coc-json',
     \ 'coc-metals',
     \ 'coc-omnisharp',
@@ -29,6 +29,10 @@ let g:coc_global_extensions = [
     \ 'coc-tsserver',
     \ 'coc-vetur',
     \]
+
+" [Deprecated]
+" coc-python
+" coc-jedi
 
 " [WARN]
 " Extension "coc-lists" registered synchronized autocmd "VimLeavePre",
@@ -237,30 +241,42 @@ elseif executable(getcwd() . '/.venv/bin/python')
     let s:coc_python_path = getcwd() . '/.venv/bin/python'
 endif
 
+let s:coc_isort_path = executable(getcwd() . '/isort.sh') ? getcwd() . '/isort.sh' : 'isort'
+let s:coc_black_path = executable(getcwd() . '/black.sh') ? getcwd() . '/black.sh' : 'black'
+
+call coc#config('pyright', {
+    \   'enable': v:true,
+    \   'inlayHints': {
+    \       'functionReturnTypes': v:false,
+    \       'parameterTypes': v:false,
+    \       'variableTypes': v:false,
+    \   },
+    \})
+
 call coc#config('python', {
     \   'pythonPath': s:coc_python_path,
-    \   'jediEnabled': v:false,
-    \   'autoComplete': {
-    \       'extraPaths': [getcwd()],
-    \   },
     \   'formatting': {
     \       'provider': 'black',
+    \       'blackPath': s:coc_black_path,
+    \   },
+    \   'sortImports': {
+    \       'path': s:coc_isort_path,
     \   },
     \   'linting': {
     \       'enabled': v:true,
     \       'flake8Enabled': v:true,
-    \       'flake8Args': [
-    \           '--extend-ignore=E203,W503',
-    \           '--max-line-length=88',
-    \           '--exclude=*_pb2.py,*_pb2_grpc.py',
-    \       ],
     \       'banditEnabled': v:false,
-    \       'mypyEnabled': v:false,
-    \       'pep8Enabled': v:false,
+    \       'mypyEnabled': v:true,
+    \       'pycodestyleEnabled': v:true,
     \       'prospectorEnabled': v:false,
     \       'pydocstyleEnabled': v:false,
     \       'pylamaEnabled': v:false,
     \       'pylintEnabled': v:false,
+    \   },
+    \   'analysis': {
+    \       'typeCheckingMode': 'basic',
+    \       'autoSearchPaths': v:true,
+    \       'extraPaths': [getcwd()],
     \   },
     \})
 
