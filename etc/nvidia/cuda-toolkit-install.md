@@ -97,6 +97,25 @@ nvcc --version
 nvidia-smi
 ```
 
+## Troubleshooting
+
+### `cc: error: unrecognized command-line option '-ftrivial-auto-var-init=zero'`
+
+This error occurs when the GCC version is older than 12. The `-ftrivial-auto-var-init=zero` option is only supported from GCC 12 onward, so you need to check the GCC version and upgrade to 12 or later.
+
+```bash
+gcc --version
+```
+
+If GCC is older than 12, install GCC 12 and switch the default version using `update-alternatives`.
+
+```bash
+sudo apt install gcc-12
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-12 120
+sudo update-alternatives --config gcc
+```
+
 ## Notes
 
 - Using the `--silent` option implies acceptance of the EULA.
