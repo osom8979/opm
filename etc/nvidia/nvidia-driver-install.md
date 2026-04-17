@@ -18,8 +18,12 @@ Press `Ctrl+Alt+F3` to open TTY terminal.
 
 ```bash
 sudo systemctl stop gdm      # GNOME
+sudo systemctl stop gdm3     # GNOME
 sudo systemctl stop sddm     # KDE
 sudo systemctl stop lightdm  # Others
+
+## System V script
+sudo service gdm3 stop
 ```
 
 ## 4. Remove Conflicting Packages
