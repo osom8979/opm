@@ -122,3 +122,7 @@ sudo update-alternatives --config gcc
 - When running without root permissions, additional command-line options may be required for further customization.
 - Do not use `--run-nvidia-xconfig` on systems that require a custom X configuration or where a non-NVIDIA GPU drives the display.
 - Use the `--no-drm` option only to work around failures to build or install the nvidia-drm kernel module. It disables PRIME, DRM-KMS, and X11 autoconfiguration.
+
+## References
+
+- https://docs.nvidia.com/cuda/cuda-installation-guide-linux/contents.html
