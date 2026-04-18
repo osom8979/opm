@@ -22,7 +22,7 @@ let g:coc_global_extensions = [
     \ 'coc-metals',
     \ 'coc-omnisharp',
     \ 'coc-prettier',
-    \ 'coc-rls',
+    \ 'coc-rust-analyzer',
     \ 'coc-sh',
     \ 'coc-snippets',
     \ 'coc-tasks',
@@ -33,6 +33,7 @@ let g:coc_global_extensions = [
 " [Deprecated]
 " coc-python
 " coc-jedi
+" coc-rls
 
 " [WARN]
 " Extension "coc-lists" registered synchronized autocmd "VimLeavePre",
