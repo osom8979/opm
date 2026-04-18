@@ -13,6 +13,7 @@
     interactive = true
 
 [alias]
+    log1    = log --name-status -1
     log10   = log --graph --decorate --oneline -10
     log20   = log --graph --decorate --oneline -20
     log30   = log --graph --decorate --oneline -30
