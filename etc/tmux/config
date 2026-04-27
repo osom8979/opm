@@ -19,6 +19,9 @@ set -g prefix C-s
 unbind C-b
 bind C-s send-prefix
 
+# Focus event
+set -g focus-events on
+
 # Enable mouse support for switching panes/windows.
 set -g mouse on
 
