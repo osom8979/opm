@@ -32,7 +32,11 @@ cnoreabbrev grepr GrepRecursive
 
 " Open window.
 noremap  <leader><leader>`  <ESC>:OpmAsyncRunOpen<CR>
+if has('nvim')
+noremap  <leader><leader>1  <ESC>:Neotree toggle<CR>
+else
 noremap  <leader><leader>1  <ESC>:NERDTreeToggle<CR>
+endif
 noremap  <leader><leader>2  <ESC>:Tagbar<CR>
 "noremap <leader><leader>2  <ESC>:Vista!!<CR>
 "noremap <leader><leader>3  " It is already set in opm
@@ -42,7 +46,11 @@ noremap  <leader><leader>6  <ESC>:ClaudeCursorToggle<CR>
 "noremap <leader><leader>8  <ESC>:SrcExplToggle<CR>
 
 " Jump window.
+if has('nvim')
+noremap  <leader>1  <ESC>:Neotree focus<CR>
+else
 noremap  <leader>1  <ESC>:NERDTreeFocus<CR>
+endif
 noremap  <leader>6  <ESC>:ClaudeCursorFocus<CR>
 
 " Quick-fix settings.

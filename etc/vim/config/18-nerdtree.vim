@@ -1,3 +1,7 @@
+if has('nvim')
+    finish
+endif
+
 let s:plugin_name = 'nerdtree'
 let s:plugin_homepage = 'https://github.com/preservim/nerdtree'
 if !neobundle#is_installed(s:plugin_name)

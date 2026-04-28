@@ -21,9 +21,17 @@ NeoBundleFetch 'Shougo/neobundle.vim'
 " Plugins
 " -------
 
-NeoBundle 'preservim/nerdtree'              " directory browser.
+if has('nvim')
+    NeoBundle 'nvim-lua/plenary.nvim'           " neo-tree dependency.
+    NeoBundle 'MunifTanjim/nui.nvim'            " neo-tree dependency.
+    NeoBundle 'nvim-tree/nvim-web-devicons'     " icons for neo-tree.
+    NeoBundle 'nvim-neo-tree/neo-tree.nvim', {'rev': 'v3.x'}  " directory browser (nvim).
+else
+    NeoBundle 'preservim/nerdtree'              " directory browser.
+    NeoBundle 'Xuyuanp/nerdtree-git-plugin'     " [Git] showing git status flags.
+    NeoBundle 'ryanoasis/vim-devicons'          " adds file type icons to vim plugins.
+endif
 NeoBundle 'preservim/nerdcommenter'         " language dependent commenter.
-NeoBundle 'Xuyuanp/nerdtree-git-plugin'     " [Git] showing git status flags.
 NeoBundle 'airblade/vim-gitgutter'          " [Git] shows a git diff in the gutter.
 NeoBundle 'tpope/vim-fugitive'              " [Git] git wrapper.
 NeoBundle 'majutsushi/tagbar'               " tagbar window.
@@ -35,7 +43,6 @@ NeoBundle 'VisIncr'                         " produce increasing/decreasing colu
 NeoBundle 'skywind3000/asynctasks.vim'      " modern task system.
 NeoBundle 'skywind3000/asyncrun.vim'        " run async shell commands.
 NeoBundle 'skywind3000/vim-quickui'         " ui extensions for vim.
-NeoBundle 'ryanoasis/vim-devicons'          " adds file type icons to vim plugins
 NeoBundle 'echofunc.vim'                    " print function parameter information.
 NeoBundle 'a.vim'                           " source <-> header.
 NeoBundle 'epheien/termdbg'                 " terminal debugger for vim (pdb, ipdb, lldb, dlv)

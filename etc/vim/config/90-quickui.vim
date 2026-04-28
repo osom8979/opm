@@ -198,8 +198,12 @@ call quickui#menu#install("&Edit", [
             \ [ "dot.case\tgs.", ':execute "normal \<Plug>CaserDotCase"' ],
             \ ])
 
+let s:nav_first = has('nvim')
+            \ ? [ "Neotree Reveal", ":Neotree reveal", "Reveal the current file in the neo-tree sidebar." ]
+            \ : [ "NERDTreeFind",   ":NERDTreeFind",   "Reveal the current file in the NERDTree sidebar." ]
+
 call quickui#menu#install("&Navigation", [
-            \ [ "NERDTreeFind", ":NERDTreeFind", "Reveal the current file in the NERDTree sidebar." ],
+            \ s:nav_first,
             \ [ "--", "" ],
             \ [ "File (<cword>)", ":call AsyncRunGrepCwordCurrentFile()" ],
             \ [ "File (pattern?)", ":call AsyncRunGrepCurrentFile()" ],
@@ -294,15 +298,23 @@ call quickui#menu#install("&Tools", [
             \ [ "Claude Code Autocomplete\t<leader><Space>", ':call OpmClaudeCodeAutocomplete()' ],
             \ ])
 
+let s:view_tree = has('nvim')
+            \ ? [
+            \     [ "&Neotree\t<leader><leader>1", ":Neotree toggle" ],
+            \   ]
+            \ : [
+            \     [ "&NERDTree\t<leader><leader>1", ":NERDTreeToggle" ],
+            \     [ "NERDTree &Bookmarks (%{g:NERDTreeShowBookmarks? 'Hide':'Show'})", ':let g:NERDTreeShowBookmarks = !g:NERDTreeShowBookmarks | NERDTreeRefreshRoot' ],
+            \     [ "NERDTree Bookmark Current", ':Bookmark' ],
+            \     [ "NERDTree Clear Bookmarks", ':ClearAllBookmarks' ],
+            \     [ "NERDTree Edit Bookmarks", ':EditBookmarks' ],
+            \     [ "NERDTree Read Bookmarks", ':ReadBookmarks' ],
+            \   ]
+
 call quickui#menu#install("&View", [
             \ [ "E&xchange Next Window\t<C-w>x", ':call feedkeys("\<C-w>x")' ],
             \ [ "--", "" ],
-            \ [ "&NERDTree\t<leader><leader>1", ":NERDTreeToggle" ],
-            \ [ "NERDTree &Bookmarks (%{g:NERDTreeShowBookmarks? 'Hide':'Show'})", ':let g:NERDTreeShowBookmarks = !g:NERDTreeShowBookmarks | NERDTreeRefreshRoot' ],
-            \ [ "NERDTree Bookmark Current", ':Bookmark' ],
-            \ [ "NERDTree Clear Bookmarks", ':ClearAllBookmarks' ],
-            \ [ "NERDTree Edit Bookmarks", ':EditBookmarks' ],
-            \ [ "NERDTree Read Bookmarks", ':ReadBookmarks' ],
+            \ ] + s:view_tree + [
             \ [ "--", "" ],
             \ [ "T&agbar\t<leader><leader>2", ":Tagbar" ],
             \ [ "&Quickfix\t<leader><leader>3", ":call OpmToggleQuickfixBuffer()" ],

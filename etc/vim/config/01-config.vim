@@ -122,9 +122,14 @@ let g:snips_author = $USER
 
 " auto-command setting.
 if has('autocmd')
-    " Show NERDTree window.
-    autocmd VimEnter * NERDTree | wincmd p
-    autocmd TabEnter * NERDTree | wincmd p
+    " Show directory tree window.
+    if has('nvim')
+        autocmd VimEnter * Neotree show
+        autocmd TabEnter * Neotree show
+    else
+        autocmd VimEnter * NERDTree | wincmd p
+        autocmd TabEnter * NERDTree | wincmd p
+    endif
 
     " Remove tailing whitespace.
     autocmd FileType c,cpp,go,java,php,python,ruby,vim autocmd BufWritePre <buffer> :%s/\s\+$//e
