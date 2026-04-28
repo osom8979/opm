@@ -56,6 +56,7 @@ NeoBundle 'nanotech/jellybeans.vim'         " a colorful, dark color scheme for 
 NeoBundle 'puremourning/vimspector'         " a multi-language debugging system for Vim
 NeoBundle 'arthurxavierx/vim-caser'         " easily change word casing
 NeoBundle 'doums/darcula'                   " jetbrains ide darcula theme
+NeoBundle 'nickkadutskyi/jb.nvim'           " jetbrains ide new ui theme (lua)
 NeoBundle 'shirk/vim-gas'                   " advanced syntax highlighting for gnu as
 NeoBundle 'rust-lang/rust.vim'              " vim configuration for rust
 NeoBundle 'ap/vim-css-color'                " preview css colours

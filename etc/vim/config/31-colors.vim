@@ -1,5 +1,9 @@
-let s:plugin_name = 'darcula'
-let s:plugin_homepage = 'https://github.com/doums/darcula'
+"let s:plugin_name = 'darcula'
+"let s:plugin_homepage = 'https://github.com/doums/darcula'
+
+let s:plugin_name = 'jb.nvim'
+let s:plugin_homepage = 'https://github.com/nickkadutskyi/jb.nvim'
+
 if !neobundle#is_installed(s:plugin_name)
     echohl WarningMsg
     echom s:plugin_name.' is not installed.'
@@ -8,7 +12,15 @@ if !neobundle#is_installed(s:plugin_name)
     finish
 endif
 
-colorscheme darcula
+" ==[[ doums/darcula
+" colorscheme darcula
+" ]]==
+
+" ==[[ nickkadutskyi/jb.nvim
+lua require('jb').setup({})
+colorscheme jb
+" ]]==
+
 let g:lightline = { 'colorscheme': 'darculaOriginal' }
 
 " GitGutter
