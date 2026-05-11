@@ -6,7 +6,7 @@
     "clangd.disableDiagnostics": false,
     "clangd.disableSnippetCompletion": false,
     "clangd.disableProgressNotifications": false,
-    "clangd.compilationDatabasePath": '',
+    "clangd.compilationDatabasePath": "",
     "clangd.compilationDatabaseCandidates": [],
     "clangd.fallbackFlags": [],
     "clangd.path": "clangd"
