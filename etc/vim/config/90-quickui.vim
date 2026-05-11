@@ -198,7 +198,7 @@ call quickui#menu#install("&Edit", [
             \ [ "dot.case\tgs.", ':execute "normal \<Plug>CaserDotCase"' ],
             \ ])
 
-let s:nav_first = has('nvim')
+let s:nav_first = g:opm_neo_tree
             \ ? [ "Neotree Reveal", ":Neotree reveal", "Reveal the current file in the neo-tree sidebar." ]
             \ : [ "NERDTreeFind",   ":NERDTreeFind",   "Reveal the current file in the NERDTree sidebar." ]
 
@@ -298,7 +298,7 @@ call quickui#menu#install("&Tools", [
             \ [ "Claude Code Autocomplete\t<leader><Space>", ':call OpmClaudeCodeAutocomplete()' ],
             \ ])
 
-let s:view_tree = has('nvim')
+let s:view_tree = g:opm_neo_tree
             \ ? [
             \     [ "&Neotree\t<leader><leader>1", ":Neotree toggle" ],
             \   ]

@@ -13,6 +13,7 @@ let s:opn_prefix = 'opn'
 let g:opn_suffix = 'default'
 let s:opm_home_by_env = $OPM_HOME
 let s:opm_home_by_sfile = expand('<sfile>:p:h:h:h')
+let g:opm_neo_tree = 0
 
 function! s:GetOpmHomeDir() abort
     if strlen(s:opm_home_by_env) >= 1 && isdirectory(s:opm_home_by_env)

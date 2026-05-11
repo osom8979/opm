@@ -32,7 +32,7 @@ cnoreabbrev grepr GrepRecursive
 
 " Open window.
 noremap  <leader><leader>`  <ESC>:OpmAsyncRunOpen<CR>
-if has('nvim')
+if g:opm_neo_tree
 noremap  <leader><leader>1  <ESC>:Neotree toggle<CR>
 else
 noremap  <leader><leader>1  <ESC>:NERDTreeToggle<CR>
@@ -46,7 +46,7 @@ noremap  <leader><leader>6  <ESC>:ClaudeCursorToggle<CR>
 "noremap <leader><leader>8  <ESC>:SrcExplToggle<CR>
 
 " Jump window.
-if has('nvim')
+if g:opm_neo_tree
 noremap  <leader>1  <ESC>:Neotree focus<CR>
 else
 noremap  <leader>1  <ESC>:NERDTreeFocus<CR>

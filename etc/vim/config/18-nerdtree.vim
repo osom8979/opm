@@ -1,4 +1,4 @@
-if has('nvim')
+if g:opm_neo_tree
     finish
 endif
 
