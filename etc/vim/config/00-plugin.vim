@@ -21,16 +21,23 @@ NeoBundleFetch 'Shougo/neobundle.vim'
 " Plugins
 " -------
 
-if has('nvim')
-    NeoBundle 'nvim-lua/plenary.nvim'           " neo-tree dependency.
-    NeoBundle 'MunifTanjim/nui.nvim'            " neo-tree dependency.
-    NeoBundle 'nvim-tree/nvim-web-devicons'     " icons for neo-tree.
-    NeoBundle 'nvim-neo-tree/neo-tree.nvim', {'rev': 'v3.x'}  " directory browser (nvim).
-else
-    NeoBundle 'preservim/nerdtree'              " directory browser.
-    NeoBundle 'Xuyuanp/nerdtree-git-plugin'     " [Git] showing git status flags.
-    NeoBundle 'ryanoasis/vim-devicons'          " adds file type icons to vim plugins.
-endif
+" -------------------------------------------------------------------------------------
+" if has('nvim')
+"     NeoBundle 'nvim-lua/plenary.nvim'           " neo-tree dependency.
+"     NeoBundle 'MunifTanjim/nui.nvim'            " neo-tree dependency.
+"     NeoBundle 'nvim-tree/nvim-web-devicons'     " icons for neo-tree.
+"     NeoBundle 'nvim-neo-tree/neo-tree.nvim', {'rev': 'v3.x'}  " directory browser (nvim).
+" else
+"     NeoBundle 'preservim/nerdtree'              " directory browser.
+"     NeoBundle 'Xuyuanp/nerdtree-git-plugin'     " [Git] showing git status flags.
+"     NeoBundle 'ryanoasis/vim-devicons'          " adds file type icons to vim plugins.
+" endif
+" -------------------------------------------------------------------------------------
+NeoBundle 'preservim/nerdtree'              " directory browser.
+NeoBundle 'Xuyuanp/nerdtree-git-plugin'     " [Git] showing git status flags.
+NeoBundle 'ryanoasis/vim-devicons'          " adds file type icons to vim plugins.
+" -------------------------------------------------------------------------------------
+
 NeoBundle 'preservim/nerdcommenter'         " language dependent commenter.
 NeoBundle 'airblade/vim-gitgutter'          " [Git] shows a git diff in the gutter.
 NeoBundle 'tpope/vim-fugitive'              " [Git] git wrapper.
