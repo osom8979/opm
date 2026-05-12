@@ -180,11 +180,9 @@ function opm_pg_prove_run_scripts_main
     opm-println "Tests: ${#test_files[@]} file(s)"
 
     # Show file list and confirm
-    if [[ $verbose -eq 1 ]]; then
-        for f in "${test_files[@]}"; do
-            opm-println "  $f"
-        done
-    fi
+    for f in "${test_files[@]}"; do
+        opm-println "  $f"
+    done
     echo ""
 
     if [[ $skip_confirm -eq 0 ]]; then
@@ -209,6 +207,10 @@ function opm_pg_prove_run_scripts_main
     # if [[ $failed -ne 0 ]]; then
     #     return 1
     # fi
+
+    if [[ $verbose -eq 0 ]]; then
+        export PGOPTIONS="${PGOPTIONS:+$PGOPTIONS }-c client_min_messages=warning"
+    fi
 
     if ! opm-pg-prove "${opm_pg_prove_args[@]}" -- "${test_files[@]}"; then
         return 1
