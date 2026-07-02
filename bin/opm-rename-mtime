@@ -1,0 +1,216 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Rename files based on their modification time.
+
+  Usage: ${BASH_SOURCE[0]} [options] file...
+
+Renamed format: <YYYYMMDD>-<name>[-<index>].<ext>
+  YYYYMMDD  The last modification date of the file.
+  name      The original file name without its extension.
+  index     A sequence number, only added when the target name collides.
+  ext       The original extension. (omitted when the file has none)
+
+Available options are:
+  -h, --help        Print this message.
+  -n, --dry-run     Print the changes without renaming.
+  -f, --force       Reprocess files that already match the format.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  -s, --silent      Suppresses all messages.
+  --                Skip handling options.
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function exists_program_or_exit
+{
+    local cmd=$1
+    local cmd_which
+    cmd_which=$(which "$cmd" 2> /dev/null)
+
+    if [[ -z "$cmd_which" ]]; then
+        opm-println-error -s "Not found executable: $cmd"
+        exit 1
+    fi
+}
+
+function mtime_ymd
+{
+    local file=$1
+    if stat --version > /dev/null 2>&1; then
+        # GNU coreutils (Linux)
+        date -d "@$(stat -c %Y "$file")" +%Y%m%d
+    else
+        # BSD/Darwin kernel
+        stat -f %Sm -t %Y%m%d "$file"
+    fi
+}
+
+function split_stem
+{
+    local base=$1
+    case "$base" in
+    .*.*) echo "${base%.*}" ;;  # hidden file with extension: .config.json
+    .*)   echo "$base" ;;       # pure dotfile: .bashrc
+    *.*)  echo "${base%.*}" ;;  # normal file with extension
+    *)    echo "$base" ;;       # no extension
+    esac
+}
+
+function split_ext
+{
+    local base=$1
+    case "$base" in
+    .*.*) echo "${base##*.}" ;;
+    .*)   echo "" ;;
+    *.*)  echo "${base##*.}" ;;
+    *)    echo "" ;;
+    esac
+}
+
+function build_name
+{
+    local ymd=$1
+    local stem=$2
+    local ext=$3
+    local index=$4
+
+    local result="${ymd}-${stem}"
+    if [[ -n "$index" ]]; then
+        result="${result}-${index}"
+    fi
+    if [[ -n "$ext" ]]; then
+        result="${result}.${ext}"
+    fi
+    echo "$result"
+}
+
+function rename_one
+{
+    local dry_run=$1
+    local force=$2
+    local src=$3
+
+    if [[ ! -e "$src" ]]; then
+        opm-println-error -s "Not exists: $src"
+        return 1
+    fi
+    if [[ -d "$src" ]]; then
+        opm-println-warn -v -s "Skip directory: $src"
+        return 0
+    fi
+
+    local dir base stem ext ymd
+    dir=$(dirname "$src")
+    base=$(basename "$src")
+    stem=$(split_stem "$base")
+    ext=$(split_ext "$base")
+    ymd=$(mtime_ymd "$src")
+
+    # Skip files that already match the format unless --force is given.
+    if [[ $force -eq 0 && "$stem" =~ ^[0-9]{8}- ]]; then
+        opm-println-info -v -s "Keep: $base"
+        return 0
+    fi
+
+    local target
+    target=$(build_name "$ymd" "$stem" "$ext" "")
+
+    # Resolve collisions by appending an incrementing index.
+    if [[ "$dir/$target" != "$src" && -e "$dir/$target" ]]; then
+        local index=1
+        while true; do
+            target=$(build_name "$ymd" "$stem" "$ext" "$index")
+            if [[ "$dir/$target" == "$src" || ! -e "$dir/$target" ]]; then
+                break
+            fi
+            index=$((index + 1))
+        done
+    fi
+
+    if [[ "$dir/$target" == "$src" ]]; then
+        opm-println-info -v -s "Keep: $base"
+        return 0
+    fi
+
+    if [[ $dry_run -ne 0 ]]; then
+        opm-println -s "[dry-run] $base -> $target"
+    else
+        mv -n -- "$src" "$dir/$target"
+        opm-println-info -v -s "$base -> $target"
+    fi
+}
+
+function opm_mtime_rename_main
+{
+    local dry_run=0
+    local force=0
+    local verbose_flag=0
+    local silent_flag=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -n|--dry-run)
+            dry_run=1
+            shift
+            ;;
+        -f|--force)
+            force=1
+            shift
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error -s "Unknown option: $1"
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    if [[ -z $1 ]]; then
+        print_usage
+        return 1
+    fi
+
+    exists_program_or_exit stat
+
+    local file
+    for file in "$@"; do
+        rename_one "$dry_run" "$force" "$file"
+    done
+}
+
+opm_mtime_rename_main "$@"
