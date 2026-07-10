@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_TIMEOUT=5
+
+IPV4_PROVIDERS=(
+    "https://api.ipify.org"
+    "https://ipv4.icanhazip.com"
+    "https://ifconfig.me/ip"
+    "https://ipinfo.io/ip"
+)
+
+IPV6_PROVIDERS=(
+    "https://api6.ipify.org"
+    "https://ipv6.icanhazip.com"
+    "https://ifconfig.co/ip"
+)
+
+USAGE_MESSAGE="
+Print the current public (WAN) IP address.
+
+  Usage: opm-public-ip [options]
+
+Available options are:
+  -h, --help                Print this message.
+  -4, --ipv4                Query the IPv4 address. [default]
+  -6, --ipv6                Query the IPv6 address.
+  -w, --timeout=seconds     Request timeout (default: ${DEFAULT_TIMEOUT}s).
+  -q, --quiet               Suppress error messages (exit code only).
+  --                        Skip handling options.
+
+Examples:
+  opm-public-ip
+  opm-public-ip -6
+  opm-public-ip -w 10
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function fetch_url
+{
+    local timeout=$1
+    local ip_flag=$2
+    local url=$3
+
+    if command -v curl &> /dev/null; then
+        curl --silent --show-error --fail "$ip_flag" \
+            --max-time "$timeout" "$url" 2> /dev/null
+    elif command -v wget &> /dev/null; then
+        wget "$ip_flag" --quiet --timeout="$timeout" \
+            --output-document=- "$url" 2> /dev/null
+    else
+        return 127
+    fi
+}
+
+function opm_public_ip_main
+{
+    local timeout=$DEFAULT_TIMEOUT
+    local quiet_mode=0
+    local family=4
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -4|--ipv4)
+            family=4
+            shift
+            ;;
+        -6|--ipv6)
+            family=6
+            shift
+            ;;
+        -w)
+            timeout=$2
+            shift 2
+            ;;
+        --timeout=*)
+            timeout=${1:10}
+            shift
+            ;;
+        -q|--quiet)
+            quiet_mode=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error "Unknown option: $1"
+            print_usage
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if ! command -v curl &> /dev/null && ! command -v wget &> /dev/null; then
+        [[ $quiet_mode -eq 0 ]] && opm-println-error "curl or wget is required"
+        return 1
+    fi
+
+    local providers ip_flag
+    if [[ $family -eq 6 ]]; then
+        providers=("${IPV6_PROVIDERS[@]}")
+        ip_flag="-6"
+    else
+        providers=("${IPV4_PROVIDERS[@]}")
+        ip_flag="-4"
+    fi
+
+    local url result
+    for url in "${providers[@]}"; do
+        result=$(fetch_url "$timeout" "$ip_flag" "$url")
+        result=$(echo -n "$result" | tr -d '[:space:]')
+        if [[ -n "$result" ]]; then
+            echo "$result"
+            return 0
+        fi
+    done
+
+    [[ $quiet_mode -eq 0 ]] && opm-println-error "Failed to determine the public IPv${family} address"
+    return 1
+}
+
+opm_public_ip_main "$@"
