@@ -1,0 +1,255 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+CHROME_CANDIDATES=(
+    google-chrome
+    google-chrome-stable
+    chromium
+    chromium-browser
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+)
+
+USAGE_MESSAGE="
+Convert HTML files to PDF using headless Chrome/Chromium.
+
+  Usage: opm-html2pdf [options] [file ...]
+
+Without file arguments, every '*.html' in the current directory is converted.
+Each PDF is written next to its HTML source unless '--output-dir' is given.
+Files whose PDF is newer than the HTML are skipped unless '--force' is given.
+
+Available options are:
+  -h, --help              Print this message.
+  -o, --output-dir=dir    Write the PDF files into this directory.
+  -n, --dry-run           Print the changes without converting.
+  -f, --force             Reconvert files whose PDF is already up to date.
+  -H, --header-footer     Print the default header and footer.
+  -v, --verbose           Be more verbose/talkative during the operation.
+  -s, --silent            Suppresses all messages.
+  --                      Skip handling options.
+
+Examples:
+  opm-html2pdf
+  opm-html2pdf -f
+  opm-html2pdf -o ./pdf ./docs/index.html
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+# The EXIT trap runs after the main function returns, so the profile path must
+# outlive it as a global.
+PROFILE_DIR=
+
+function remove_profile_dir
+{
+    if [[ -n "$PROFILE_DIR" ]]; then
+        rm -rf "$PROFILE_DIR"
+        PROFILE_DIR=
+    fi
+}
+
+function find_chrome
+{
+    local candidate
+    for candidate in "${CHROME_CANDIDATES[@]}"; do
+        if command -v "$candidate" &> /dev/null; then
+            echo "$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
+function absolute_path
+{
+    local path=$1
+    local dir base
+    dir=$(dirname "$path")
+    base=$(basename "$path")
+    echo "$(cd "$dir" && pwd)/$base"
+}
+
+function convert_one
+{
+    local chrome=$1
+    local profile=$2
+    local output_dir=$3
+    local dry_run=$4
+    local force=$5
+    local header_footer=$6
+    local html=$7
+
+    if [[ ! -f "$html" ]]; then
+        opm-println-error -s "Not exists: $html"
+        return 1
+    fi
+
+    local base pdf
+    base=$(basename "$html")
+    if [[ -n "$output_dir" ]]; then
+        pdf="$output_dir/${base%.*}.pdf"
+    else
+        pdf="$(dirname "$html")/${base%.*}.pdf"
+    fi
+
+    if [[ $force -eq 0 && -f "$pdf" && "$pdf" -nt "$html" ]]; then
+        opm-println-info -v -s "Up to date: $pdf"
+        return 0
+    fi
+
+    if [[ $dry_run -ne 0 ]]; then
+        opm-println -s "[dry-run] $html -> $pdf"
+        return 0
+    fi
+
+    # Chrome only accepts absolute paths, and a 'file://' URL keeps spaces and
+    # non-ASCII names intact.
+    local html_abs pdf_abs
+    html_abs=$(absolute_path "$html")
+    pdf_abs=$(absolute_path "$pdf")
+
+    local options=()
+    options+=(--headless)
+    options+=(--disable-gpu)
+    options+=(--user-data-dir="$profile")
+    if [[ $header_footer -eq 0 ]]; then
+        options+=(--no-pdf-header-footer)
+    fi
+    options+=(--print-to-pdf="$pdf_abs")
+
+    if "$chrome" "${options[@]}" "file://$html_abs" &> /dev/null; then
+        opm-println-info -s "Converted: $pdf"
+        return 0
+    fi
+
+    opm-println-error -s "Conversion failed: $html"
+    return 1
+}
+
+function opm_html2pdf_main
+{
+    local output_dir=
+    local dry_run=0
+    local force=0
+    local header_footer=0
+    local verbose_flag=0
+    local silent_flag=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -o)
+            output_dir=$2
+            shift 2
+            ;;
+        --output-dir=*)
+            output_dir=${1:13}
+            shift
+            ;;
+        -n|--dry-run)
+            dry_run=1
+            shift
+            ;;
+        -f|--force)
+            force=1
+            shift
+            ;;
+        -H|--header-footer)
+            header_footer=1
+            shift
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error "Unknown option: $1"
+            print_usage
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    local chrome
+    if ! chrome=$(find_chrome); then
+        opm-println-error -s "Not found Chrome/Chromium command"
+        opm-println-error -s "Install: sudo apt install chromium-browser"
+        return 1
+    fi
+
+    local targets=()
+    if [[ $# -gt 0 ]]; then
+        targets=("$@")
+    else
+        local html
+        for html in ./*.html; do
+            [[ -f "$html" ]] && targets+=("$html")
+        done
+    fi
+
+    if [[ ${#targets[@]} -eq 0 ]]; then
+        opm-println-warn -s "Not found HTML files"
+        return 0
+    fi
+
+    if [[ -n "$output_dir" && $dry_run -eq 0 ]]; then
+        if ! mkdir -p "$output_dir"; then
+            opm-println-error -s "Could not create the output directory: $output_dir"
+            return 1
+        fi
+    fi
+
+    # Chrome writes into its profile directory, so keep it out of the workspace.
+    PROFILE_DIR=$(mktemp -d)
+    trap remove_profile_dir EXIT
+
+    local failed=0
+    local target
+    for target in "${targets[@]}"; do
+        convert_one \
+            "$chrome" \
+            "$PROFILE_DIR" \
+            "$output_dir" \
+            "$dry_run" \
+            "$force" \
+            "$header_footer" \
+            "$target" \
+            || failed=$((failed + 1))
+    done
+
+    if [[ $failed -ne 0 ]]; then
+        opm-println-error -s "Failed to convert $failed file(s)"
+        return 1
+    fi
+}
+
+opm_html2pdf_main "$@"
