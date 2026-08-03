@@ -1,5 +1,5 @@
 FROM ubuntu:24.04
-MAINTAINER zer0 <osom8979@gmail.com>
+LABEL maintainer="zer0 <osom8979@gmail.com>"
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=ko_KR.UTF-8
@@ -15,10 +15,22 @@ ENV WINEDEBUG=-all
 # Suppress the Mono/Gecko installation dialogs during prefix bootstrap.
 ENV WINEDLLOVERRIDES="mscoree,mshtml="
 
+# Korean input. Wine speaks XIM over the shared X11 socket, so it can drive the
+# desktop session's own ibus without an input method daemon in the container.
+ENV XMODIFIERS=@im=ibus
+ENV GTK_IM_MODULE=ibus
+ENV QT_IM_MODULE=ibus
+
+# Bind-mounted from the host at runtime; the directory KakaoTalk reads sent
+# files from and writes received ones to.
+ENV KAKAO_SHARE_DIR=/root/Downloads
+
 ENV KAKAO_SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/x64/KakaoTalk_Setup.exe"
 ENV KAKAO_SETUP_PATH=/opt/kakaotalk/KakaoTalk_Setup.exe
 
 # Base runtime dependencies (Korean fonts, locale, X11 helpers, wine helpers).
+# xvfb backs the headless bootstrap path in the entrypoint; libpulse carries
+# notification sounds out to the host sound server.
 RUN dpkg --add-architecture i386 && \
     apt-get -qq update && \
     apt-get install -y --no-install-recommends \
@@ -26,6 +38,7 @@ RUN dpkg --add-architecture i386 && \
         locales tzdata \
         xvfb xauth x11-utils \
         cabextract winbind \
+        libpulse0 libpulse0:i386 \
         fonts-nanum fonts-nanum-coding fonts-nanum-extra && \
     rm -rf /var/lib/apt/lists/*
 

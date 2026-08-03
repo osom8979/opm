@@ -7,13 +7,29 @@ set -euo pipefail
 : "${WINEPREFIX:=/root/.wine}"
 : "${WINEARCH:=win64}"
 : "${KAKAO_SETUP_PATH:=/opt/kakaotalk/KakaoTalk_Setup.exe}"
+: "${KAKAO_SHARE_DIR:=/root/Downloads}"
 export WINEPREFIX WINEARCH
+
+# Korean input: wine connects to whichever XIM server owns the display, which
+# is the host session's ibus-x11 when /tmp/.X11-unix is shared.
+export XMODIFIERS="${XMODIFIERS:-@im=ibus}"
+export GTK_IM_MODULE="${GTK_IM_MODULE:-ibus}"
+export QT_IM_MODULE="${QT_IM_MODULE:-ibus}"
 
 KAKAO_EXE="$WINEPREFIX/drive_c/Program Files/Kakao/KakaoTalk/KakaoTalk.exe"
 
+# Both the prefix bootstrap and the installer need an X server. Without a host
+# display, fall back to a throwaway virtual one so the image can still be primed
+# headlessly -- the GUI itself, of course, has nowhere to go.
 if [[ -z "${DISPLAY:-}" ]]; then
-    echo "[kakaotalk] WARN: DISPLAY is empty; the GUI has nowhere to render." >&2
-    echo "[kakaotalk] Pass -e DISPLAY and mount /tmp/.X11-unix (see kakaotalk.run.sh)." >&2
+    echo "[kakaotalk] WARN: DISPLAY is empty; starting a virtual X server." >&2
+    echo "[kakaotalk] Nothing will be visible. Pass -e DISPLAY and mount" >&2
+    echo "[kakaotalk] /tmp/.X11-unix to see the GUI (see kakaotalk.run.sh)." >&2
+    Xvfb :99 -screen 0 1280x1024x24 &
+    export DISPLAY=:99
+    until xdpyinfo -display :99 &> /dev/null; do
+        sleep 0.2
+    done
 fi
 
 # Initialize the wine prefix on a fresh (empty) volume.
@@ -29,6 +45,28 @@ mkdir -p "$FONTS_DST"
 for f in /usr/share/fonts/truetype/nanum/*.ttf; do
     [[ -e "$f" ]] && ln -sf "$f" "$FONTS_DST/"
 done
+
+# Wire the host's shared directory into the prefix so files can cross the
+# container boundary in both directions.
+if [[ -d "$KAKAO_SHARE_DIR" ]]; then
+    # Always reachable as drive D: from any file dialog.
+    ln -sfn "$KAKAO_SHARE_DIR" "$WINEPREFIX/dosdevices/d:"
+
+    # Make it the Windows "Downloads" folder too, so received files land there
+    # by default. Only replace the directory wine created if it is still empty
+    # -- never discard files someone already has in the prefix.
+    WIN_DOWNLOADS="$WINEPREFIX/drive_c/users/root/Downloads"
+    if [[ ! -L "$WIN_DOWNLOADS" ]]; then
+        if rmdir "$WIN_DOWNLOADS" 2> /dev/null; then
+            ln -sfn "$KAKAO_SHARE_DIR" "$WIN_DOWNLOADS"
+        else
+            echo "[kakaotalk] WARN: $WIN_DOWNLOADS is not empty; leaving it." >&2
+            echo "[kakaotalk] The shared directory is still available as drive D:." >&2
+        fi
+    fi
+else
+    echo "[kakaotalk] WARN: $KAKAO_SHARE_DIR is not mounted; no shared folder." >&2
+fi
 
 # Install KakaoTalk when it is not present in the prefix yet.
 if [[ ! -f "$KAKAO_EXE" ]]; then
