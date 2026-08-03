@@ -4,11 +4,36 @@
 
 set -euo pipefail
 
-: "${WINEPREFIX:=/root/.wine}"
+: "${KAKAO_USER:=kakao}"
+: "${KAKAO_HOME:=/home/kakao}"
+: "${WINEPREFIX:=$KAKAO_HOME/.wine}"
 : "${WINEARCH:=win64}"
 : "${KAKAO_SETUP_PATH:=/opt/kakaotalk/KakaoTalk_Setup.exe}"
-: "${KAKAO_SHARE_DIR:=/root/Downloads}"
-export WINEPREFIX WINEARCH
+: "${KAKAO_SHARE_DIR:=$KAKAO_HOME/Downloads}"
+export WINEPREFIX WINEARCH HOME="$KAKAO_HOME"
+
+# Started as root: line the container account up with the host's uid/gid before
+# doing anything else, so every file KakaoTalk later writes into the shared
+# directory belongs to the host user instead of root. Then drop privileges and
+# re-enter this same script as that account.
+if [[ "$(id -u)" -eq 0 ]]; then
+    uid="${KAKAO_UID:-$(id -u "$KAKAO_USER")}"
+    gid="${KAKAO_GID:-$(id -g "$KAKAO_USER")}"
+
+    [[ "$(id -g "$KAKAO_USER")" == "$gid" ]] || groupmod -o -g "$gid" "$KAKAO_USER"
+    [[ "$(id -u "$KAKAO_USER")" == "$uid" ]] || usermod -o -u "$uid" "$KAKAO_USER"
+
+    # Re-own the home only when it actually changed hands -- the wine prefix is
+    # thousands of files. The shared directory is a host bind mount, so prune it:
+    # its ownership belongs to the host and must not be rewritten from in here.
+    if [[ "$(stat -c %u "$KAKAO_HOME")" != "$uid" ]]; then
+        echo "[kakaotalk] Adopting uid $uid:$gid for $KAKAO_HOME ..."
+        find "$KAKAO_HOME" -path "$KAKAO_SHARE_DIR" -prune -o \
+            -exec chown -h "$uid:$gid" {} +
+    fi
+
+    exec setpriv --reuid="$uid" --regid="$gid" --init-groups "$0" "$@"
+fi
 
 # Korean input: wine connects to whichever XIM server owns the display, which
 # is the host session's ibus-x11 when /tmp/.X11-unix is shared.
@@ -55,7 +80,7 @@ if [[ -d "$KAKAO_SHARE_DIR" ]]; then
     # Make it the Windows "Downloads" folder too, so received files land there
     # by default. Only replace the directory wine created if it is still empty
     # -- never discard files someone already has in the prefix.
-    WIN_DOWNLOADS="$WINEPREFIX/drive_c/users/root/Downloads"
+    WIN_DOWNLOADS="$WINEPREFIX/drive_c/users/$KAKAO_USER/Downloads"
     if [[ ! -L "$WIN_DOWNLOADS" ]]; then
         if rmdir "$WIN_DOWNLOADS" 2> /dev/null; then
             ln -sfn "$KAKAO_SHARE_DIR" "$WIN_DOWNLOADS"

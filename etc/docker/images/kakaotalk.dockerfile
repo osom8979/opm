@@ -7,10 +7,17 @@ ENV LANGUAGE=ko_KR:ko
 ENV LC_ALL=ko_KR.UTF-8
 ENV TZ=Asia/Seoul
 
+# KakaoTalk runs as this unprivileged account rather than as root. The
+# entrypoint re-maps it onto the host's uid at startup, so files written into
+# the shared directory stay owned -- and editable -- by the host user.
+ENV KAKAO_USER=kakao
+ENV KAKAO_HOME=/home/kakao
+ENV HOME=/home/kakao
+
 # Wine runs against this prefix. Mount it as a volume at runtime so the
 # KakaoTalk installation and login session survive container restarts.
 ENV WINEARCH=win64
-ENV WINEPREFIX=/root/.wine
+ENV WINEPREFIX=/home/kakao/.wine
 ENV WINEDEBUG=-all
 # Suppress the Mono/Gecko installation dialogs during prefix bootstrap.
 ENV WINEDLLOVERRIDES="mscoree,mshtml="
@@ -23,7 +30,7 @@ ENV QT_IM_MODULE=ibus
 
 # Bind-mounted from the host at runtime; the directory KakaoTalk reads sent
 # files from and writes received ones to.
-ENV KAKAO_SHARE_DIR=/root/Downloads
+ENV KAKAO_SHARE_DIR=/home/kakao/Downloads
 
 ENV KAKAO_SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/x64/KakaoTalk_Setup.exe"
 ENV KAKAO_SETUP_PATH=/opt/kakaotalk/KakaoTalk_Setup.exe
@@ -41,6 +48,16 @@ RUN dpkg --add-architecture i386 && \
         libpulse0 libpulse0:i386 \
         fonts-nanum fonts-nanum-coding fonts-nanum-extra && \
     rm -rf /var/lib/apt/lists/*
+
+# The account KakaoTalk runs under. Ubuntu 24.04 ships a stock "ubuntu" user on
+# uid 1000, which is exactly the uid most desktop hosts hand out, so drop it to
+# leave that number free for the entrypoint to claim. Directories that back a
+# mount are pre-created and owned here, since docker copies their ownership onto
+# a fresh volume.
+RUN { userdel -r ubuntu || true; } 2> /dev/null && \
+    useradd --create-home --uid 1000 --user-group --shell /bin/bash kakao && \
+    mkdir -p /home/kakao/.wine /home/kakao/Downloads /home/kakao/.config/pulse && \
+    chown -R kakao:kakao /home/kakao
 
 # Korean locale and Asia/Seoul timezone.
 RUN sed -i 's/^# *\(ko_KR.UTF-8\)/\1/' /etc/locale.gen && \
