@@ -27,4 +27,27 @@ if ! docker image inspect "$KAKAO_IMAGE" &> /dev/null; then
     fi
 fi
 
-bash "$IMAGES_DIR/kakaotalk.run.sh" "$@" &
+LOG_FILE="$OPM_HOME/var/log/kakaotalk.log"
+mkdir -p "$(dirname "$LOG_FILE")"
+
+# The GUI outlives this shell, so the container runs detached from the terminal
+# -- and since it is started with --rm, dying takes the container away and
+# "docker logs" with it. Keep the output on disk instead: without it a crash
+# leaves nothing at all to look at. Redirecting also detaches stdin, which keeps
+# the run from asking docker for a tty it can no longer reach.
+bash "$IMAGES_DIR/kakaotalk.run.sh" "$@" < /dev/null &> "$LOG_FILE" &
+RUN_PID=$!
+
+# Long enough for the failures that are immediate -- unreadable X cookie, a name
+# still held by an earlier container, a broken image. A healthy launch is only
+# just past wineboot at this point and keeps going in the background.
+sleep 3
+
+if kill -0 "$RUN_PID" 2> /dev/null; then
+    opm-println-info "KakaoTalk is starting; logging to $LOG_FILE"
+else
+    wait "$RUN_PID"
+    opm-println-error "KakaoTalk exited immediately (exit $?)"
+    tail -n 20 "$LOG_FILE" >&2
+    exit 1
+fi
