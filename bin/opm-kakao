@@ -4,33 +4,27 @@ if ! command -v opm-version &> /dev/null; then
 PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
 fi
 
-WINEPREFIX=$(source opm-wine64-env && echo -n "$WINEPREFIX")
-if [[ -z $WINEPREFIX ]]; then
-    opm-println-error "Not found wine prefix"
+if [[ -z $OPM_HOME ]]; then
+OPM_HOME=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit; pwd)
+fi
+
+IMAGES_DIR="$OPM_HOME/etc/docker/images"
+KAKAO_IMAGE="${KAKAO_IMAGE:-osom8979/kakaotalk:latest}"
+export KAKAO_IMAGE
+
+if ! command -v docker &> /dev/null; then
+    opm-println-error "Not found docker command"
     exit 1
 fi
 
-KAKAO_SUFFIX="Program Files/Kakao/KakaoTalk/KakaoTalk.exe"
-KAKAO_PATH="$WINEPREFIX/drive_c/$KAKAO_SUFFIX"
-TEMP_DIR="$WINEPREFIX/temp"
-# SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/KakaoTalk_Setup.exe"
-# SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/under_win10/KakaoTalk_Setup.exe"
-SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/x64/KakaoTalk_Setup.exe"
-SETUP_PATH="$TEMP_DIR/KakaoTalk_Setup.exe"
-
-if [[ ! -f "$KAKAO_PATH" ]]; then
-    opm-println-warn "Not found KakaoTalk.exe file"
-
-    if [[ ! -d "$TEMP_DIR" ]]; then
-        mkdir -vp "$TEMP_DIR"
+# The first run has no image yet; building it pulls wine and the installer, so
+# it takes a while and lands a few gigabytes on disk.
+if ! docker image inspect "$KAKAO_IMAGE" &> /dev/null; then
+    opm-println-warn "Not found $KAKAO_IMAGE image; building it now"
+    if ! bash "$IMAGES_DIR/kakaotalk.build.sh"; then
+        opm-println-error "Image build failed"
+        exit 1
     fi
-
-    if [[ ! -f "$SETUP_PATH" ]]; then
-        curl -o "$SETUP_PATH" "$SETUP_URL"
-    fi
-
-    opm-wine64 "$SETUP_PATH"
-    exit $?
 fi
 
-opm-wine64 "$KAKAO_PATH" "$@" &
+bash "$IMAGES_DIR/kakaotalk.run.sh" "$@" &

@@ -31,8 +31,13 @@ fi
 chmod 644 "$XAUTH"
 
 ARGS=(
-    --rm -it
+    --rm
     --name kakaotalk
+    # Wine draws through the MIT-SHM X extension, which needs the X server and
+    # the client to share memory segments. A private ipc namespace makes every
+    # X_ShmPutImage fail with BadValue and takes the app down with it, so join
+    # the host's -- the same trust boundary the X socket already crosses.
+    --ipc=host
     -e DISPLAY="$DISPLAY"
     -e XAUTHORITY="$XAUTH"
     -e KAKAO_SILENT="${KAKAO_SILENT:-0}"
@@ -46,6 +51,12 @@ ARGS=(
     -v "$VOLUME":"$GUEST_HOME/.wine"
     -v "$SHARE":"$GUEST_HOME/Downloads"
 )
+
+# Only ask for a terminal when there is one to give. The GUI needs no console,
+# so this stays usable when launched in the background or from a pipe.
+if [[ -t 0 && -t 1 ]]; then
+    ARGS+=(-it)
+fi
 
 # Notification sounds: hand over the desktop's PulseAudio socket. PipeWire
 # serves the same socket through pipewire-pulse, so both work unchanged.
