@@ -1,0 +1,24 @@
+USER_UID=@USER_UID@
+USER_GID=@USER_GID@
+DOCKER_GID=@DOCKER_GID@
+
+# https://github.com/coder/coder/blob/main/compose.yaml
+
+# PostgreSQL
+POSTGRES_USER=coder
+POSTGRES_PASSWORD=@POSTGRES_PASSWORD@
+POSTGRES_DB=coder
+
+# Coder
+CODER_VERSION=latest
+CODER_PORT=7080
+CODER_PG_CONNECTION_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?sslmode=disable
+CODER_TELEMETRY_ENABLE=false
+
+# Workspace 에서 도달 가능한 주소여야 한다. (localhost/127.0.0.1 사용 불가)
+CODER_ACCESS_URL=http://@CODER_HOSTNAME@:7080
+
+# Port forwarding 용 와일드카드 도메인. (미사용 시 비워둔다)
+CODER_WILDCARD_ACCESS_URL=
+## OR
+# CODER_WILDCARD_ACCESS_URL=*.coder.example.com
