@@ -1,0 +1,99 @@
+# ---------------------------------------------------------------------------
+# CNCF Distribution (registry:3) -- S3 backend behind a Cloudflare Tunnel.
+#
+# This file holds the STRUCTURE and the reasoning. Host-specific values and
+# secrets come from .env via REGISTRY_* environment overrides in
+# docker-compose.yml, which win over whatever is written here. The literals
+# below are therefore safe defaults / placeholders, not the effective config.
+#
+# v3 dropped the `registry validate` subcommand -- config errors surface at
+# boot instead:
+#   docker compose logs registry
+# and to see which overrides are actually live:
+#   docker compose exec registry env | grep ^REGISTRY_
+# ---------------------------------------------------------------------------
+version: 0.1
+
+log:
+  level: info
+  formatter: text
+  accesslog:
+    disabled: false
+
+storage:
+  s3:
+    # --- overridden from .env -------------------------------------------
+    region: us-east-1
+    bucket: registry
+    regionendpoint: https://s3.invalid
+    # --- fixed by the tunnel topology, not per-host ----------------------
+    # v3 flipped the default of forcepathstyle from true to false. A custom
+    # endpoint has no wildcard DNS behind it, so virtual-host style requests
+    # would resolve nowhere: keep this true for any S3-compatible backend.
+    forcepathstyle: true
+    secure: true
+    v4auth: true
+
+    # Part size for multipart uploads (WriteStream). This is THE knob that
+    # keeps the tunnel leg under Cloudflare's request body cap. Three bounds:
+    #   lower  - S3 requires >= 5 MiB per part
+    #   upper  - Cloudflare body cap (100 MB Free/Pro, 200 MB Business,
+    #            500 MB Enterprise); stay well clear of it
+    #   time   - one part must complete inside the Proxy Read Timeout (100 s
+    #            by default), so uplink >= chunksize / 100 s.
+    #            32 MiB => 2.7 Mbps bare minimum, 10 Mbps+ to be comfortable.
+    # Lower it (8-16 MiB) if the S3 site has a slow uplink.
+    chunksize: 33554432
+
+    # Blob commit moves the staged upload into place with a multipart copy.
+    # Copies are server-side (no request body), so the body cap does not
+    # apply -- but concurrency does: the default of 100 fires 100 concurrent
+    # part requests at a single cloudflared process. 8-16 is sane.
+    multipartcopychunksize: 33554432
+    multipartcopythresholdsize: 33554432
+    multipartcopymaxconcurrency: 8
+
+  delete:
+    # Needed for `registry garbage-collect` to be able to reclaim anything,
+    # and for clients to delete manifests/tags.
+    enabled: true
+
+  cache:
+    # Descriptor cache only -- blob BODIES are not cached, so every pull of a
+    # cold layer is a full round trip through the tunnel. See README.
+    blobdescriptor: inmemory
+
+  maintenance:
+    uploadpurging:
+      # Abandoned uploads otherwise sit in S3 forever paying rent.
+      enabled: true
+      age: 168h
+      interval: 24h
+      dryrun: false
+
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+  debug:
+    # Unauthenticated, container-local: /debug/health for the healthcheck,
+    # /metrics for Prometheus. Never publish this port.
+    addr: :5001
+    prometheus:
+      enabled: true
+      path: /metrics
+
+auth:
+  htpasswd:
+    realm: basic-realm
+    # bcrypt ONLY -- Distribution silently ignores entries hashed any other
+    # way, which reads as "wrong password". Generate with ./generate-htpasswd.
+    path: /etc/distribution/htpasswd
+
+health:
+  storagedriver:
+    # Makes /debug/health (and therefore the container's health status) go red
+    # when S3 is unreachable -- i.e. when the tunnel is down.
+    enabled: true
+    interval: 30s
+    threshold: 3

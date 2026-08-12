@@ -1,0 +1,31 @@
+USER_UID=@USER_UID@
+USER_GID=@USER_GID@
+
+# Registry
+REGISTRY_VERSION=3
+# Published on loopback only; the reverse proxy in front reaches it here.
+REGISTRY_PORT=5000
+# Public name clients push/pull with. MUST be DNS-only (grey cloud) in
+# Cloudflare -- proxied means a 100 MB cap on every layer.
+REGISTRY_DOMAIN=@REGISTRY_DOMAIN@
+# Signs upload state handed back to clients. Must be identical across
+# instances if you ever run more than one registry.
+REGISTRY_HTTP_SECRET=@REGISTRY_HTTP_SECRET@
+
+# Remote S3, reached through the Cloudflare Tunnel that runs on the S3 site.
+# The hostname here is the tunnel's public hostname, not the S3 host itself.
+S3_ENDPOINT_URL=https://@S3_HOSTNAME@
+S3_BUCKET=registry
+S3_REGION=us-east-1
+AWS_ACCESS_KEY_ID=@AWS_ACCESS_KEY_ID@
+AWS_SECRET_ACCESS_KEY=@AWS_SECRET_ACCESS_KEY@
+
+# Multipart tuning -- keeps the tunnel leg under Cloudflare's request body cap
+# (100 MB Free/Pro, 200 MB Business, 500 MB Enterprise) and each part inside
+# the 100 s Proxy Read Timeout. 32 MiB needs >= 2.7 Mbps uplink at the S3 site;
+# drop to 8-16 MiB if it is slower. Minimum allowed by S3 is 5 MiB.
+S3_CHUNKSIZE=33554432
+S3_MULTIPART_COPY_CHUNKSIZE=33554432
+S3_MULTIPART_COPY_THRESHOLDSIZE=33554432
+# Default is 100, which stampedes a single cloudflared process on blob commit.
+S3_MULTIPART_COPY_MAXCONCURRENCY=8

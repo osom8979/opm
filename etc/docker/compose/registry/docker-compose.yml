@@ -1,0 +1,100 @@
+# ---------------------------------------------------------------------------
+# Self-hosted OCI registry whose blobs live on a REMOTE S3 reached through a
+# Cloudflare Tunnel:
+#
+#   docker push --[no size cap]--> registry --[32 MiB parts]--> Cloudflare edge
+#                                                            --> cloudflared
+#                                                            --> S3
+#
+# Why the split: the Cloudflare proxy caps request bodies (100 MB on Free/Pro,
+# 200 MB Business, 500 MB Enterprise, 413 past that). `docker push` sends a
+# whole layer in a single request and the client cannot chunk it, so the FRONT
+# door must stay off the proxy -- DNS-only (grey cloud), TLS terminated by
+# whatever reverse proxy this host already runs. The registry -> S3 leg is fine
+# because the registry, not the client, picks the multipart part size. See
+# config/config.yml for the numbers.
+#
+#   ./generate-env                  # once, writes .env
+#   ./generate-htpasswd <user>      # once, writes htpasswd
+#   docker compose up -d
+#   docker compose down
+# ---------------------------------------------------------------------------
+
+services:
+  # Creates the bucket if it is missing, and doubles as the first real proof
+  # that the tunnel + SigV4 path works: if this job passes, the registry can
+  # talk to S3.
+  create-bucket:
+    image: amazon/aws-cli:2.33.25
+    container_name: registry-create-bucket
+    entrypoint: >
+      /bin/sh -c "
+        set -e;
+        echo 'Checking bucket ${S3_BUCKET} on ${S3_ENDPOINT_URL} ...';
+        if aws --endpoint-url=${S3_ENDPOINT_URL} s3api head-bucket --bucket ${S3_BUCKET} 2>/dev/null; then
+          echo 'Bucket ${S3_BUCKET} already exists. Skipping creation.';
+        else
+          echo 'Creating bucket ${S3_BUCKET}...';
+          aws --endpoint-url=${S3_ENDPOINT_URL} s3api create-bucket --bucket ${S3_BUCKET} --region ${S3_REGION};
+        fi
+      "
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${S3_REGION}
+      # A custom endpoint has no wildcard DNS behind it; force path-style.
+      AWS_S3_ADDRESSING_STYLE: path
+      # botocore 1.36+ defaults to checksum-trailer (aws-chunked) bodies with
+      # no Content-Length, which RustFS rejects on UploadPart and which the
+      # Cloudflare edge would have to buffer just to size-check. Pin it off.
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+    restart: "no"
+
+  registry:
+    image: registry:${REGISTRY_VERSION}
+    container_name: registry-server
+    depends_on:
+      create-bucket:
+        condition: service_completed_successfully
+    environment:
+      # config/config.yml carries the structure and the tuning rationale.
+      # These override the values that are host-specific or must not be
+      # committed. Override syntax: REGISTRY_ + the config path joined by '_'.
+      REGISTRY_HTTP_SECRET: ${REGISTRY_HTTP_SECRET}
+      REGISTRY_STORAGE_S3_REGIONENDPOINT: ${S3_ENDPOINT_URL}
+      REGISTRY_STORAGE_S3_BUCKET: ${S3_BUCKET}
+      REGISTRY_STORAGE_S3_REGION: ${S3_REGION}
+      REGISTRY_STORAGE_S3_ACCESSKEY: ${AWS_ACCESS_KEY_ID}
+      REGISTRY_STORAGE_S3_SECRETKEY: ${AWS_SECRET_ACCESS_KEY}
+      REGISTRY_STORAGE_S3_CHUNKSIZE: ${S3_CHUNKSIZE}
+      REGISTRY_STORAGE_S3_MULTIPARTCOPYCHUNKSIZE: ${S3_MULTIPART_COPY_CHUNKSIZE}
+      REGISTRY_STORAGE_S3_MULTIPARTCOPYTHRESHOLDSIZE: ${S3_MULTIPART_COPY_THRESHOLDSIZE}
+      REGISTRY_STORAGE_S3_MULTIPARTCOPYMAXCONCURRENCY: ${S3_MULTIPART_COPY_MAXCONCURRENCY}
+      # Same aws-chunked story as create-bucket, this time for aws-sdk-go-v2,
+      # which the v3 S3 driver uses. Without this, UploadPart fails against
+      # RustFS/MinIO with MissingContentLength.
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+    volumes:
+      # v3 reads /etc/distribution/config.yml (v2 used /etc/docker/registry).
+      - ./config/config.yml:/etc/distribution/config.yml:ro
+      - ./htpasswd:/etc/distribution/htpasswd:ro
+    ports:
+      # Bind to loopback: the reverse proxy in front terminates TLS and is the
+      # only thing that should reach 5000. Drop the 127.0.0.1 prefix only if
+      # the proxy lives on another host.
+      - "127.0.0.1:${REGISTRY_PORT}:5000"
+    restart: unless-stopped
+    healthcheck:
+      # /v2/ sits behind htpasswd, the debug listener does not. With
+      # health.storagedriver enabled this also fails when the tunnel is down.
+      test: ["CMD", "wget", "-q", "-O-", "http://127.0.0.1:5001/debug/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+networks:
+  default:
+    name: registry-network
