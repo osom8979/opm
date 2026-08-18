@@ -1,0 +1,38 @@
+USER_UID=@USER_UID@
+USER_GID=@USER_GID@
+
+# RustFS
+# `latest` still points at a beta build; pin an explicit release candidate.
+# https://hub.docker.com/r/rustfs/rustfs/tags
+RUSTFS_VERSION=1.0.0-rc.2
+
+# THE directory this stack serves. RustFS owns the layout inside it -- it is a
+# storage backend, not a filesystem gateway, so files that are already there
+# will NOT show up as objects. See README.
+# Relative paths must start with './' and resolve against this directory.
+RUSTFS_DATA_DIR=./data
+
+# Published on loopback only; the tunnel or reverse proxy in front reaches it
+# here. Set to 0.0.0.0 to expose it on the LAN directly.
+BIND_ADDRESS=127.0.0.1
+RUSTFS_S3_PORT=9000
+RUSTFS_CONSOLE_PORT=9001
+
+# Embedded web console on RUSTFS_CONSOLE_PORT. Turn it off once the credentials
+# below are the only thing standing between the network and the data.
+RUSTFS_CONSOLE_ENABLE=true
+
+# Root credentials. Every S3 client -- and the console -- uses these.
+RUSTFS_ACCESS_KEY=@RUSTFS_ACCESS_KEY@
+RUSTFS_SECRET_KEY=@RUSTFS_SECRET_KEY@
+
+# Reported to S3 clients. SigV4 signs it, so consumers must agree with it.
+RUSTFS_REGION=us-east-1
+
+# warn | info | debug | trace. Logs go to stdout (`docker compose logs`).
+RUSTFS_LOG_LEVEL=info
+
+# Buckets created at startup, space separated. Leave empty to skip -- consumers
+# that bootstrap their own bucket (e.g. the ../registry stack) do not need one
+# here.
+S3_BUCKETS=

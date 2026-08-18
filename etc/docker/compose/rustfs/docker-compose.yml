@@ -1,0 +1,109 @@
+# ---------------------------------------------------------------------------
+# Self-hosted S3 on top of one host directory, served by RustFS.
+#
+#   S3 client --[SigV4, path-style]--> rustfs :9000 --> ${RUSTFS_DATA_DIR}
+#                                      console :9001
+#
+# RustFS is a STORAGE BACKEND, not a filesystem gateway: it owns the layout
+# under ${RUSTFS_DATA_DIR} (buckets as directories, objects as data + xl.meta
+# sidecars, MinIO-compatible). Point it at an empty directory. Files that are
+# already in that directory do not become objects, and objects written through
+# S3 are not meant to be edited on disk behind RustFS's back.
+#
+# Both listeners bind to ${BIND_ADDRESS} (127.0.0.1 by default) -- whatever
+# fronts this host (the shared ../caddy stack, or a Cloudflare Tunnel) is the
+# only thing that should reach them. ../registry is one such consumer: it
+# stores its blobs here over a tunnel.
+#
+#   ./generate-env                  # once, writes .env
+#   docker compose up -d
+#   docker compose down
+# ---------------------------------------------------------------------------
+
+services:
+  rustfs:
+    image: rustfs/rustfs:${RUSTFS_VERSION}
+    container_name: rustfs-server
+    security_opt:
+      - "no-new-privileges:true"
+    # The image ships a `rustfs` user at 10001 and chowns /data to it. A bind
+    # mount brings the HOST's ownership instead, so run as the host user and
+    # the directory just works -- no chown -R over an existing data set.
+    user: ${USER_UID:?err}:${USER_GID:?err}
+    environment:
+      # Single volume: everything lives in the one bind-mounted directory.
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_CONSOLE_ENABLE: ${RUSTFS_CONSOLE_ENABLE}
+      RUSTFS_REGION: ${RUSTFS_REGION}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?err}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?err}
+      RUSTFS_OBS_LOGGER_LEVEL: ${RUSTFS_LOG_LEVEL}
+      # The image defaults this to /logs, which is chmod 0750 root-of-10001 and
+      # therefore unwritable once `user:` above overrides the runtime user.
+      # Empty makes the entrypoint log to stdout, where compose can see it.
+      RUSTFS_OBS_LOG_DIRECTORY: ""
+      # Virtual-hosted-style requests (bucket.host) need this AND wildcard DNS
+      # behind the endpoint. Leave it unset: consumers here use path-style
+      # (../registry pins `forcepathstyle: true` for exactly this reason).
+      # RUSTFS_SERVER_DOMAINS: s3.example.com
+      TZ: Asia/Seoul
+    volumes:
+      - ${RUSTFS_DATA_DIR}:/data
+    ports:
+      - "${BIND_ADDRESS}:${RUSTFS_S3_PORT}:9000"
+      - "${BIND_ADDRESS}:${RUSTFS_CONSOLE_PORT}:9001"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "10"
+    healthcheck:
+      # Unauthenticated probe (RUSTFS_HEALTH_ENDPOINT_ENABLE defaults to true).
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Creates the buckets listed in S3_BUCKETS, and doubles as proof that the
+  # SigV4 path works. A no-op when S3_BUCKETS is empty.
+  create-bucket:
+    image: amazon/aws-cli:2.33.25
+    container_name: rustfs-create-bucket
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+        set -e;
+        if [ -z '${S3_BUCKETS}' ]; then
+          echo 'S3_BUCKETS is empty. Nothing to create.';
+          exit 0;
+        fi;
+        for bucket in ${S3_BUCKETS}; do
+          if aws --endpoint-url=http://rustfs:9000 s3api head-bucket --bucket $$bucket 2>/dev/null; then
+            echo 'Bucket' $$bucket 'already exists. Skipping creation.';
+          else
+            echo 'Creating bucket' $$bucket '...';
+            aws --endpoint-url=http://rustfs:9000 s3api create-bucket --bucket $$bucket --region ${RUSTFS_REGION};
+          fi;
+        done
+      "
+    environment:
+      AWS_ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY}
+      AWS_DEFAULT_REGION: ${RUSTFS_REGION}
+      # No wildcard DNS behind a custom endpoint; force path-style.
+      AWS_S3_ADDRESSING_STYLE: path
+      # botocore 1.36+ defaults to checksum-trailer (aws-chunked) bodies with
+      # no Content-Length, which RustFS rejects on UploadPart. Pin it off.
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+    restart: "no"
+
+networks:
+  default:
+    name: rustfs-network
