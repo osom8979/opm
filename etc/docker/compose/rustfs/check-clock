@@ -182,8 +182,23 @@ wait_for_sync() {
 
 confirm() {
     [ "$ASSUME_YES" -eq 1 ] && return 0
-    printf "%s [y/N] " "$1"
-    read -r reply
+
+    local reply=""
+
+    if [ -r /dev/tty ]; then
+        exec 9< /dev/tty
+        # sudo's password prompt leaves a newline queued behind it. Without
+        # dropping it first the question answers itself with the default
+        # before the user ever sees it.
+        while IFS= read -r -t 0.05 -u 9 _; do :; done
+        printf "%s [y/N] " "$1"
+        IFS= read -r -u 9 reply
+        exec 9<&-
+    else
+        printf "%s [y/N] " "$1"
+        IFS= read -r reply || return 1
+    fi
+
     case "$reply" in
         [yY]|[yY][eE][sS]) return 0 ;;
         *) return 1 ;;
@@ -298,7 +313,7 @@ if [ "$FIX" -eq 1 ] && [ "$verdict" -ne 0 ]; then
                 verdict=$(verdict_of "$offset")
             }
         else
-            yellow "  Skipped."
+            yellow "  Skipped. Re-run with --fix -y to set it without asking."
         fi
     fi
 
