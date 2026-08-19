@@ -61,6 +61,35 @@ docker compose down               # 중지
 docker compose down -v            # 볼륨 포함 초기화
 ```
 
+## DGX Spark 워크스페이스 이미지
+
+`dgx-spark.dockerfile` 은 DGX Spark(GB10, arm64) 에서 사용할 워크스페이스
+이미지다. Ubuntu 24.04 + CUDA 13.0 + cuDNN 위에 Python 3.12 가상환경
+(`/opt/venv`) 과 PyTorch(cu130), `gh`, `uv`, `ffmpeg` 를 미리 설치한다.
+
+```bash
+# DGX Spark 에서 직접 빌드
+docker build -f dgx-spark.dockerfile -t coder-dgx-spark:cuda13 .
+
+# 확인
+docker run --rm --gpus all coder-dgx-spark:cuda13 \
+    python -c "import torch; print(torch.cuda.get_device_name(0), torch.cuda.is_available())"
+```
+
+Coder 템플릿(`Docker Containers`) 의 `main.tf` 에서 이미지를 교체한다.
+
+```hcl
+resource "docker_container" "workspace" {
+  count = data.coder_workspace.me.start_count
+  image = "coder-dgx-spark:cuda13"
+  ...
+}
+```
+
+GB10 은 compute capability `sm_121` 이라 cu128 휠은 사용할 수 없고 cu130 휠이
+필요하다. `torchaudio` 는 aarch64 + cu130 휠 배포가 중단되어 제외했으며,
+오디오/비디오 디코딩은 `torchcodec` 이 대신한다.
+
 ## 참고
 
 - 공식 Compose: <https://github.com/coder/coder/blob/main/compose.yaml>
