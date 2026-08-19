@@ -36,3 +36,11 @@ RUSTFS_LOG_LEVEL=info
 # that bootstrap their own bucket (e.g. the ../registry stack) do not need one
 # here.
 S3_BUCKETS=
+
+# Browser uploads (presigned PUT from a web app) need a bucket CORS rule. List
+# the buckets browsers reach and the origins allowed to reach them, both space
+# separated; leave either empty to skip. `configure-cors` applies them at
+# startup and REPLACES each bucket's CORS configuration, so this is the whole
+# truth for the buckets listed here.
+S3_CORS_BUCKETS=
+S3_CORS_ORIGINS=

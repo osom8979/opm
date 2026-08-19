@@ -104,6 +104,49 @@ services:
       AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
     restart: "no"
 
+  # Applies the bucket CORS rules that browser uploads need. A web app handing
+  # the browser a presigned URL has it PUT straight to this endpoint, and the
+  # browser refuses unless the bucket answers the preflight -- which RustFS only
+  # does for buckets that have a CORS configuration. ExposeHeaders must carry
+  # ETag: multipart clients read it off each part's response.
+  #
+  # A no-op when either variable is empty. NOTE: PutBucketCors REPLACES a
+  # bucket's whole configuration, so what is listed here is the whole truth for
+  # these buckets -- rules added elsewhere are dropped on the next `up`.
+  configure-cors:
+    image: amazon/aws-cli:2.33.25
+    container_name: rustfs-configure-cors
+    depends_on:
+      rustfs:
+        condition: service_healthy
+      create-bucket:
+        condition: service_completed_successfully
+    # `set -f` keeps the shorthand's [*] from being read as a glob, which is why
+    # the rules can stay unquoted (they hold no whitespace).
+    entrypoint: >
+      /bin/sh -c "
+        set -ef;
+        if [ -z '${S3_CORS_BUCKETS:-}' ] || [ -z '${S3_CORS_ORIGINS:-}' ]; then
+          echo 'S3_CORS_BUCKETS or S3_CORS_ORIGINS is empty. Nothing to configure.';
+          exit 0;
+        fi;
+        origins=$$(echo '${S3_CORS_ORIGINS:-}' | tr -s ' ' ',');
+        rules='CORSRules=[{AllowedOrigins=['$$origins'],AllowedMethods=[GET,PUT,POST,DELETE,HEAD],AllowedHeaders=[*],ExposeHeaders=[ETag,Content-Length,Content-Range,Accept-Ranges],MaxAgeSeconds=3000}]';
+        for bucket in ${S3_CORS_BUCKETS:-}; do
+          echo 'Applying CORS rules to' $$bucket 'for' $$origins '...';
+          aws --endpoint-url=http://rustfs:9000 s3api put-bucket-cors --bucket $$bucket --cors-configuration $$rules;
+        done
+      "
+    environment:
+      AWS_ACCESS_KEY_ID: ${RUSTFS_ACCESS_KEY}
+      AWS_SECRET_ACCESS_KEY: ${RUSTFS_SECRET_KEY}
+      AWS_DEFAULT_REGION: ${RUSTFS_REGION}
+      AWS_S3_ADDRESSING_STYLE: path
+      # PutBucketCors requires a body checksum; leave the CLI free to add one.
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+    restart: "no"
+
 networks:
   default:
     name: rustfs-network

@@ -29,7 +29,7 @@ RustFS is not.
 
 | File | Purpose |
 | --- | --- |
-| `docker-compose.yml` | RustFS server + optional bucket bootstrap |
+| `docker-compose.yml` | RustFS server + optional bucket and CORS bootstrap |
 | `env-template` → `.env` | host-specific values and credentials |
 | `generate-env` | writes `.env`, generates the root access/secret key |
 | `s3` | `aws-cli` wrapper pointed at this stack |
@@ -129,6 +129,62 @@ consumers in this repo do not need it — `../registry` pins
 
 ---
 
+## Browser uploads (CORS)
+
+An app that hands the browser a presigned URL has the browser PUT straight to
+this endpoint, and the browser blocks that unless the bucket answers the
+preflight. RustFS answers it only for buckets that carry a CORS configuration —
+without one, every direct upload fails with `Access-Control-Allow-Origin`
+missing, on a preflight that returned `200`.
+
+List the buckets browsers reach and the origins allowed to reach them in
+`.env`, both space separated:
+
+```env
+S3_CORS_BUCKETS=root
+S3_CORS_ORIGINS=https://app.example.com http://localhost:5173
+```
+
+`configure-cors` applies them once the buckets exist:
+
+```bash
+docker compose up -d configure-cors
+docker compose logs configure-cors
+./s3 s3api get-bucket-cors --bucket root
+```
+
+The rule it writes is wider than "allow the origin", and each part earns its
+place:
+
+| Field | Value | Why |
+| --- | --- | --- |
+| `AllowedMethods` | GET, PUT, POST, DELETE, HEAD | POST creates and completes a multipart upload, DELETE aborts it |
+| `AllowedHeaders` | `*` | uploads carry `content-type`, and object metadata rides in `x-amz-meta-*` |
+| `ExposeHeaders` | ETag, Content-Length, Content-Range, Accept-Ranges | **ETag is not optional** — multipart clients read it off each part's response, so leaving it out breaks uploads *after* the origin is already allowed |
+| `MaxAgeSeconds` | 3000 | preflight cache; without it every part upload pays an extra round trip |
+
+Two things to know:
+
+- **`PutBucketCors` replaces the whole configuration.** For the buckets listed
+  in `S3_CORS_BUCKETS`, `.env` is the only truth — a rule added from anywhere
+  else is gone on the next `docker compose up`.
+- **Origins match exactly.** Scheme, host and port all count, so
+  `https://app.example.com` does nothing for `http://localhost:5173`.
+
+Verify from outside, through whatever fronts this host:
+
+```bash
+curl -i -X OPTIONS https://s3.example.com/root/probe \
+  -H 'Origin: https://app.example.com' \
+  -H 'Access-Control-Request-Method: PUT' \
+  -H 'Access-Control-Request-Headers: content-type'
+```
+
+The response must carry `access-control-allow-origin` for that origin. A bare
+`200` with no `access-control-*` header is the failure this section exists for.
+
+---
+
 ## Exposing it
 
 Both listeners bind to `${BIND_ADDRESS}` — `127.0.0.1` by default — so nothing
@@ -159,6 +215,13 @@ S3_BUCKETS=registry backups
 ```
 
 `create-bucket` runs after the server is healthy and skips buckets that exist.
+
+**Re-apply the CORS rules** — after editing `S3_CORS_BUCKETS` or
+`S3_CORS_ORIGINS`:
+
+```bash
+docker compose up -d configure-cors
+```
 
 **Rotate the root credentials** — edit `.env`, then
 `docker compose up -d rustfs`. Every consumer has to be updated in the same
@@ -201,6 +264,8 @@ running data directory can catch a half-written `xl.meta`.
 | `NoSuchBucket` for a name that resolves in a browser | client is using virtual-hosted style; force path-style |
 | Existing files in the directory are invisible | expected — see the note at the top |
 | `413` through a Cloudflare Tunnel | the proxy body cap; lower the client's multipart part size |
+| Browser upload blocked, `Access-Control-Allow-Origin` missing on a `200` preflight | the bucket has no CORS configuration — see Browser uploads |
+| Multipart upload fails with a missing ETag on a part | the CORS rule does not expose `ETag` |
 
 ---
 
