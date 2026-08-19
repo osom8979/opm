@@ -1,0 +1,489 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_TIMEOUT=8
+DEFAULT_SYNC_WAIT=45
+# Signed HTTP APIs refuse a request stamped further than this from the server's
+# clock. AWS SigV4 and every S3 clone answer `403 RequestTimeTooSkewed`, which
+# clients render as an authentication failure -- so a drifting clock is
+# indistinguishable from a wrong secret key until somebody measures it.
+DEFAULT_SKEW_LIMIT=900
+# Below this the difference is jitter, not drift.
+DEFAULT_OK_SKEW=2
+# Reference clocks, read over HTTPS rather than NTP: a host is usually
+# unsynchronised precisely because UDP 123 is blocked, and the measurement has
+# to work there. The trace endpoint carries sub-second precision, the Date
+# header only whole seconds -- ample against a fifteen-minute window.
+DEFAULT_REFERENCE_URL="https://cloudflare.com/cdn-cgi/trace"
+DEFAULT_FALLBACK_URL="https://www.google.com"
+
+USAGE_MESSAGE="
+Measure how far this host's clock sits from true time, and optionally correct it.
+
+  Usage: opm-check-clock-skew [options]
+
+Available options are:
+  -h, --help                Print this message.
+  -f, --fix                 Correct the clock. Asks the running NTP daemon
+                            first and sets the clock from the reference only
+                            when that leaves the offset in place. Needs root.
+  -y, --yes                 Skip the confirmation prompt.
+  -e, --endpoint=url        Also report the Date header this URL serves.
+  -c, --container=name      Also report the clock inside a docker container.
+  -w, --timeout=seconds     HTTP timeout (default: ${DEFAULT_TIMEOUT}s).
+  -l, --limit=seconds       Skew that breaks signed requests (default: ${DEFAULT_SKEW_LIMIT}s).
+  -v, --verbose             Be more verbose/talkative during the operation.
+  -s, --silent              Suppresses all messages.
+  --                        Skip handling options.
+
+Exit codes:
+  0   Clock is within ${DEFAULT_OK_SKEW}s of the reference.
+  1   Clock is off; signed requests break past the limit.
+  2   Usage error, missing command, or no reference clock reachable.
+
+Examples:
+  opm-check-clock-skew
+  opm-check-clock-skew -v
+  sudo opm-check-clock-skew --fix --yes
+  opm-check-clock-skew -e http://127.0.0.1:9000 -c rustfs-server
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+# date(1) grows a %N field only on GNU coreutils; whole seconds elsewhere.
+function now_float
+{
+    local now
+    now=$(date +%s.%N 2>/dev/null)
+    case $now in
+    *N*|"")
+        date +%s
+        ;;
+    *)
+        echo "$now"
+        ;;
+    esac
+}
+
+function abs_of
+{
+    awk -v offset="$1" 'BEGIN { printf "%.3f", (offset < 0 ? -offset : offset) }'
+}
+
+# Prints "<offset> <rtt> <source>". The offset is local minus true time, in
+# seconds; both local readings bracket the request so their midpoint cancels
+# most of the round trip.
+function measure_offset
+{
+    local timeout=$1
+    local began ended body stamp header served
+
+    began=$(now_float)
+    body=$(curl -fsS -m "$timeout" "$DEFAULT_REFERENCE_URL" 2>/dev/null)
+    ended=$(now_float)
+    stamp=$(sed -n 's/^ts=//p' <<< "$body" | head -1)
+    if [[ -n $stamp ]]; then
+        awk -v a="$began" -v b="$ended" -v s="$stamp" \
+            'BEGIN { printf "%.3f %.3f cloudflare\n", (a + b) / 2 - s, b - a }'
+        return 0
+    fi
+
+    began=$(now_float)
+    header=$(curl -fsS -m "$timeout" -D - -o /dev/null "$DEFAULT_FALLBACK_URL" 2>/dev/null \
+        | grep -i '^date:' | head -1 | sed 's/^[^:]*: *//' | tr -d '\r')
+    ended=$(now_float)
+    if [[ -n $header ]]; then
+        served=$(date -d "$header" +%s 2>/dev/null)
+        if [[ -n $served ]]; then
+            awk -v a="$began" -v b="$ended" -v s="$served" \
+                'BEGIN { printf "%.3f %.3f http-date\n", (a + b) / 2 - s, b - a }'
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+# 0 = within tolerance, 1 = drifting but still signable, 2 = past the limit.
+function verdict_of
+{
+    local absolute
+    absolute=$(abs_of "$1")
+    awk -v a="$absolute" -v ok="$DEFAULT_OK_SKEW" -v limit="$2" \
+        'BEGIN { print (a <= ok ? 0 : (a < limit ? 1 : 2)) }'
+}
+
+function ntp_daemon
+{
+    if command -v chronyc &> /dev/null; then
+        if systemctl is-active --quiet chrony 2> /dev/null \
+            || systemctl is-active --quiet chronyd 2> /dev/null; then
+            echo chrony
+            return 0
+        fi
+    fi
+    if systemctl is-active --quiet systemd-timesyncd 2> /dev/null; then
+        echo timesyncd
+        return 0
+    fi
+    if systemctl is-active --quiet ntp 2> /dev/null \
+        || systemctl is-active --quiet ntpsec 2> /dev/null; then
+        echo ntpd
+        return 0
+    fi
+    echo none
+}
+
+function wait_for_sync
+{
+    local waited
+    for ((waited = 0; waited < $1; waited++)); do
+        if [[ $(timedatectl show -p NTPSynchronized --value 2> /dev/null) == "yes" ]]; then
+            return 0
+        fi
+        sleep 1
+    done
+    return 1
+}
+
+function print_host_clock
+{
+    opm-println -v "local: $(date '+%F %T %Z')"
+    opm-println -v "utc: $(date -u '+%F %T UTC')"
+
+    if command -v timedatectl &> /dev/null; then
+        if [[ $(timedatectl show -p NTPSynchronized --value 2> /dev/null) == "yes" ]]; then
+            opm-println-info -s "✓ NTP synchronised ($(ntp_daemon))"
+        else
+            opm-println-warn -s "✗ NTP not synchronised ($(ntp_daemon)) -- the clock is on its own"
+        fi
+    fi
+
+    # A reboot restores the RTC, so a system clock corrected without writing it
+    # back comes up wrong again.
+    if [[ $(id -u) -eq 0 ]] && command -v hwclock &> /dev/null; then
+        opm-println -v "rtc: $(hwclock --show 2> /dev/null || echo unreadable)"
+    fi
+
+    if grep -qi microsoft /proc/version 2> /dev/null; then
+        opm-println-warn -s "WSL: its clock lags after the Windows host sleeps"
+    elif command -v systemd-detect-virt &> /dev/null; then
+        local virt
+        virt=$(systemd-detect-virt 2> /dev/null)
+        if [[ -n $virt && $virt != "none" ]]; then
+            opm-println -v "virtualised: $virt (guest clocks lag after the host suspends)"
+        fi
+    fi
+}
+
+function print_offset
+{
+    local offset=$1
+    local rtt=$2
+    local source=$3
+    local limit=$4
+    local absolute minutes direction
+
+    absolute=$(abs_of "$offset")
+    minutes=$(awk -v a="$absolute" 'BEGIN { printf "%.1f", a / 60 }')
+    direction=$(awk -v o="$offset" 'BEGIN { print (o < 0 ? "behind" : "ahead of") }')
+
+    opm-println -v "reference: $source (round trip ${rtt}s)"
+
+    case $(verdict_of "$offset" "$limit") in
+    0)
+        opm-println-info -s "✓ Clock is ${offset}s from true time"
+        ;;
+    1)
+        opm-println-warn -s "✗ Clock is ${minutes} minutes ${direction} true time (${offset}s)"
+        opm-println-warn -s "  Signs fine today, but not once it passes ${limit}s"
+        ;;
+    *)
+        opm-println-error "✗ Clock is ${minutes} minutes ${direction} true time (${offset}s)"
+        opm-println-error "  Past the ${limit}s window: signed APIs answer 403 (S3: RequestTimeTooSkewed)"
+        ;;
+    esac
+}
+
+function print_endpoint_clock
+{
+    local endpoint=$1
+    local timeout=$2
+    local served
+
+    served=$(curl -sS -m "$timeout" -D - -o /dev/null "$endpoint" 2> /dev/null \
+        | grep -i '^date:' | head -1 | sed 's/^[^:]*: *//' | tr -d '\r')
+
+    if [[ -z $served ]]; then
+        opm-println-warn -s "$endpoint served no Date header"
+        return 1
+    fi
+
+    opm-println -s "$endpoint says: $served"
+    opm-println-warn -v "behind a proxy or tunnel that is the PROXY's clock, not the origin's"
+}
+
+function print_container_clock
+{
+    local container=$1
+    local inside
+
+    if ! command -v docker &> /dev/null; then
+        opm-println-error "Not found docker command"
+        return 1
+    fi
+
+    inside=$(docker exec "$container" date -u '+%F %T UTC' 2> /dev/null)
+    if [[ -z $inside ]]; then
+        opm-println-warn -s "Could not read the clock in $container"
+        return 1
+    fi
+
+    # Containers read the host's clock. A disagreement means the runtime is
+    # running its own VM, which is where Docker Desktop drifts after a sleep.
+    opm-println -s "$container says: $inside"
+}
+
+# The sudo password prompt leaves a newline queued on the terminal. Without
+# dropping it the question answers itself with the default before the user
+# ever sees it.
+function ask_to_set_clock
+{
+    local prompt="Set the clock directly from the HTTPS reference?"
+
+    if [[ ! -r /dev/tty ]]; then
+        opm-yes-or-no "$prompt"
+        return $?
+    fi
+
+    exec 9< /dev/tty
+    while IFS= read -r -t 0.05 -u 9 _; do :; done
+    opm-yes-or-no "$prompt" <&9
+    local answered=$?
+    exec 9<&-
+    return $answered
+}
+
+function set_clock_from_reference
+{
+    local timeout=$1
+    local reading offset target
+
+    reading=$(measure_offset "$timeout")
+    if [[ -z $reading ]]; then
+        opm-println-error "Lost the reference clock"
+        return 1
+    fi
+
+    offset=$(awk '{ print $1 }' <<< "$reading")
+    target=$(awk -v now="$(now_float)" -v o="$offset" 'BEGIN { printf "%.0f", now - o }')
+
+    timedatectl set-ntp false &> /dev/null
+    if ! date -u -s "@$target" &> /dev/null; then
+        opm-println-error "Failed to set the clock"
+        return 1
+    fi
+    opm-println-info -s "✓ Clock set to $(date '+%F %T %Z')"
+
+    if command -v hwclock &> /dev/null; then
+        if hwclock --systohc 2> /dev/null; then
+            opm-println-info -s "✓ RTC written, so a reboot keeps it"
+        else
+            opm-println-warn -s "Could not write the RTC -- no battery-backed clock here"
+        fi
+    fi
+
+    # Leave NTP enabled: harmless while blocked, and it takes over the moment
+    # the port opens.
+    timedatectl set-ntp true &> /dev/null
+}
+
+function fix_clock
+{
+    local timeout=$1
+    local limit=$2
+    local skip_confirm=$3
+    local reading offset
+
+    case $(ntp_daemon) in
+    chrony)
+        opm-println -s "Stepping the clock with chrony ..."
+        chronyc makestep &> /dev/null
+        chronyc waitsync 10 0.5 &> /dev/null
+        ;;
+    ntpd)
+        opm-println -s "Restarting the NTP daemon ..."
+        systemctl restart ntp &> /dev/null || systemctl restart ntpsec &> /dev/null
+        wait_for_sync "$DEFAULT_SYNC_WAIT"
+        ;;
+    *)
+        opm-println -s "Enabling NTP and restarting systemd-timesyncd ..."
+        timedatectl set-ntp true &> /dev/null
+        systemctl restart systemd-timesyncd &> /dev/null
+        wait_for_sync "$DEFAULT_SYNC_WAIT"
+        ;;
+    esac
+
+    reading=$(measure_offset "$timeout")
+    offset=$(awk '{ print $1 }' <<< "$reading")
+    if [[ -n $offset && $(verdict_of "$offset" "$limit") -eq 0 ]]; then
+        return 0
+    fi
+
+    # NTP quietly does nothing when UDP 123 is blocked, which is the usual
+    # reason a host drifted this far in the first place.
+    opm-println-warn -s "NTP did not correct it -- UDP 123 is most likely blocked"
+
+    if [[ $skip_confirm -eq 0 ]] && ! ask_to_set_clock; then
+        opm-println-warn "Aborted. Re-run with --yes to set the clock without asking"
+        return 1
+    fi
+
+    set_clock_from_reference "$timeout"
+}
+
+function opm_check_clock_skew_main
+{
+    local fix_flag=0
+    local skip_confirm=0
+    local verbose_flag=0
+    local silent_flag=0
+    local endpoint=""
+    local container=""
+    local timeout=$DEFAULT_TIMEOUT
+    local limit=$DEFAULT_SKEW_LIMIT
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -f|--fix)
+            fix_flag=1
+            shift
+            ;;
+        -y|--yes)
+            skip_confirm=1
+            shift
+            ;;
+        -e)
+            endpoint=$2
+            shift 2
+            ;;
+        --endpoint=*)
+            endpoint=${1#--endpoint=}
+            shift
+            ;;
+        -c)
+            container=$2
+            shift 2
+            ;;
+        --container=*)
+            container=${1#--container=}
+            shift
+            ;;
+        -w)
+            timeout=$2
+            shift 2
+            ;;
+        --timeout=*)
+            timeout=${1#--timeout=}
+            shift
+            ;;
+        -l)
+            limit=$2
+            shift 2
+            ;;
+        --limit=*)
+            limit=${1#--limit=}
+            shift
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error "Unknown option: $1"
+            print_usage
+            return 2
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    if ! command -v curl &> /dev/null; then
+        opm-println-error "Not found curl command"
+        return 2
+    fi
+
+    if [[ $fix_flag -ne 0 && $(id -u) -ne 0 ]]; then
+        opm-println-error "Please run as root"
+        return 2
+    fi
+
+    print_host_clock
+
+    local reading offset verdict
+    if ! reading=$(measure_offset "$timeout"); then
+        opm-println-error "Could not reach a reference clock -- no HTTPS egress?"
+        opm-println-error "Compare by hand against a phone or another synchronised machine"
+        return 2
+    fi
+
+    # shellcheck disable=SC2086
+    print_offset $reading "$limit"
+    offset=$(awk '{ print $1 }' <<< "$reading")
+    verdict=$(verdict_of "$offset" "$limit")
+
+    if [[ $fix_flag -ne 0 && $verdict -ne 0 ]]; then
+        fix_clock "$timeout" "$limit" "$skip_confirm"
+
+        if reading=$(measure_offset "$timeout"); then
+            # shellcheck disable=SC2086
+            print_offset $reading "$limit"
+            offset=$(awk '{ print $1 }' <<< "$reading")
+            verdict=$(verdict_of "$offset" "$limit")
+        fi
+    fi
+
+    if [[ -n $endpoint ]]; then
+        print_endpoint_clock "$endpoint" "$timeout"
+    fi
+    if [[ -n $container ]]; then
+        print_container_clock "$container"
+    fi
+
+    if [[ $verdict -ne 0 && $fix_flag -eq 0 ]]; then
+        opm-println-warn -s "Re-run as root with --fix to correct it"
+    fi
+
+    [[ $verdict -eq 0 ]]
+}
+
+opm_check_clock_skew_main "$@"
