@@ -132,5 +132,5 @@ filetype plugin indent on
 NeoBundleCheck
 
 " Native Package Support.
-packadd termdebug
+packadd! termdebug
 
