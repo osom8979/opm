@@ -1,0 +1,279 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Rename files and directories to a random UUID.
+
+  Usage: ${BASH_SOURCE[0]} [options] path...
+
+Positional arguments:
+  path      A file or directory to rename.
+
+Renamed format: <uuid>[.<ext>]
+  uuid      A freshly generated lowercase UUID, one per entry.
+  ext       The original extension, kept unless --with-extension is given.
+            Directories have no extension, so their whole name is replaced.
+
+Every path given is renamed as it stands, directories included. With
+--recursive a directory argument is walked instead, renaming everything inside
+it, deepest entry first, while the directory itself keeps its name.
+
+A UUID carries nothing of the old name, so the rename can not be undone.
+Run --dry-run first when in doubt.
+
+Available options are:
+  -e, --with-extension
+                    Replace the extension as well, leaving no extension.
+  -r, --recursive   Rename the contents of a directory, not the directory.
+  -n, --dry-run     Print the changes without renaming.
+  -y, --yes         Do not ask for confirmation.
+  -h, --help        Print this message.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  -s, --silent      Suppresses all messages.
+  --                Skip handling options.
+"
+
+## Give up on a name after this many collisions. A UUID clash means the
+## generator is broken, not that we were unlucky.
+MAX_NAME_ATTEMPTS=8
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function exists_program_or_exit
+{
+    local cmd=$1
+    local cmd_which
+    cmd_which=$(which "$cmd" 2> /dev/null)
+
+    if [[ -z "$cmd_which" ]]; then
+        opm-println-error -s "Not found executable: $cmd"
+        exit 1
+    fi
+}
+
+function new_uuid
+{
+    # Darwin's uuidgen shouts, Linux does not. Settle on lowercase.
+    uuidgen | tr '[:upper:]' '[:lower:]'
+}
+
+function split_ext
+{
+    local path=$1
+
+    # A directory name is a name, not a stem plus an extension.
+    if [[ -d "$path" && ! -L "$path" ]]; then
+        echo ""
+        return 0
+    fi
+
+    local base=${path##*/}
+    case "$base" in
+    .*.*) echo "${base##*.}" ;;  # hidden file with extension: .config.json
+    .*)   echo "" ;;             # pure dotfile: .bashrc
+    *.*)  echo "${base##*.}" ;;  # normal file with extension
+    *)    echo "" ;;             # no extension
+    esac
+}
+
+function strip_trailing_slash
+{
+    local path=$1
+
+    while [[ "$path" == */ && "$path" != / ]]; do
+        path=${path%/}
+    done
+    echo "$path"
+}
+
+function collect_targets
+{
+    local recursive=$1
+    local target=$2
+
+    # Only NUL separated paths may reach the standard output here, the caller
+    # reads them back with 'read -d'.
+    if [[ $recursive -ne 0 && -d "$target" && ! -L "$target" ]]; then
+        # '-depth' hands us children before their parent, so a renamed
+        # directory never invalidates a path we still have to visit.
+        find "$target" -mindepth 1 -depth -print0 2> /dev/null
+    else
+        printf '%s\0' "$target"
+    fi
+}
+
+function rename_one
+{
+    local dry_run=$1
+    local with_extension=$2
+    local src=$3
+
+    if [[ ! -e "$src" && ! -L "$src" ]]; then
+        opm-println-error -s "Not exists: $src"
+        return 1
+    fi
+
+    local dir ext target
+    dir=$(dirname -- "$src")
+
+    ext=
+    if [[ $with_extension -eq 0 ]]; then
+        ext=$(split_ext "$src")
+    fi
+
+    local attempt=0
+    while true; do
+        target=$(new_uuid)
+        if [[ -n "$ext" ]]; then
+            target="${target}.${ext}"
+        fi
+        if [[ ! -e "$dir/$target" && ! -L "$dir/$target" ]]; then
+            break
+        fi
+
+        attempt=$((attempt + 1))
+        if [[ $attempt -ge $MAX_NAME_ATTEMPTS ]]; then
+            opm-println-error -s "Not found free name for: $src"
+            return 1
+        fi
+    done
+
+    if [[ $dry_run -ne 0 ]]; then
+        opm-println -s "[dry-run] $src -> $target"
+        return 0
+    fi
+
+    if ! mv -n -- "$src" "$dir/$target"; then
+        opm-println-error -s "Rename failed: $src"
+        return 1
+    fi
+
+    opm-println-info -v -s "$src -> $target"
+}
+
+function opm_rename_uuid_main
+{
+    local with_extension=0
+    local recursive=0
+    local dry_run=0
+    local assume_yes=0
+    local verbose_flag=0
+    local silent_flag=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -e|--with-extension)
+            with_extension=1
+            shift
+            ;;
+        -r|--recursive)
+            recursive=1
+            shift
+            ;;
+        -n|--dry-run)
+            dry_run=1
+            shift
+            ;;
+        -y|--yes)
+            assume_yes=1
+            shift
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error -s "Unknown option: $1"
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    if [[ -z $1 ]]; then
+        print_usage
+        return 1
+    fi
+
+    exists_program_or_exit uuidgen
+    if [[ $recursive -ne 0 ]]; then
+        exists_program_or_exit find
+    fi
+
+    local targets=()
+    local missing_count=0
+    local argument target path
+    for argument in "$@"; do
+        target=$(strip_trailing_slash "$argument")
+        if [[ ! -e "$target" && ! -L "$target" ]]; then
+            opm-println-error -s "Not a file or directory: $target"
+            missing_count=$((missing_count + 1))
+            continue
+        fi
+        while IFS= read -r -d '' path; do
+            targets+=("$path")
+        done < <(collect_targets "$recursive" "$target")
+    done
+
+    if [[ ${#targets[@]} -eq 0 ]]; then
+        opm-println-error -s "No entries to rename."
+        return 1
+    fi
+
+    if [[ $dry_run -eq 0 && $assume_yes -eq 0 && ${#targets[@]} -gt 1 ]]; then
+        opm-println-warn -s \
+            "Renaming ${#targets[@]} entries to a UUID discards their current names."
+        if ! opm-yes-or-no "Continue?"; then
+            opm-println -s "Aborted."
+            return 0
+        fi
+    fi
+
+    local renamed_count=0
+    local failed_count=$missing_count
+    for path in "${targets[@]}"; do
+        if rename_one "$dry_run" "$with_extension" "$path"; then
+            renamed_count=$((renamed_count + 1))
+        else
+            failed_count=$((failed_count + 1))
+        fi
+    done
+
+    opm-println-info -v -s "Renamed $renamed_count of ${#targets[@]} entries."
+
+    if [[ $failed_count -ne 0 ]]; then
+        opm-println-error -s "Failed to rename $failed_count entries."
+        return 1
+    fi
+}
+
+opm_rename_uuid_main "$@"
