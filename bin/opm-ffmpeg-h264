@@ -1,0 +1,771 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+USAGE_MESSAGE="
+Re-encode videos into a browser friendly H.264 profile, in place.
+
+  Usage: ${BASH_SOURCE[0]} [options] path...
+
+Positional arguments:
+  path      A video file, or a directory to scan for video files.
+
+A file is left untouched unless it fails one of these requirements:
+  video     H.264, 8bit yuv420p, key frames at least every --max-key-interval
+  audio     AAC, or no audio track at all
+  container MP4 family (.mp4, .m4v, .mov)
+
+Anything else is re-encoded and replaces its source file. Containers outside
+the MP4 family are rewritten as '<name>.mp4' and the source is removed. Files
+that already qualify are never touched, because re-encoding is always lossy.
+
+Nothing is written outside the source directory: output goes to a hidden part
+file next to the source and is renamed over it, so at most one extra copy
+exists at a time and it is removed when a file fails or the run is interrupted.
+Free space is checked before each file and short ones are skipped.
+
+Available options are:
+  --crf={n}         x264 constant rate factor, lower is better. (default: 18)
+  -c {n}            Same '--crf' flag.
+  --preset={name}   x264 preset. (default: slow)
+  -p {name}         Same '--preset' flag.
+  --gop={sec}       Force a key frame every N seconds. (default: 2)
+  -g {sec}          Same '--gop' flag.
+  --max-key-interval={sec}
+                    Re-encode H.264 sources whose key frames are sparser than
+                    this many seconds. (default: 10)
+  -m {sec}          Same '--max-key-interval' flag.
+  -r, --recursive   Scan directories recursively.
+  -k, --keep-h265   Leave H.265/HEVC sources alone.
+  -f, --force       Re-encode even when the file already qualifies.
+  -b, --backup      Keep the source as '<name>.bak'. (doubles disk usage)
+  -n, --dry-run     Print the plan without writing anything.
+  -y, --yes         Do not ask for confirmation.
+  -h, --help        Print this message.
+  -v, --verbose     Be more verbose/talkative during the operation.
+  -s, --silent      Suppresses all messages.
+  --                Skip handling options.
+"
+
+## Containers the H.264/HLS toolchains can read. Others are rewritten as MP4.
+MP4_EXTENSIONS=(mp4 m4v mov)
+
+## Extensions worth probing at all. A dropped folder is mostly subtitles,
+## thumbnails and '.DS_Store'; keeping them out of the list is the point.
+VIDEO_EXTENSIONS=(
+    mp4 m4v mov webm mkv avi ts m2ts mts mpg mpeg ogv 3gp wmv flv
+)
+
+## Refuse a file unless the free space is this many tenths of its own size.
+## ffmpeg cannot encode in place, so the source and the output coexist briefly.
+MIN_FREE_TENTHS=15
+
+## Set while ffmpeg holds a part file, so the trap knows what to remove.
+PART_FILE=
+
+## Plan for the file currently being inspected, filled by 'plan_file'.
+PLAN_ACTION=
+PLAN_VIDEO=
+PLAN_AUDIO=
+PLAN_OUTPUT=
+PLAN_REASON=
+
+trap 'on_interrupt_trap' INT TERM
+
+function on_interrupt_trap
+{
+    opm-println-error "An interrupt signal was detected."
+    remove_part_file
+    exit 1
+}
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function exists_program_or_exit
+{
+    local cmd=$1
+    local cmd_which
+    cmd_which=$(which "$cmd" 2> /dev/null)
+
+    if [[ -z "$cmd_which" ]]; then
+        opm-println-error -s "Not found executable: $cmd"
+        exit 1
+    fi
+}
+
+function remove_part_file
+{
+    if [[ -n "$PART_FILE" && -e "$PART_FILE" ]]; then
+        opm-println-debug -v -s "Remove part file: $PART_FILE"
+        rm -f -- "$PART_FILE"
+    fi
+    PART_FILE=
+}
+
+function contains
+{
+    local needle=$1
+    shift
+
+    local item
+    for item in "$@"; do
+        if [[ "$item" == "$needle" ]]; then
+            return 0
+        fi
+    done
+    return 1
+}
+
+## Lowercase extension without the dot. Empty when the file has none.
+function file_extension
+{
+    local base=${1##*/}
+    if [[ "$base" != *.* ]]; then
+        return 0
+    fi
+    echo "${base##*.}" | tr '[:upper:]' '[:lower:]'
+}
+
+function file_size
+{
+    local file=$1
+    if stat --version > /dev/null 2>&1; then
+        # GNU coreutils (Linux)
+        stat -c %s -- "$file" 2> /dev/null
+    else
+        # BSD/Darwin kernel
+        stat -f %z -- "$file" 2> /dev/null
+    fi
+}
+
+function free_disk_bytes
+{
+    # '-P -k' is the portable spelling; the block size is fixed at 1024.
+    df -P -k -- "$1" 2> /dev/null | awk 'NR == 2 { print $4 * 1024 }'
+}
+
+function human_size
+{
+    awk -v b="${1:-0}" 'BEGIN {
+        split("B KiB MiB GiB TiB", unit, " ")
+        i = 1
+        while (b >= 1024 && i < 5) { b /= 1024; i++ }
+        printf (i == 1 ? "%d %s" : "%.1f %s"), b, unit[i]
+    }'
+}
+
+## Compare two numbers without relying on bash integer arithmetic.
+function number_ge
+{
+    awk -v a="$1" -v b="$2" 'BEGIN { exit !(a >= b) }'
+}
+
+## Read a single ffprobe field. Empty when the stream or the field is missing.
+function probe_entry
+{
+    local file=$1
+    local streams=$2
+    local entries=$3
+
+    ffprobe -v error -select_streams "$streams" -show_entries "$entries" \
+        -of default=nk=1:nw=1 -- "$file" 2> /dev/null | head -1
+}
+
+## Average seconds between key frames, or -1 when it cannot be decided.
+## HLS segments can only be cut on a key frame, so a sparse stream defeats
+## any segment length the packager asks for.
+function key_frame_interval
+{
+    local file=$1
+    local duration=$2
+    local frames
+
+    frames=$(
+        ffprobe -v error -select_streams v:0 -show_entries packet=flags \
+            -of csv=p=0 -- "$file" 2> /dev/null | grep -c '^K'
+    )
+
+    awk -v d="$duration" -v k="${frames:-0}" 'BEGIN {
+        if (d <= 0 || k <= 0) print -1
+        else printf "%.2f", d / k
+    }'
+}
+
+function collect_video_files
+{
+    local recursive=$1
+    local target=$2
+
+    if [[ -f "$target" ]]; then
+        printf '%s\0' "$target"
+    elif [[ -d "$target" ]]; then
+        if [[ $recursive -ne 0 ]]; then
+            find "$target" -type f -print0 2> /dev/null
+        else
+            find "$target" -maxdepth 1 -type f -print0 2> /dev/null
+        fi
+    else
+        opm-println-warn -s "Not a file or directory: $target"
+    fi
+}
+
+function is_candidate_file
+{
+    local file=$1
+    local base=${file##*/}
+    local ext
+
+    case "$base" in
+    .*.h264-part.*)
+        return 1  # our own leftovers
+        ;;
+    *.bak)
+        return 1  # our own backups
+        ;;
+    esac
+
+    ext=$(file_extension "$file")
+    contains "$ext" "${VIDEO_EXTENSIONS[@]}"
+}
+
+## Decide what to do with one file and publish it through the PLAN_* globals.
+## Splitting this out keeps the dry-run listing and the encoder in agreement.
+function plan_file
+{
+    local force=$1
+    local keep_h265=$2
+    local max_key_interval=$3
+    local file=$4
+
+    PLAN_ACTION=skip
+    PLAN_VIDEO=copy
+    PLAN_AUDIO=none
+    PLAN_OUTPUT=$file
+    PLAN_REASON=
+
+    local video_codec
+    video_codec=$(probe_entry "$file" v:0 stream=codec_name)
+    if [[ -z "$video_codec" ]]; then
+        PLAN_REASON="no video stream"
+        return 0
+    fi
+
+    local pixel_format audio_codec duration extension
+    pixel_format=$(probe_entry "$file" v:0 stream=pix_fmt)
+    audio_codec=$(probe_entry "$file" a:0 stream=codec_name)
+    duration=$(probe_entry "$file" v:0 format=duration)
+    extension=$(file_extension "$file")
+
+    local reasons=()
+
+    if [[ "$video_codec" == h264 && "$pixel_format" == yuv420p ]]; then
+        local interval
+        interval=$(key_frame_interval "$file" "${duration:-0}")
+        if number_ge "$interval" 0 && number_ge "$max_key_interval" "$interval"; then
+            PLAN_VIDEO=copy
+        else
+            PLAN_VIDEO=encode
+            reasons+=("key frame interval ${interval}s > ${max_key_interval}s")
+        fi
+    elif [[ "$video_codec" == hevc && "$pixel_format" == yuv420p && $keep_h265 -ne 0 ]]; then
+        PLAN_VIDEO=copy
+    else
+        PLAN_VIDEO=encode
+        reasons+=("video $video_codec/$pixel_format")
+    fi
+
+    if [[ -z "$audio_codec" ]]; then
+        PLAN_AUDIO=none
+    elif [[ "$audio_codec" == aac ]]; then
+        PLAN_AUDIO=copy
+    else
+        PLAN_AUDIO=encode
+        reasons+=("audio $audio_codec")
+    fi
+
+    if ! contains "$extension" "${MP4_EXTENSIONS[@]}"; then
+        PLAN_OUTPUT="${file%.*}.mp4"
+        reasons+=("container .$extension")
+    fi
+
+    if [[ $force -ne 0 ]]; then
+        PLAN_VIDEO=encode
+        PLAN_ACTION=encode
+        if [[ ${#reasons[@]} -eq 0 ]]; then
+            reasons+=("forced")
+        fi
+    elif [[ "$PLAN_VIDEO" == copy && "$PLAN_AUDIO" != encode && "$PLAN_OUTPUT" == "$file" ]]; then
+        PLAN_ACTION=skip
+        reasons=("ready: $video_codec/${audio_codec:-silent}/.$extension")
+    elif [[ "$PLAN_VIDEO" == copy ]]; then
+        PLAN_ACTION=remux
+    else
+        PLAN_ACTION=encode
+    fi
+
+    # Never clobber a neighbour that already owns the target name.
+    if [[ "$PLAN_ACTION" != skip && "$PLAN_OUTPUT" != "$file" && -e "$PLAN_OUTPUT" ]]; then
+        PLAN_ACTION=skip
+        reasons=("conflict: ${PLAN_OUTPUT##*/} already exists")
+    fi
+
+    local reason
+    for reason in "${reasons[@]}"; do
+        if [[ -n "$PLAN_REASON" ]]; then
+            PLAN_REASON="$PLAN_REASON, $reason"
+        else
+            PLAN_REASON="$reason"
+        fi
+    done
+}
+
+## Build the ffmpeg argument list for one file. Echoes one argument per line
+## so the caller can read it back with 'mapfile' without quoting surprises.
+function build_ffmpeg_args
+{
+    local video_mode=$1
+    local audio_mode=$2
+    local crf=$3
+    local preset=$4
+    local gop_seconds=$5
+    local source=$6
+    local part=$7
+
+    local args=(-nostdin -hide_banner -loglevel error)
+    if [[ ${SILENT:-0} -ne 0 ]]; then
+        args+=(-nostats)
+    else
+        args+=(-stats)
+    fi
+
+    # A single video stream and at most one audio stream. Cover art in a
+    # Matroska file would otherwise be picked up as the video track.
+    args+=(-i "$source" -map 0:v:0 -map '0:a:0?' -sn -dn -map_metadata 0)
+
+    if [[ "$video_mode" == copy ]]; then
+        args+=(-c:v copy)
+    else
+        args+=(
+            -c:v libx264
+            -preset "$preset"
+            -crf "$crf"
+            -profile:v high
+            -pix_fmt yuv420p
+            -force_key_frames "expr:gte(t,n_forced*${gop_seconds})"
+        )
+
+        # Carry the colour tags over by hand. libx264 does not always inherit
+        # them and a dropped tag shows up as washed out playback.
+        local pair key flag value
+        for pair in \
+            'color_primaries:-color_primaries' \
+            'color_transfer:-color_trc' \
+            'color_space:-colorspace' \
+            'color_range:-color_range'
+        do
+            key=${pair%%:*}
+            flag=${pair##*:}
+            value=$(probe_entry "$source" v:0 "stream=$key")
+            case "$value" in
+            ''|unknown|N/A)
+                ;;
+            *)
+                args+=("$flag" "$value")
+                ;;
+            esac
+        done
+    fi
+
+    case "$audio_mode" in
+    none)
+        ;;
+    copy)
+        args+=(-c:a copy)
+        ;;
+    encode)
+        local channels
+        channels=$(probe_entry "$source" a:0 stream=channels)
+        if [[ -n "$channels" ]] && [[ "$channels" -gt 2 ]]; then
+            args+=(-c:a aac -b:a 384k)
+        else
+            args+=(-c:a aac -b:a 192k)
+        fi
+        ;;
+    esac
+
+    args+=(-movflags +faststart "$part")
+    printf '%s\n' "${args[@]}"
+}
+
+## Reject an output that is not what we asked for. A truncated encode is worse
+## than no encode at all, because the source is about to be overwritten.
+function verify_output
+{
+    local source=$1
+    local part=$2
+
+    local codec
+    codec=$(probe_entry "$part" v:0 stream=codec_name)
+    if [[ "$codec" != h264 && "$codec" != hevc ]]; then
+        opm-println-error -s "Unexpected output codec: ${codec:-none}"
+        return 1
+    fi
+
+    local source_duration output_duration
+    source_duration=$(probe_entry "$source" v:0 format=duration)
+    output_duration=$(probe_entry "$part" v:0 format=duration)
+    if ! awk -v a="${output_duration:-0}" -v b="${source_duration:-0}" 'BEGIN {
+        if (b <= 0) exit 0
+        d = a - b
+        if (d < 0) d = -d
+        exit !(d <= b * 0.02 + 1)
+    }'; then
+        opm-println-error -s "Duration mismatch: ${source_duration}s -> ${output_duration}s"
+        return 1
+    fi
+}
+
+function has_enough_space
+{
+    local directory=$1
+    local source_size=$2
+
+    local available
+    available=$(free_disk_bytes "$directory")
+    if [[ -z "$available" ]]; then
+        return 0  # cannot tell; let ffmpeg decide
+    fi
+
+    local required=$((source_size * MIN_FREE_TENTHS / 10))
+    if ! number_ge "$available" "$required"; then
+        opm-println-error -s \
+            "Not enough space: $(human_size "$available") free, $(human_size "$required") needed"
+        return 1
+    fi
+    if ! number_ge "$available" "$((source_size * 3))"; then
+        opm-println-warn -s "Free space is tight: $(human_size "$available")"
+    fi
+}
+
+## Encode one planned file and move the result over its source.
+function convert_one
+{
+    local backup=$1
+    local crf=$2
+    local preset=$3
+    local gop_seconds=$4
+    local source=$5
+    local output=$6
+    local video_mode=$7
+    local audio_mode=$8
+
+    local directory=${source%/*}
+    if [[ "$directory" == "$source" ]]; then
+        directory=.
+    fi
+
+    local source_size
+    source_size=$(file_size "$source")
+    if ! has_enough_space "$directory" "${source_size:-0}"; then
+        return 2
+    fi
+
+    PART_FILE="$directory/.${output##*/}.h264-part.$(file_extension "$output")"
+    rm -f -- "$PART_FILE"
+
+    local args=()
+    mapfile -t args < <(
+        build_ffmpeg_args "$video_mode" "$audio_mode" "$crf" "$preset" \
+            "$gop_seconds" "$source" "$PART_FILE"
+    )
+
+    opm-println-debug -v -s "ffmpeg ${args[*]}"
+    if ! ffmpeg "${args[@]}"; then
+        opm-println-error -s "ffmpeg failed, the source is left alone."
+        remove_part_file
+        return 1
+    fi
+
+    if ! verify_output "$source" "$PART_FILE"; then
+        remove_part_file
+        return 1
+    fi
+
+    local output_size
+    output_size=$(file_size "$PART_FILE")
+    touch -r "$source" -- "$PART_FILE"
+
+    if [[ $backup -ne 0 ]] && ! mv -f -- "$source" "$source.bak"; then
+        opm-println-error -s "Could not back up the source."
+        remove_part_file
+        return 1
+    fi
+
+    if ! mv -f -- "$PART_FILE" "$output"; then
+        opm-println-error -s "Could not replace the source."
+        remove_part_file
+        return 1
+    fi
+    PART_FILE=
+
+    # The extension changed, so the source still sits next to the output.
+    if [[ $backup -eq 0 && "$output" != "$source" && -e "$source" ]]; then
+        rm -f -- "$source"
+    fi
+
+    opm-println-info -s "${output##*/}: $(human_size "${source_size:-0}") -> $(human_size "${output_size:-0}")"
+    CONVERTED_BYTES_IN=$((CONVERTED_BYTES_IN + ${source_size:-0}))
+    CONVERTED_BYTES_OUT=$((CONVERTED_BYTES_OUT + ${output_size:-0}))
+}
+
+function opm_ffmpeg_h264_main
+{
+    local crf=18
+    local preset=slow
+    local gop_seconds=2
+    local max_key_interval=10
+    local recursive=0
+    local keep_h265=0
+    local force=0
+    local backup=0
+    local dry_run=0
+    local assume_yes=0
+    local verbose_flag=0
+    local silent_flag=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        --crf=*)
+            crf=${1:6}
+            shift
+            ;;
+        -c|--crf)
+            crf=$2
+            shift 2
+            ;;
+        --preset=*)
+            preset=${1:9}
+            shift
+            ;;
+        -p|--preset)
+            preset=$2
+            shift 2
+            ;;
+        --gop=*)
+            gop_seconds=${1:6}
+            shift
+            ;;
+        -g|--gop)
+            gop_seconds=$2
+            shift 2
+            ;;
+        --max-key-interval=*)
+            max_key_interval=${1:19}
+            shift
+            ;;
+        -m|--max-key-interval)
+            max_key_interval=$2
+            shift 2
+            ;;
+        -r|--recursive)
+            recursive=1
+            shift
+            ;;
+        -k|--keep-h265)
+            keep_h265=1
+            shift
+            ;;
+        -f|--force)
+            force=1
+            shift
+            ;;
+        -b|--backup)
+            backup=1
+            shift
+            ;;
+        -n|--dry-run)
+            dry_run=1
+            shift
+            ;;
+        -y|--yes)
+            assume_yes=1
+            shift
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error -s "Unknown option: $1"
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    if [[ -z $1 ]]; then
+        print_usage
+        return 1
+    fi
+
+    exists_program_or_exit ffmpeg
+    exists_program_or_exit ffprobe
+    exists_program_or_exit awk
+    exists_program_or_exit find
+
+    local files=()
+    local target file
+    for target in "$@"; do
+        while IFS= read -r -d '' file; do
+            if is_candidate_file "$file"; then
+                files+=("$file")
+            fi
+        done < <(collect_video_files "$recursive" "$target")
+    done
+
+    if [[ ${#files[@]} -eq 0 ]]; then
+        opm-println-error -s "No video files to process."
+        return 1
+    fi
+
+    opm-println -v -s "Inspecting ${#files[@]} file(s) ..."
+
+    local actions=() outputs=() video_modes=() audio_modes=() reasons=()
+    local encode_count=0
+    local remux_count=0
+    local skip_count=0
+    local total_input=0
+    local size
+
+    for file in "${files[@]}"; do
+        size=$(file_size "$file")
+        total_input=$((total_input + ${size:-0}))
+
+        plan_file "$force" "$keep_h265" "$max_key_interval" "$file"
+        actions+=("$PLAN_ACTION")
+        outputs+=("$PLAN_OUTPUT")
+        video_modes+=("$PLAN_VIDEO")
+        audio_modes+=("$PLAN_AUDIO")
+        reasons+=("$PLAN_REASON")
+
+        case "$PLAN_ACTION" in
+        encode)
+            encode_count=$((encode_count + 1))
+            opm-println-warn -s "encode  ${file##*/}  (${PLAN_REASON})"
+            ;;
+        remux)
+            remux_count=$((remux_count + 1))
+            opm-println-debug -s "remux   ${file##*/}  (${PLAN_REASON})"
+            ;;
+        skip)
+            skip_count=$((skip_count + 1))
+            # A dry run is a planning tool, so say why each file was passed
+            # over. A real run keeps quiet unless asked.
+            if [[ $dry_run -ne 0 ]]; then
+                opm-println -s "skip    ${file##*/}  (${PLAN_REASON})"
+            else
+                opm-println -v -s "skip    ${file##*/}  (${PLAN_REASON})"
+            fi
+            ;;
+        esac
+    done
+
+    opm-println -s \
+        "Encode $encode_count, remux $remux_count, skip $skip_count, input $(human_size "$total_input")"
+
+    if [[ $((encode_count + remux_count)) -eq 0 ]]; then
+        opm-println-info -s "Nothing to do."
+        return 0
+    fi
+
+    if [[ $dry_run -ne 0 ]]; then
+        opm-println -s "Dry run, nothing was written."
+        return 0
+    fi
+
+    if [[ $encode_count -gt 0 ]]; then
+        opm-println-warn -s \
+            "Re-encoding overwrites the source. H.264 is less efficient than AV1/HEVC, so files may grow."
+    fi
+    if [[ $backup -ne 0 ]]; then
+        opm-println-warn -s "Backups are kept as '.bak', which doubles disk usage."
+    fi
+
+    if [[ $assume_yes -eq 0 ]] && ! opm-yes-or-no "Continue?"; then
+        opm-println -s "Aborted."
+        return 0
+    fi
+
+    CONVERTED_BYTES_IN=0
+    CONVERTED_BYTES_OUT=0
+
+    local index=0
+    local ok_count=0
+    local failed_count=0
+    local short_count=0
+    local exit_code
+
+    for index in "${!files[@]}"; do
+        if [[ "${actions[$index]}" == skip ]]; then
+            continue
+        fi
+
+        file=${files[$index]}
+        opm-println -s "[$((index + 1))/${#files[@]}] ${file##*/}"
+
+        convert_one "$backup" "$crf" "$preset" "$gop_seconds" \
+            "$file" "${outputs[$index]}" "${video_modes[$index]}" "${audio_modes[$index]}"
+        exit_code=$?
+
+        case $exit_code in
+        0)
+            ok_count=$((ok_count + 1))
+            ;;
+        2)
+            short_count=$((short_count + 1))
+            ;;
+        *)
+            failed_count=$((failed_count + 1))
+            ;;
+        esac
+    done
+
+    opm-println-info -s \
+        "Done. $ok_count converted, $failed_count failed, $short_count skipped for space."
+    if [[ $ok_count -gt 0 ]]; then
+        opm-println -s \
+            "Converted size: $(human_size "$CONVERTED_BYTES_IN") -> $(human_size "$CONVERTED_BYTES_OUT")"
+    fi
+
+    [[ $failed_count -eq 0 ]]
+}
+
+opm_ffmpeg_h264_main "$@"
