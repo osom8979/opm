@@ -113,4 +113,25 @@ if [[ ! -f "$KAKAO_EXE" ]]; then
 fi
 
 echo "[kakaotalk] Launching KakaoTalk ..."
-exec wine "$KAKAO_EXE" "$@"
+
+# Not exec'd, and not waited on alone: an update makes KakaoTalk spawn
+# KakaoUpdate.exe and then quit, leaving the updater to patch the installation
+# and start the new build. Tying the container's lifetime to KakaoTalk.exe would
+# tear the whole prefix down at exactly that moment and kill the updater
+# mid-patch -- which is why an update could download forever and never apply.
+# Wait for the prefix to go quiet instead, so every successor process outlives
+# the one that started it.
+wine "$KAKAO_EXE" "$@" &
+WINE_PID=$!
+
+# Backgrounding wine also means "docker stop" now reaches a shell rather than
+# the app, so pass the shutdown on: bash runs traps while waiting, not while a
+# foreground command holds the terminal.
+trap 'wineserver -k' INT TERM
+
+status=0
+wait "$WINE_PID" || status=$?
+trap - INT TERM
+
+wineserver -w
+exit "$status"

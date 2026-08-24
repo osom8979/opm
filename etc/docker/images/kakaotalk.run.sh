@@ -6,6 +6,7 @@
 #     KAKAO_VOLUME  wine prefix volume     (default: kakaotalk-wine)
 #     KAKAO_SHARE   shared host directory  (default: $HOME/Downloads/KakaoTalk)
 #     KAKAO_SILENT  1 = unattended install (default: 0, GUI installer)
+#     WINEDEBUG     wine debug channels    (default: image default, -all)
 
 set -euo pipefail
 
@@ -51,6 +52,13 @@ ARGS=(
     -v "$VOLUME":"$GUEST_HOME/.wine"
     -v "$SHARE":"$GUEST_HOME/Downloads"
 )
+
+# The image silences wine (WINEDEBUG=-all) so the log stays readable. Let the
+# caller turn the channels back on for troubleshooting -- e.g. WINEDEBUG= for
+# plain err/fixme, or WINEDEBUG=+process for what wine spawns.
+if [[ -n "${WINEDEBUG+x}" ]]; then
+    ARGS+=(-e WINEDEBUG="$WINEDEBUG")
+fi
 
 # Only ask for a terminal when there is one to give. The GUI needs no console,
 # so this stays usable when launched in the background or from a pipe.
