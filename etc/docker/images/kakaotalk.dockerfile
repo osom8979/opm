@@ -29,8 +29,10 @@ ENV GTK_IM_MODULE=ibus
 ENV QT_IM_MODULE=ibus
 
 # Bind-mounted from the host at runtime; the directory KakaoTalk reads sent
-# files from and writes received ones to.
-ENV KAKAO_SHARE_DIR=/home/kakao/Downloads
+# files from and writes received ones to. The entrypoint hangs the prefix's
+# "카카오톡 받은 파일" folder off it, so everything received crosses
+# straight out to the host.
+ENV KAKAO_SHARE_DIR=/home/kakao/KakaoTalk
 
 ENV KAKAO_SETUP_URL="https://app-pc.kakaocdn.net/talk/win32/x64/KakaoTalk_Setup.exe"
 ENV KAKAO_SETUP_PATH=/opt/kakaotalk/KakaoTalk_Setup.exe
@@ -56,7 +58,7 @@ RUN dpkg --add-architecture i386 && \
 # a fresh volume.
 RUN { userdel -r ubuntu || true; } 2> /dev/null && \
     useradd --create-home --uid 1000 --user-group --shell /bin/bash kakao && \
-    mkdir -p /home/kakao/.wine /home/kakao/Downloads /home/kakao/.config/pulse && \
+    mkdir -p /home/kakao/.wine /home/kakao/KakaoTalk /home/kakao/.config/pulse && \
     chown -R kakao:kakao /home/kakao
 
 # Korean locale and Asia/Seoul timezone.

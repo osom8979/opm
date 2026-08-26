@@ -3,17 +3,24 @@
 #
 #   Env overrides:
 #     KAKAO_IMAGE   image tag to run       (default: osom8979/kakaotalk:latest)
+#     KAKAO_NAME    container name         (default: kakaotalk)
 #     KAKAO_VOLUME  wine prefix volume     (default: kakaotalk-wine)
-#     KAKAO_SHARE   shared host directory  (default: $HOME/Downloads/KakaoTalk)
+#     KAKAO_SHARE   shared host directory  (default: $HOME/KakaoTalk)
 #     KAKAO_SILENT  1 = unattended install (default: 0, GUI installer)
 #     WINEDEBUG     wine debug channels    (default: image default, -all)
 
 set -euo pipefail
 
 IMAGE="${KAKAO_IMAGE:-osom8979/kakaotalk:latest}"
+# Also what opm-kakao-shutdown stops, so both read the same override.
+NAME="${KAKAO_NAME:-kakaotalk}"
 VOLUME="${KAKAO_VOLUME:-kakaotalk-wine}"
-SHARE="${KAKAO_SHARE:-$HOME/Downloads/KakaoTalk}"
+SHARE="${KAKAO_SHARE:-$HOME/KakaoTalk}"
 GUEST_HOME=/home/kakao
+# Where the share lands inside the container. The entrypoint reads it from
+# KAKAO_SHARE_DIR, which is passed explicitly below so the mount point and the
+# path the prefix is wired to cannot drift apart from the image's own default.
+GUEST_SHARE="$GUEST_HOME/KakaoTalk"
 
 : "${DISPLAY:?DISPLAY is not set; run this from an X11 desktop session}"
 
@@ -33,7 +40,7 @@ chmod 644 "$XAUTH"
 
 ARGS=(
     --rm
-    --name kakaotalk
+    --name "$NAME"
     # Wine draws through the MIT-SHM X extension, which needs the X server and
     # the client to share memory segments. A private ipc namespace makes every
     # X_ShmPutImage fail with BadValue and takes the app down with it, so join
@@ -49,8 +56,11 @@ ARGS=(
     -e XMODIFIERS="${XMODIFIERS:-@im=ibus}"
     -v /tmp/.X11-unix:/tmp/.X11-unix:rw
     -v "$XAUTH":"$XAUTH":ro
+    -e KAKAO_SHARE_DIR="$GUEST_SHARE"
     -v "$VOLUME":"$GUEST_HOME/.wine"
-    -v "$SHARE":"$GUEST_HOME/Downloads"
+    # KakaoTalk's "카카오톡 받은 파일" folder is hung off this mount inside the
+    # prefix, so received files show up straight in $SHARE on the host.
+    -v "$SHARE":"$GUEST_SHARE"
 )
 
 # The image silences wine (WINEDEBUG=-all) so the log stays readable. Let the

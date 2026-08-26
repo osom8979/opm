@@ -9,7 +9,7 @@ set -euo pipefail
 : "${WINEPREFIX:=$KAKAO_HOME/.wine}"
 : "${WINEARCH:=win64}"
 : "${KAKAO_SETUP_PATH:=/opt/kakaotalk/KakaoTalk_Setup.exe}"
-: "${KAKAO_SHARE_DIR:=$KAKAO_HOME/Downloads}"
+: "${KAKAO_SHARE_DIR:=$KAKAO_HOME/KakaoTalk}"
 export WINEPREFIX WINEARCH HOME="$KAKAO_HOME"
 
 # Started as root: line the container account up with the host's uid/gid before
@@ -71,24 +71,44 @@ for f in /usr/share/fonts/truetype/nanum/*.ttf; do
     [[ -e "$f" ]] && ln -sf "$f" "$FONTS_DST/"
 done
 
+# Point a Windows folder inside the prefix at the shared directory. Whatever
+# the folder already holds is carried across first: a prefix that predates this
+# wiring can have real files in it, and they would otherwise stay stranded in
+# the wine volume where the host cannot reach them. mv -n means a name that
+# already exists on the host side wins, so nothing is overwritten.
+link_into_share() {
+    local dir=$1
+
+    if [[ ! -L "$dir" && -d "$dir" ]]; then
+        find "$dir" -mindepth 1 -maxdepth 1 \
+            -exec mv -n -t "$KAKAO_SHARE_DIR" {} +
+        if ! rmdir "$dir" 2> /dev/null; then
+            echo "[kakaotalk] WARN: could not empty $dir; leaving it." >&2
+            echo "[kakaotalk] The shared directory is still available as drive D:." >&2
+            return
+        fi
+    fi
+
+    mkdir -p "$(dirname "$dir")"
+    ln -sfn "$KAKAO_SHARE_DIR" "$dir"
+}
+
 # Wire the host's shared directory into the prefix so files can cross the
 # container boundary in both directions.
 if [[ -d "$KAKAO_SHARE_DIR" ]]; then
     # Always reachable as drive D: from any file dialog.
     ln -sfn "$KAKAO_SHARE_DIR" "$WINEPREFIX/dosdevices/d:"
 
-    # Make it the Windows "Downloads" folder too, so received files land there
-    # by default. Only replace the directory wine created if it is still empty
-    # -- never discard files someone already has in the prefix.
-    WIN_DOWNLOADS="$WINEPREFIX/drive_c/users/$KAKAO_USER/Downloads"
-    if [[ ! -L "$WIN_DOWNLOADS" ]]; then
-        if rmdir "$WIN_DOWNLOADS" 2> /dev/null; then
-            ln -sfn "$KAKAO_SHARE_DIR" "$WIN_DOWNLOADS"
-        else
-            echo "[kakaotalk] WARN: $WIN_DOWNLOADS is not empty; leaving it." >&2
-            echo "[kakaotalk] The shared directory is still available as drive D:." >&2
-        fi
-    fi
+    WIN_USER_DIR="$WINEPREFIX/drive_c/users/$KAKAO_USER"
+
+    # The one that matters: KakaoTalk writes every received file into this
+    # fixed path under Documents and offers no setting to move it, so that
+    # folder -- not "Downloads", which the app never touches -- is what has to
+    # become the share for received files to reach the host at all.
+    link_into_share "$WIN_USER_DIR/Documents/카카오톡 받은 파일"
+
+    # And "Downloads" as well, so the share is where file dialogs start.
+    link_into_share "$WIN_USER_DIR/Downloads"
 else
     echo "[kakaotalk] WARN: $KAKAO_SHARE_DIR is not mounted; no shared folder." >&2
 fi
