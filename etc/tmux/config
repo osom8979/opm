@@ -93,6 +93,7 @@ set-environment -g TMUX_FZF_LAUNCH_KEY "C-f"
 set-environment -g TMUX_FZF_MENU \
 'Move OPM home\nopm-tmux-cd-opm-home\n'\
 'Move Projects\nopm-tmux-cd-home-projects\n'\
+'Clipboard History\n~/.tmux/plugins/tmux-fzf/scripts/clipboard.sh buffer\n'\
 'Logging Toggle\n~/.tmux/plugins/tmux-logging/scripts/toggle_logging.sh\n'\
 'Logging Screen Capture\n~/.tmux/plugins/tmux-logging/scripts/screen_capture.sh\n'\
 'Logging Save History\n~/.tmux/plugins/tmux-logging/scripts/save_complete_history.sh\n'\
