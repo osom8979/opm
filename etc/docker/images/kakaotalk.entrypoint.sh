@@ -57,8 +57,22 @@ if [[ -z "${DISPLAY:-}" ]]; then
     done
 fi
 
-# Initialize the wine prefix on a fresh (empty) volume.
+# Initialize the wine prefix on a fresh (empty) volume. No system.reg means no
+# usable prefix -- but a bootstrap that was killed partway leaves a drive_c
+# behind, and wineboot cannot rebuild on top of it: the half-copied system
+# directories make its own helper processes fail to load (c0000135). Move such
+# remains aside (the volume mount can't be deleted from in here, and this keeps
+# anything unexpected recoverable) so the init starts from a clean slate.
 if [[ ! -f "$WINEPREFIX/system.reg" ]]; then
+    if [[ -e "$WINEPREFIX/drive_c" ]]; then
+        BROKEN="$WINEPREFIX/broken.$(date +%Y%m%d%H%M%S)"
+        echo "[kakaotalk] WARN: $WINEPREFIX has no registry but is not empty;" >&2
+        echo "[kakaotalk] moving the remains to $BROKEN and starting over." >&2
+        mkdir -p "$BROKEN"
+        find "$WINEPREFIX" -mindepth 1 -maxdepth 1 \
+            ! -name "$(basename "$BROKEN")" ! -name 'broken.*' \
+            -exec mv -t "$BROKEN" {} +
+    fi
     echo "[kakaotalk] Initializing wine prefix at $WINEPREFIX ..."
     wineboot --init
     wineserver -w
