@@ -1,0 +1,814 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_TIMEOUT=15
+DEFAULT_PING_COUNT=20
+DEFAULT_DOWNLOAD_BYTES=50000000
+DEFAULT_UPLOAD_BYTES=10000000
+
+# An internet host that answers ICMP from almost everywhere and sits close to
+# most lines, so its latency is the line's latency and not the route's.
+REFERENCE_HOST="1.1.1.1"
+PING_TARGETS=("1.1.1.1" "8.8.8.8")
+DNS_DOMAINS=("google.com" "github.com" "naver.com" "cloudflare.com")
+HTTP_TARGETS=("https://www.google.com" "https://github.com" "https://www.naver.com")
+SPEED_DOWN_URL="https://speed.cloudflare.com/__down?bytes="
+SPEED_UP_URL="https://speed.cloudflare.com/__up"
+
+# The hop to the router is one radio or one cable. Anything above a few
+# milliseconds there is the Wi-Fi, not the internet.
+GATEWAY_AVG_WARN_MS=10
+GATEWAY_JITTER_WARN_MS=15
+INTERNET_AVG_WARN_MS=80
+LOSS_WARN_PERCENT=5
+DNS_WARN_MS=80
+TTFB_WARN_MS=1500
+SIGNAL_WARN_PERCENT=50
+DOWNLOAD_WARN_MBPS=20
+UPLOAD_WARN_MBPS=5
+# Spikes in --monitor mode.
+MONITOR_GATEWAY_SPIKE_MS=30
+MONITOR_INTERNET_SPIKE_MS=100
+
+USAGE_MESSAGE="
+Measure the network layer by layer and point at the slow one.
+
+  Usage: opm-network-speed [options]
+
+Walks the path outward: link (Wi-Fi signal, band, power saving), latency to
+the router and to the internet, DNS resolvers, HTTP timings, and throughput.
+A problem at the router hop is the Wi-Fi/LAN; a clean router hop with a slow
+internet is the router or the line.
+
+Available options are:
+  -h, --help                Print this message.
+  -q, --quick               Skip the download/upload throughput test.
+  -t, --trace               Also trace the route hop by hop (mtr or tracepath).
+  -m, --monitor             Ping the router and the internet once a second
+                            until Ctrl-C. Run it while the network feels slow
+                            to catch an intermittent problem.
+  -c, --count=number        Pings per target (default: ${DEFAULT_PING_COUNT}).
+  -b, --bytes=number        Download size in bytes (default: ${DEFAULT_DOWNLOAD_BYTES}).
+  -w, --timeout=seconds     Throughput/HTTP timeout (default: ${DEFAULT_TIMEOUT}s).
+  -v, --verbose             Be more verbose/talkative during the operation.
+  -s, --silent              Suppresses all messages.
+  --                        Skip handling options.
+
+Exit codes:
+  0   Nothing slow was measured.
+  1   At least one layer is slow; the verdict says which.
+  2   Usage error, missing command, or no route to the internet.
+
+Examples:
+  opm-network-speed
+  opm-network-speed -q
+  opm-network-speed -t -v
+  opm-network-speed -m
+"
+
+ISSUES=()
+HINTS=()
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function gt
+{
+    awk -v a="$1" -v b="$2" 'BEGIN { exit !(a + 0 > b + 0) }'
+}
+
+function lt
+{
+    awk -v a="$1" -v b="$2" 'BEGIN { exit !(a + 0 < b + 0) }'
+}
+
+function add_issue
+{
+    ISSUES+=("$1|$2")
+    opm-println-warn -s "✗ $2"
+}
+
+# A setting worth changing that did not show up as slow in this run.
+function add_hint
+{
+    HINTS+=("$1")
+    opm-println -s "! $1"
+}
+
+function print_section
+{
+    opm-println -s ""
+    opm-println-debug -s "== $1 =="
+}
+
+# Prints "<interface> <gateway> <source>". The gateway is "-" on a link with no
+# router in between (a point-to-point VPN, for one).
+function default_route
+{
+    local route iface gateway source
+    route=$(ip route get "$REFERENCE_HOST" 2> /dev/null | head -1)
+    [[ -z $route ]] && return 1
+
+    iface=$(sed -n 's/.* dev \([^ ]*\).*/\1/p' <<< "$route")
+    gateway=$(sed -n 's/.* via \([^ ]*\).*/\1/p' <<< "$route")
+    source=$(sed -n 's/.* src \([^ ]*\).*/\1/p' <<< "$route")
+    [[ -z $iface ]] && return 1
+    echo "$iface ${gateway:--} ${source:--}"
+}
+
+function is_wireless
+{
+    [[ -d /sys/class/net/$1/wireless || -L /sys/class/net/$1/phy80211 ]]
+}
+
+# The connection's own value wins; "default" defers to the merged daemon
+# config, which is where Ubuntu ships `wifi.powersave = 3` (on).
+function wifi_powersave
+{
+    local iface=$1
+    local value connection
+
+    if command -v iw &> /dev/null; then
+        value=$(iw dev "$iface" get power_save 2> /dev/null | awk '{ print $NF }')
+        if [[ -n $value ]]; then
+            echo "$value"
+            return 0
+        fi
+    fi
+
+    connection=$(nmcli -t -g GENERAL.CONNECTION device show "$iface" 2> /dev/null)
+    if [[ -n $connection ]]; then
+        value=$(nmcli -g 802-11-wireless.powersave connection show "$connection" 2> /dev/null)
+        case $value in
+        2|disable)
+            echo "off"
+            return 0
+            ;;
+        3|enable)
+            echo "on"
+            return 0
+            ;;
+        esac
+    fi
+
+    value=$(NetworkManager --print-config 2> /dev/null \
+        | sed -n 's/^[[:space:]]*wifi\.powersave[[:space:]]*=[[:space:]]*//p' | tail -1)
+    case $value in
+    2)
+        echo "off"
+        ;;
+    3)
+        echo "on"
+        ;;
+    *)
+        echo "unknown"
+        ;;
+    esac
+}
+
+# Prints "<channel> <MHz> <signal%> <Mbit/s> <ssid...>" for the associated AP.
+# --rescan no: a scan parks the radio off-channel and would itself cause lag.
+function wifi_link
+{
+    nmcli -t -e no -f ACTIVE,CHAN,FREQ,SIGNAL,RATE,SSID device wifi list \
+        ifname "$1" --rescan no 2> /dev/null \
+        | awk -F: '$1 == "yes" {
+            ssid = $6
+            for (i = 7; i <= NF; i++) ssid = ssid ":" $i
+            split($3, freq, " "); split($5, rate, " ")
+            print $2, freq[1], $4, rate[1], ssid
+            exit
+        }'
+}
+
+function band_of
+{
+    awk -v f="$1" 'BEGIN { print (f < 3000 ? "2.4GHz" : (f < 5925 ? "5GHz" : "6GHz")) }'
+}
+
+function sample_traffic
+{
+    local iface=$1
+    local stats=/sys/class/net/$iface/statistics
+    local rx1 tx1 rx2 tx2
+
+    rx1=$(< "$stats/rx_bytes")
+    tx1=$(< "$stats/tx_bytes")
+    sleep 1
+    rx2=$(< "$stats/rx_bytes")
+    tx2=$(< "$stats/tx_bytes")
+    echo "$(( (rx2 - rx1) / 1024 )) $(( (tx2 - tx1) / 1024 ))"
+}
+
+function check_link
+{
+    local iface=$1
+    local gateway=$2
+    local source=$3
+
+    print_section "Link"
+    opm-println -s "interface   $iface  $source  via $gateway"
+
+    if is_wireless "$iface" && command -v nmcli &> /dev/null; then
+        local link channel freq signal rate ssid band powersave
+        link=$(wifi_link "$iface")
+        if [[ -n $link ]]; then
+            read -r channel freq signal rate ssid <<< "$link"
+            band=$(band_of "$freq")
+            opm-println -s "wifi        $ssid  $band ch$channel  signal ${signal}%  rate ${rate} Mbit/s"
+            if lt "$signal" "$SIGNAL_WARN_PERCENT"; then
+                add_issue wifi "Weak Wi-Fi signal (${signal}%) -- move closer or add a mesh node"
+            fi
+            if [[ $band == "2.4GHz" ]]; then
+                add_issue wifi "Associated on 2.4GHz (ch$channel) -- slower and crowded; prefer 5GHz"
+            fi
+        fi
+
+        powersave=$(wifi_powersave "$iface")
+        if [[ $powersave == "on" ]]; then
+            add_hint "Wi-Fi power saving is on -- can add lag after idle (set wifi.powersave = 2)"
+        else
+            opm-println -v "power save  $powersave"
+        fi
+    else
+        local speed
+        speed=$(cat "/sys/class/net/$iface/speed" 2> /dev/null)
+        if [[ -n $speed && $speed -gt 0 ]]; then
+            opm-println -s "wired       ${speed} Mbit/s  $(cat "/sys/class/net/$iface/duplex" 2> /dev/null) duplex"
+            if [[ $speed -lt 1000 ]]; then
+                add_issue lan "Link negotiated at ${speed} Mbit/s -- check the cable or the switch port"
+            fi
+        fi
+    fi
+
+    local stats=/sys/class/net/$iface/statistics
+    opm-println -v "counters    rx errors $(< "$stats/rx_errors")  dropped $(< "$stats/rx_dropped")" \
+        " tx errors $(< "$stats/tx_errors")  dropped $(< "$stats/tx_dropped")"
+
+    # A download running in the background explains a poor result below better
+    # than anything on the line does.
+    local traffic rx tx
+    traffic=$(sample_traffic "$iface")
+    read -r rx tx <<< "$traffic"
+    opm-println -s "traffic     rx ${rx} KB/s  tx ${tx} KB/s (already in use)"
+    if [[ $rx -gt 1024 || $tx -gt 1024 ]]; then
+        add_issue bandwidth "Something is already moving over 1 MB/s -- close it or find it with nethogs"
+    fi
+
+    if env | grep -qiE '^(https?|all)_proxy='; then
+        opm-println-warn -s "proxy       $(env | grep -iE '^(https?|all)_proxy=' | head -1)"
+    fi
+}
+
+# Prints "<loss%> <min> <avg> <max> <mdev>"; the rtt fields are "-" when
+# every packet was lost.
+function ping_stats
+{
+    local target=$1
+    local count=$2
+    local output loss rtt
+
+    output=$(LC_ALL=C ping -q -n -c "$count" -i 0.2 -W 1 "$target" 2> /dev/null)
+    loss=$(grep -oE '[0-9.]+% packet loss' <<< "$output" | grep -oE '^[0-9.]+')
+    [[ -z $loss ]] && return 1
+
+    rtt=$(sed -n 's|^rtt [^=]*= \([0-9.]*\)/\([0-9.]*\)/\([0-9.]*\)/\([0-9.]*\) ms.*|\1 \2 \3 \4|p' <<< "$output" \
+        | awk '{ printf "%.1f %.1f %.1f %.1f", $1, $2, $3, $4 }')
+    echo "$loss ${rtt:-- - - -}"
+}
+
+function check_latency
+{
+    local gateway=$1
+    local count=$2
+    local gateway_ok=1
+    local internet_bad=0
+    local internet_total=0
+
+    print_section "Latency ($count pings each)"
+    opm-println -s "$(printf '%-16s %6s %9s %9s %9s' target loss avg max jitter)"
+
+    local targets=()
+    [[ $gateway != "-" ]] && targets+=("$gateway")
+    targets+=("${PING_TARGETS[@]}")
+
+    local target label stats loss min avg max mdev
+    for target in "${targets[@]}"; do
+        label=$target
+        [[ $target == "$gateway" ]] && label="router"
+
+        if ! stats=$(ping_stats "$target" "$count"); then
+            opm-println-error "$(printf '%-16s %s' "$label" "ping failed")"
+            [[ $target == "$gateway" ]] && gateway_ok=0
+            continue
+        fi
+        read -r loss min avg max mdev <<< "$stats"
+        opm-println -s "$(printf '%-16s %5s%% %7sms %7sms %7sms' "$label" "$loss" "$avg" "$max" "$mdev")"
+        opm-println -v "  min ${min}ms"
+
+        if [[ $target == "$gateway" ]]; then
+            if gt "$loss" "$LOSS_WARN_PERCENT" || [[ $avg == "-" ]]; then
+                add_issue wifi "Losing ${loss}% of packets to the router -- the Wi-Fi/LAN hop is dropping"
+                gateway_ok=0
+            elif gt "$avg" "$GATEWAY_AVG_WARN_MS" || gt "$mdev" "$GATEWAY_JITTER_WARN_MS"; then
+                add_issue wifi "Router hop is slow (avg ${avg}ms, jitter ${mdev}ms) -- the Wi-Fi/LAN is the bottleneck"
+                gateway_ok=0
+            fi
+        else
+            internet_total=$((internet_total + 1))
+            if gt "$loss" "$LOSS_WARN_PERCENT" || [[ $avg == "-" ]] || gt "$avg" "$INTERNET_AVG_WARN_MS"; then
+                internet_bad=$((internet_bad + 1))
+            fi
+        fi
+    done
+
+    # Only when the router hop is clean does a slow internet point past it.
+    if [[ $internet_bad -gt 0 && $gateway_ok -eq 1 ]]; then
+        if [[ $internet_bad -eq $internet_total ]]; then
+            add_issue line "Router hop is clean but every internet host is slow -- the router or the ISP line"
+        else
+            add_issue route "Only some internet hosts are slow -- their route, not your line"
+        fi
+    fi
+}
+
+# Configured resolvers first, in the order the system tries them.
+function configured_resolvers
+{
+    local iface=$1
+    local servers
+
+    if command -v resolvectl &> /dev/null; then
+        servers=$(resolvectl dns "$iface" 2> /dev/null | sed 's/^[^:]*: *//')
+        if [[ -z ${servers// /} ]]; then
+            servers=$(resolvectl dns 2> /dev/null | sed -n 's/^Global: *//p')
+        fi
+    fi
+    if [[ -z ${servers// /} ]]; then
+        servers=$(awk '$1 == "nameserver" && $2 !~ /^127\./ { print $2 }' /etc/resolv.conf 2> /dev/null)
+    fi
+    # Drop the "#server-name" suffix resolvectl adds for DNS-over-TLS.
+    tr ' ' '\n' <<< "$servers" | sed 's/#.*//' | grep -v '^$'
+}
+
+# Mean query time over DNS_DOMAINS in ms, or "-" when the server never answered.
+function resolver_ms
+{
+    local server=$1
+    local domain ms total=0 answered=0
+
+    for domain in "${DNS_DOMAINS[@]}"; do
+        ms=$(dig +tries=1 +time=2 "@$server" "$domain" 2> /dev/null | awk '/Query time:/ { print $4 }')
+        if [[ -n $ms ]]; then
+            total=$((total + ms))
+            answered=$((answered + 1))
+        fi
+    done
+
+    if [[ $answered -eq 0 ]]; then
+        echo "-"
+    else
+        echo $((total / answered))
+    fi
+}
+
+function check_dns
+{
+    local iface=$1
+    local gateway=$2
+
+    print_section "DNS"
+    if ! command -v dig &> /dev/null; then
+        opm-println-warn -s "Not found dig command -- resolver times skipped (apt install dnsutils)"
+        return 0
+    fi
+
+    local servers=() labels=() server
+    local index=1
+    while read -r server; do
+        servers+=("$server")
+        labels+=("configured #$index")
+        index=$((index + 1))
+    done < <(configured_resolvers "$iface")
+
+    # Two yardsticks: the router's own forwarder and a nearby anycast resolver.
+    local candidate known
+    for candidate in "$gateway" "$REFERENCE_HOST"; do
+        [[ $candidate == "-" ]] && continue
+        known=0
+        for server in "${servers[@]}"; do
+            [[ $server == "$candidate" ]] && known=1
+        done
+        if [[ $known -eq 0 ]]; then
+            servers+=("$candidate")
+            [[ $candidate == "$gateway" ]] && labels+=("router") || labels+=("reference")
+        fi
+    done
+
+    local times=() ms i
+    for i in "${!servers[@]}"; do
+        ms=$(resolver_ms "${servers[$i]}")
+        times+=("$ms")
+        if [[ $ms == "-" ]]; then
+            opm-println-warn -s "$(printf '%-16s %8s  %s' "${servers[$i]}" "no reply" "${labels[$i]}")"
+        else
+            opm-println -s "$(printf '%-16s %6sms  %s' "${servers[$i]}" "$ms" "${labels[$i]}")"
+        fi
+    done
+
+    [[ ${#servers[@]} -eq 0 ]] && return 0
+    local first=${times[0]}
+    if [[ ${labels[0]} != "configured #1" ]]; then
+        return 0
+    fi
+    if [[ $first == "-" ]]; then
+        add_issue dns "First resolver ${servers[0]} does not answer -- every lookup waits for the fallback"
+        return 0
+    fi
+
+    # Each new hostname waits on the first resolver. A faster one sitting
+    # second in line is a free fix.
+    local best_index=0
+    for i in "${!times[@]}"; do
+        [[ ${times[$i]} == "-" ]] && continue
+        if lt "${times[$i]}" "${times[$best_index]}"; then
+            best_index=$i
+        fi
+    done
+    local best=${times[$best_index]}
+    if [[ $best_index -ne 0 ]] && gt "$first" $((best * 2)) && gt "$first" $((best + 20)); then
+        local message="First resolver ${servers[0]} takes ${first}ms; ${servers[$best_index]} takes ${best}ms -- put it first"
+        if gt "$first" "$DNS_WARN_MS"; then
+            add_issue dns "$message"
+        else
+            add_hint "$message"
+        fi
+    elif gt "$first" "$DNS_WARN_MS"; then
+        add_issue dns "First resolver ${servers[0]} takes ${first}ms per lookup"
+    fi
+}
+
+function check_http
+{
+    local timeout=$1
+
+    print_section "HTTP (ms)"
+    opm-println -s "$(printf '%-26s %6s %8s %6s %6s %7s' url dns connect tls ttfb total)"
+
+    local url timing code dns connect tls ttfb total
+    for url in "${HTTP_TARGETS[@]}"; do
+        timing=$(curl -o /dev/null -s -m "$timeout" -w \
+            '%{http_code} %{time_namelookup} %{time_connect} %{time_appconnect} %{time_starttransfer} %{time_total}' \
+            "$url" 2> /dev/null)
+        read -r code dns connect tls ttfb total <<< "$timing"
+        if [[ -z $code || $code == "000" ]]; then
+            opm-println-error "$(printf '%-26s %s' "${url#https://}" "failed")"
+            add_issue http "Could not fetch $url"
+            continue
+        fi
+        # Each phase is cumulative from the start; print the phase itself.
+        read -r dns connect tls ttfb total < <(awk -v d="$dns" -v c="$connect" -v t="$tls" \
+            -v f="$ttfb" -v a="$total" 'BEGIN {
+                printf "%d %d %d %d %d\n", d * 1000, (c - d) * 1000, (t - c) * 1000, (f - t) * 1000, a * 1000
+            }')
+        opm-println -s "$(printf '%-26s %6s %8s %6s %6s %7s' "${url#https://}" "$dns" "$connect" "$tls" "$ttfb" "$total")"
+        if gt "$total" "$TTFB_WARN_MS"; then
+            add_issue http "${url#https://} took ${total}ms to answer"
+        fi
+    done
+}
+
+function mbps_of
+{
+    awk -v b="$1" 'BEGIN { printf "%.1f", b * 8 / 1000000 }'
+}
+
+function check_throughput
+{
+    local bytes=$1
+    local timeout=$2
+    local result speed size total
+
+    print_section "Throughput"
+
+    # --max-time ends a slow transfer early; the rate so far is still valid.
+    result=$(curl -o /dev/null -s -m "$timeout" -w '%{speed_download} %{size_download} %{time_total}' \
+        "${SPEED_DOWN_URL}${bytes}" 2> /dev/null)
+    read -r speed size total <<< "$result"
+    if [[ -n $size && $size -gt 0 ]]; then
+        opm-println -s "download    $(mbps_of "$speed") Mbit/s  ($((size / 1000000)) MB in $(printf '%.2f' "$total")s)"
+        if lt "$(mbps_of "$speed")" "$DOWNLOAD_WARN_MBPS"; then
+            add_issue bandwidth "Download is only $(mbps_of "$speed") Mbit/s"
+        fi
+    else
+        opm-println-error "download    failed"
+        add_issue bandwidth "Download test failed"
+    fi
+
+    result=$(head -c "$DEFAULT_UPLOAD_BYTES" /dev/zero | curl -o /dev/null -s -m "$timeout" \
+        -w '%{speed_upload} %{size_upload} %{time_total}' -X POST --data-binary @- \
+        "$SPEED_UP_URL" 2> /dev/null)
+    read -r speed size total <<< "$result"
+    if [[ -n $size && $size -gt 0 ]]; then
+        opm-println -s "upload      $(mbps_of "$speed") Mbit/s  ($((size / 1000000)) MB in $(printf '%.2f' "$total")s)"
+        if lt "$(mbps_of "$speed")" "$UPLOAD_WARN_MBPS"; then
+            add_issue bandwidth "Upload is only $(mbps_of "$speed") Mbit/s"
+        fi
+    else
+        opm-println-error "upload      failed"
+        add_issue bandwidth "Upload test failed"
+    fi
+}
+
+function check_trace
+{
+    print_section "Route to $REFERENCE_HOST"
+    if command -v mtr &> /dev/null; then
+        mtr -rwbc 10 -n "$REFERENCE_HOST" 2>&1 | tail -n +2
+    elif command -v tracepath &> /dev/null; then
+        tracepath -n -m 20 "$REFERENCE_HOST" 2>&1
+    else
+        opm-println-warn -s "Not found mtr or tracepath command"
+    fi
+}
+
+# Order matters: the first slow layer on the way out is the one to fix first;
+# everything past it inherits its lag.
+function print_verdict
+{
+    print_section "Verdict"
+
+    local hint
+    if [[ ${#ISSUES[@]} -eq 0 ]]; then
+        opm-println-info -s "✓ Nothing slow right now."
+        opm-println -s "  If it still feels slow, it is intermittent or app-specific --"
+        opm-println -s "  run 'opm-network-speed --monitor' while it happens."
+        if [[ ${#HINTS[@]} -gt 0 ]]; then
+            opm-println -s "Worth changing anyway:"
+            for hint in "${HINTS[@]}"; do
+                opm-println -s "  - $hint"
+            done
+        fi
+        return 0
+    fi
+
+    local layer entry where=""
+    for layer in wifi lan line route dns bandwidth http; do
+        for entry in "${ISSUES[@]}"; do
+            if [[ ${entry%%|*} == "$layer" ]]; then
+                where=$layer
+                break 2
+            fi
+        done
+    done
+
+    case $where in
+    wifi)
+        opm-println-error "Bottleneck: the Wi-Fi between this PC and the router"
+        ;;
+    lan)
+        opm-println-error "Bottleneck: the wired link between this PC and the router"
+        ;;
+    line)
+        opm-println-error "Bottleneck: the router or the ISP line (the local hop is clean)"
+        ;;
+    route)
+        opm-println-error "Bottleneck: the route to particular hosts, not your line"
+        ;;
+    dns)
+        opm-println-error "Bottleneck: name resolution (DNS)"
+        ;;
+    bandwidth)
+        opm-println-error "Bottleneck: bandwidth"
+        ;;
+    *)
+        opm-println-error "Bottleneck: particular sites"
+        ;;
+    esac
+
+    for entry in "${ISSUES[@]}"; do
+        opm-println-warn -s "  - ${entry#*|}"
+    done
+    for hint in "${HINTS[@]}"; do
+        opm-println -s "  ! $hint"
+    done
+    return 1
+}
+
+function ping_once
+{
+    LC_ALL=C ping -n -c 1 -W 1 "$1" 2> /dev/null \
+        | sed -n 's/.*time=\([0-9.]*\).*/\1/p' | awk '{ printf "%.1f", $1 }'
+}
+
+function opm_network_speed_monitor
+{
+    local iface=$1
+    local gateway=$2
+    local wireless=0
+    local samples=0 gateway_lost=0 gateway_spikes=0 internet_lost=0 internet_spikes=0
+    local last_channel=""
+
+    if is_wireless "$iface" && command -v nmcli &> /dev/null; then
+        wireless=1
+    fi
+
+    function print_monitor_summary
+    {
+        opm-println -s ""
+        opm-println -s "samples $samples:" \
+            " router lost $gateway_lost, spikes $gateway_spikes;" \
+            " internet lost $internet_lost, spikes $internet_spikes"
+        if [[ $((gateway_lost + gateway_spikes)) -gt 0 ]]; then
+            opm-println-error "Bottleneck: the Wi-Fi/LAN hop (the router itself lagged)"
+        elif [[ $((internet_lost + internet_spikes)) -gt 0 ]]; then
+            opm-println-error "Bottleneck: the router or the ISP line (the local hop stayed clean)"
+        else
+            opm-println-info -s "✓ No spike on either side"
+        fi
+    }
+    trap 'print_monitor_summary; exit 0' INT TERM
+
+    opm-println -s "Pinging router $gateway and $REFERENCE_HOST once a second. Ctrl-C to stop."
+    opm-println -s "$(printf '%-9s %10s %10s  %s' time router internet link)"
+
+    local began gateway_ms internet_ms link channel freq signal rate ssid info mark
+    while true; do
+        began=$(date +%s%N)
+        gateway_ms=""
+        [[ $gateway != "-" ]] && gateway_ms=$(ping_once "$gateway")
+        internet_ms=$(ping_once "$REFERENCE_HOST")
+        samples=$((samples + 1))
+
+        info=""
+        if [[ $wireless -eq 1 ]]; then
+            link=$(wifi_link "$iface")
+            read -r channel freq signal rate ssid <<< "$link"
+            info="$(band_of "${freq:-0}") ch${channel} ${signal}% ${rate}Mb"
+        fi
+
+        mark=""
+        if [[ -z $gateway_ms && $gateway != "-" ]]; then
+            gateway_lost=$((gateway_lost + 1))
+            mark="<- router lost"
+        elif [[ -n $gateway_ms ]] && gt "$gateway_ms" "$MONITOR_GATEWAY_SPIKE_MS"; then
+            gateway_spikes=$((gateway_spikes + 1))
+            mark="<- wifi/lan"
+        elif [[ -z $internet_ms ]]; then
+            internet_lost=$((internet_lost + 1))
+            mark="<- internet lost"
+        elif gt "$internet_ms" "$MONITOR_INTERNET_SPIKE_MS"; then
+            internet_spikes=$((internet_spikes + 1))
+            mark="<- line"
+        fi
+        if [[ -n $last_channel && -n $channel && $channel != "$last_channel" ]]; then
+            mark="$mark <- roamed"
+        fi
+        last_channel=$channel
+
+        if [[ -n $mark ]]; then
+            opm-println-warn -s "$(printf '%-9s %8sms %8sms  %s %s' "$(date +%T)" "${gateway_ms:--}" "${internet_ms:--}" "$info" "$mark")"
+        else
+            opm-println -s "$(printf '%-9s %8sms %8sms  %s' "$(date +%T)" "${gateway_ms:--}" "${internet_ms:--}" "$info")"
+        fi
+
+        local elapsed_ms=$(( ($(date +%s%N) - began) / 1000000 ))
+        if [[ $elapsed_ms -lt 1000 ]]; then
+            sleep "$(awk -v e="$elapsed_ms" 'BEGIN { printf "%.3f", (1000 - e) / 1000 }')"
+        fi
+    done
+}
+
+function opm_network_speed_main
+{
+    local quick_flag=0
+    local trace_flag=0
+    local monitor_flag=0
+    local verbose_flag=0
+    local silent_flag=0
+    local count=$DEFAULT_PING_COUNT
+    local bytes=$DEFAULT_DOWNLOAD_BYTES
+    local timeout=$DEFAULT_TIMEOUT
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -q|--quick)
+            quick_flag=1
+            shift
+            ;;
+        -t|--trace)
+            trace_flag=1
+            shift
+            ;;
+        -m|--monitor)
+            monitor_flag=1
+            shift
+            ;;
+        -c)
+            count=$2
+            shift 2
+            ;;
+        --count=*)
+            count=${1#--count=}
+            shift
+            ;;
+        -b)
+            bytes=$2
+            shift 2
+            ;;
+        --bytes=*)
+            bytes=${1#--bytes=}
+            shift
+            ;;
+        -w)
+            timeout=$2
+            shift 2
+            ;;
+        --timeout=*)
+            timeout=${1#--timeout=}
+            shift
+            ;;
+        -v|--verbose)
+            verbose_flag=1
+            shift
+            ;;
+        -s|--silent)
+            silent_flag=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error "Unknown option: $1"
+            print_usage
+            return 2
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ $verbose_flag -ne 0 ]]; then
+        VERBOSE=1
+        export VERBOSE
+    fi
+    if [[ $silent_flag -ne 0 ]]; then
+        SILENT=1
+        export SILENT
+    fi
+
+    local number
+    for number in "$count" "$bytes" "$timeout"; do
+        if [[ ! $number =~ ^[0-9]+$ || $number -eq 0 ]]; then
+            opm-println-error "Not a positive number: $number"
+            return 2
+        fi
+    done
+
+    local command
+    for command in ip ping curl awk; do
+        if ! command -v "$command" &> /dev/null; then
+            opm-println-error "Not found $command command"
+            return 2
+        fi
+    done
+
+    local route iface gateway source
+    if ! route=$(default_route); then
+        opm-println-error "No route to the internet -- not connected?"
+        return 2
+    fi
+    read -r iface gateway source <<< "$route"
+
+    if [[ $monitor_flag -ne 0 ]]; then
+        opm_network_speed_monitor "$iface" "$gateway"
+        return 0
+    fi
+
+    check_link "$iface" "$gateway" "$source"
+    check_latency "$gateway" "$count"
+    check_dns "$iface" "$gateway"
+    check_http "$timeout"
+    if [[ $quick_flag -eq 0 ]]; then
+        check_throughput "$bytes" "$timeout"
+    fi
+    if [[ $trace_flag -ne 0 ]]; then
+        check_trace
+    fi
+
+    print_verdict
+}
+
+opm_network_speed_main "$@"
