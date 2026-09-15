@@ -196,7 +196,7 @@ def print_written_prayer(name: str, year: int, month: int, day: int) -> None:
         raise ValueError("Unsupported year")
 
     info = LunarInfo(year, month, day)
-    print(f"{name} [{info.lunar}]")
+    print(f"{name} [Lunar calendar {info.lunar}]")
     print(str(info))
 
 
@@ -205,7 +205,7 @@ def print_all_written_prayer(year: int) -> None:
         name="Grandma",
         year=year,
         month=GRANDMA_DEATH_ANNIVERSARY.month,
-        day=GRANDMA_DEATH_ANNIVERSARY.month,
+        day=GRANDMA_DEATH_ANNIVERSARY.day,
     )
     print_written_prayer(
         name="Grandfather",
