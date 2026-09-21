@@ -4,7 +4,8 @@ HOMEPAGE=${1:-https://duckduckgo.com}
 HOST_WEB_PORT=${2:-5800}
 HOST_VNC_PORT=${3:-5900}
 DOWNLOAD_DIR=$HOME/Downloads
-DW_HELPER_DIR=$HOME/.dwhelper
+CAPTURE_DIR=${FFCAP_HOST_DIR:-$HOME/Downloads/ffcap}
+FFCAP_ENABLE=${FFCAP_ENABLE:-1}
 DISPLAY_WIDTH=1600
 DISPLAY_HEIGHT=900
 FF_PREF_TRR_URI="network.trr.uri=\"https://mozilla.cloudflare-dns.com/dns-query\""
@@ -19,15 +20,15 @@ SHM_SIZE=2g
 echo "Run Firefox Web"
 echo "Homepage: $HOMEPAGE"
 echo "Download directory: $DOWNLOAD_DIR"
-echo "DwHelper directory: $DW_HELPER_DIR"
+echo "Capture directory: $CAPTURE_DIR (enable: $FFCAP_ENABLE)"
 echo "Access URL: http://localhost:$HOST_WEB_PORT"
 echo "Or VNC: localhost:$HOST_VNC_PORT"
 
 if [[ ! -d "$DOWNLOAD_DIR" ]]; then
     mkdir -vp "$DOWNLOAD_DIR"
 fi
-if [[ ! -d "$DW_HELPER_DIR" ]]; then
-    mkdir -vp "$DW_HELPER_DIR"
+if [[ ! -d "$CAPTURE_DIR" ]]; then
+    mkdir -vp "$CAPTURE_DIR"
 fi
 
 docker run --rm -it \
@@ -36,7 +37,11 @@ docker run --rm -it \
     -p "$HOST_WEB_PORT:5800" \
     -p "$HOST_VNC_PORT:5900" \
     -v "$DOWNLOAD_DIR:/config/downloads:rw" \
-    -v "$DW_HELPER_DIR:/config/dwhelper:rw" \
+    -v "$CAPTURE_DIR:/config/captures:rw" \
+    -e "FFCAP_ENABLE=$FFCAP_ENABLE" \
+    -e "FF_OPEN_URL=$HOMEPAGE" \
+    -e "USER_ID=$(id -u)" \
+    -e "GROUP_ID=$(id -g)" \
     -e "DISPLAY_WIDTH=$DISPLAY_WIDTH" \
     -e "DISPLAY_HEIGHT=$DISPLAY_HEIGHT" \
     -e "FF_PREF_TRR_URI=$FF_PREF_TRR_URI" \
