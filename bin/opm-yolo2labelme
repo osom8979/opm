@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+opy-checked-install pillow pyyaml || exit $?
+opy "$(opm-home)/lib/python3/yolo2labelme.py" "$@"
