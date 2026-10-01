@@ -76,6 +76,7 @@ NeoBundle 'jakerobers/vim-hexrgba'          " toggle between hex color codes and
 NeoBundle 'habamax/vim-godot'               " use vim and godot engine to make games
 NeoBundle 'amadeus/vim-convert-color-to'    " convert color strings to different formats.
 NeoBundle 'osom8979/claude-cursor.vim'      " seamless claude code integration for vim
+NeoBundle 'coder/claudecode.nvim'           " claude code ide integration for neovim
 NeoBundle 'kevinhwang91/nvim-hlslens'       " hlsearch Lens for neovim
 NeoBundle 'lewis6991/gitsigns.nvim'         " git integration for buffers
 NeoBundle 'petertriho/nvim-scrollbar'       " extensible neovim scrollbar

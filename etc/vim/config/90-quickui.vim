@@ -296,6 +296,15 @@ call quickui#menu#install("&Tools", [
             \ [ "Gitsigns diff t&his", ':Gitsigns diffthis' ],
             \ [ "--", "" ],
             \ [ "Claude Code Autocomplete\t<leader><Space>", ':call OpmClaudeCodeAutocomplete()' ],
+            \ [ "--", "" ],
+            \ [ "Claude Code toggle\t<leader>kc", ':ClaudeCode', "Toggle the Claude Code terminal." ],
+            \ [ "Claude Code focus\t<leader>kf", ':ClaudeCodeFocus', "Focus the Claude Code terminal." ],
+            \ [ "Claude Code send selection\t<leader>ks", ":'<,'>ClaudeCodeSend", "Send the last visual selection to Claude Code." ],
+            \ [ "Claude Code add buffer\t<leader>kb", ':ClaudeCodeAdd %', "Add the current buffer to the Claude Code context." ],
+            \ [ "Claude Code diff accept\t<leader>ka", ':ClaudeCodeDiffAccept', "Accept the diff proposed by Claude Code." ],
+            \ [ "Claude Code diff deny\t<leader>kd", ':ClaudeCodeDiffDeny', "Deny the diff proposed by Claude Code." ],
+            \ [ "Claude Code select model", ':ClaudeCodeSelectModel', "Select the Claude model." ],
+            \ [ "Claude Code status", ':ClaudeCodeStatus', "Show the Claude Code integration status." ],
             \ ])
 
 let s:view_tree = g:opm_neo_tree
