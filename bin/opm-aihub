@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if [[ -z $OPM_HOME ]]; then
+OPM_HOME=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." || exit; pwd)
+fi
+
+IMAGES_DIR="$OPM_HOME/etc/docker/images"
+AIHUB_IMAGE="${AIHUB_IMAGE:-osom8979/aihub:latest}"
+export AIHUB_IMAGE
+
+if ! command -v docker &> /dev/null; then
+    opm-println-error "Not found docker command"
+    exit 1
+fi
+
+# 첫 실행에는 이미지가 없으므로 먼저 빌드한다. aihubshell 은 빌드할 때 받으므로,
+# 새 버전이 필요하면 aihub.build.sh 로 다시 빌드한다.
+if ! docker image inspect "$AIHUB_IMAGE" &> /dev/null; then
+    opm-println-warn "Not found $AIHUB_IMAGE image; building it now"
+    if ! bash "$IMAGES_DIR/aihub.build.sh"; then
+        opm-println-error "Image build failed"
+        exit 1
+    fi
+fi
+
+# 현재 폴더(또는 $AIHUB_OUT)에 받는다. 옵션은 opm-aihub --help 참고.
+exec bash "$IMAGES_DIR/aihub.run.sh" "$@"
