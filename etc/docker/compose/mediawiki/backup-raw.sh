@@ -1,52 +1,49 @@
 #!/usr/bin/env bash
 
-if [[ $(id -u) -ne 0 ]]; then
-    echo "Please run as root" 1>&2
-    exit 1
-fi
+ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd)
+# shellcheck source=common.sh
+source "$ROOT_DIR/common.sh"
 
-function print_error
+require_root
+require_7za
+read_password confirm
+
+ARCHIVE=$BACKUP_DIR/raw-$(date +%Y%m%d-%H%M%S).tar.7z
+mkdir -p "$BACKUP_DIR"
+STAGE=$(mktemp -d "$BACKUP_DIR/.raw.XXXXXX")
+write_backup_info "$STAGE/backup.info"
+
+# Start again only the services stopped by this script
+STOPPED=()
+for SERVICE in mariadb mediawiki; do
+    if is_running "$SERVICE"; then
+        STOPPED+=("$SERVICE")
+    fi
+done
+
+function cleanup
 {
-    # shellcheck disable=SC2145
-    echo -e "\033[31m$@\033[0m" 1>&2
+    rm -rf "$STAGE"
+    if [[ ${#STOPPED[@]} -gt 0 ]]; then
+        print_message "Start services: ${STOPPED[*]}"
+        compose start "${STOPPED[@]}"
+    fi
 }
+trap cleanup EXIT
 
-function print_message
-{
-    # shellcheck disable=SC2145
-    echo -e "\033[32m$@\033[0m"
-}
+# Copying the files of a running database gives an inconsistent snapshot
+print_message "Stop services ..."
+compose stop mediawiki mariadb || exit 1
 
-if ! command -v 7za &> /dev/null; then
-    print_error "Not found '7za' command"
-    print_error "Please run the following command:"
-    print_error "  sudo apt install p7zip-full"
-    exit 1
-fi
+mapfile -t ITEMS < <(existing_items "$ROOT_DIR" "${STATE_ITEMS[@]}")
 
-read -s -r -p "Enter a archive password: " PASS
-echo -n -e "\n"
-read -s -r -p "Re-enter a archive password: " REPASS
-
-if [[ -z $PASS || "$PASS" != "$REPASS" ]]; then
-    print_error "Incorrect password error"
-    exit 1
-fi
-
-DATE_FORMAT=$(date +%Y%m%d)
-
-print_message "Images backup starts ..."
-time 7za a "images-$DATE_FORMAT.7z" images/ -p"$PASS"
+print_message "Raw backup starts: ${ITEMS[*]}"
+time create_archive "$ARCHIVE" -C "$STAGE" backup.info -C "$ROOT_DIR" "${ITEMS[@]}"
 CODE=$?
 if [[ $CODE -ne 0 ]]; then
-    print_error "Images backup failed: $CODE"
+    print_error "Raw backup failed: $CODE"
     exit $CODE
 fi
 
-print_message "Database backup starts ..."
-time 7za a -p"$PASS" "mysql-$DATE_FORMAT.7z" mysql/
-CODE=$?
-if [[ $CODE -ne 0 ]]; then
-    print_error "Database backup failed: $CODE"
-    exit $CODE
-fi
+print_message "Backup complete: '$ARCHIVE' ($(du -h "$ARCHIVE" | cut -f1))"
+print_message " Checksum: '$ARCHIVE.sha256'"
