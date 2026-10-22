@@ -129,7 +129,7 @@ wfLoadExtension('CodeEditor');
 wfLoadExtension('ConfirmEdit');
 wfLoadExtension('MultimediaViewer');
 wfLoadExtension('PdfHandler');
-wfLoadExtension('Renameuser');
+# wfLoadExtension('Renameuser');
 wfLoadExtension('SyntaxHighlight_GeSHi');
 wfLoadExtension('WikiEditor');
 

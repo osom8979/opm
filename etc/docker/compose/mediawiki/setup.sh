@@ -89,7 +89,6 @@ Options:
   - Timeless
   - Vector - 'Use this skin as default'
  Extensions:
-  - Renameuser
   - CodeEditor (requires WikiEditor)
   - WikiEditor
   - Cite

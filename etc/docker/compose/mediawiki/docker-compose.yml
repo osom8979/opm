@@ -32,7 +32,7 @@ services:
       - "./mysql:/var/lib/mysql"
 
   mediawiki:
-    image: "mediawiki:1.39.3"
+    image: "mediawiki:1.43.11"
     restart: always
     depends_on:
       - mariadb
