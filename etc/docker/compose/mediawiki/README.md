@@ -81,6 +81,9 @@ TOTP 를 등록한 계정은 비밀번호로 로그인할 때마다 인증 앱�
 | `$wgRememberMe = 'never'` | "로그인 상태 유지" 체크박스를 없앤다. 기본값이면 체크 시 180일 동안 다시 로그인하지 않는다. |
 | `$wgEnableBotPasswords = false` | `Special:BotPasswords` 를 끈다. bot password 는 API 로그인 때 2단계 인증을 거치지 않는다. |
 
+예외로 [create-readonly-bot.sh](#create-readonly-botsh) 가 만드는 봇 계정은 비밀번호만으로 API 에 로그인한다.
+대신 `read` 외의 모든 권한을 회수하므로 비밀번호가 유출되어도 위키를 바꿀 수 없다.
+
 브라우저를 닫거나 1시간 동안 요청이 없으면 다시 로그인해야 한다.
 세션은 APCu 에 저장되므로 `mediawiki` 컨테이너를 재시작해도 로그아웃된다.
 1시간이 짧으면 `$wgObjectCacheSessionExpiry` 를 초 단위로 늘린다.
@@ -107,6 +110,7 @@ docker compose run --rm --no-deps --user www-data mediawiki \
 | `update-schema.sh` | MediaWiki 업그레이드나 확장 추가 후 DB 스키마 갱신 | | |
 | `run-jobs.sh` | 작업 큐 처리 | | |
 | `version.sh` | 이미지/MediaWiki/PHP 버전과 컨테이너 상태 확인 | | |
+| `create-readonly-bot.sh` | unwiki 용 읽기 전용 봇 계정 생성, 비밀번호 재발급 | | |
 | `backup-raw.sh` | DB 파일 그대로 백업 (복원이 가장 빠름) | ✅ | ✅ 백업 동안 |
 | `backup-dump.sh` | SQL 덤프 백업 (무중단, cron 용) | ✅ | |
 | `verify-backup.sh` | 백업을 임시 DB 에 띄워 검사 | ✅ | |
@@ -161,6 +165,56 @@ MediaWiki 이미지를 올린 뒤 `maintenance/run.php update --quick` 을 실�
 `container` 가 `running an older image` 이면 새로 받은 이미지가 아직 적용되지 않은 것이다.
 `docker compose up -d` 로 컨테이너를 다시 만든다.
 PHP 보안 공지가 나오면 `PHP` 값으로 패치 여부를 확인한다.
+
+### create-readonly-bot.sh
+
+```bash
+./create-readonly-bot.sh              # 계정 이름 UnwikiBot
+./create-readonly-bot.sh OtherBot
+```
+
+[unwiki](https://github.com/osom8979/unwiki) 의 mwfilter 가 문서를 내려받을 때 쓰는 읽기 전용 계정을 만든다.
+bot password 를 껐으므로 봇은 일반 계정 비밀번호로 API 에 로그인한다.
+그래서 계정을 `readonly` 그룹에 넣고 `read` 외의 권한을 모두 회수한다.
+
+먼저 `init.php` 의 `Read-only accounts` 블록을 `LocalSettings.php` 끝에 추가한다.
+블록이 없거나 `read` 외 권한이 남아 있으면 남은 권한을 출력하고 계정을 만들지 않는다.
+확장을 새로 켜면 그 확장이 `user` 그룹에 주는 권한도 `$wgRevokePermissions['readonly']` 에 추가해야 한다.
+
+`mariadb` 가 떠 있어야 하며 다음을 출력한다.
+
+```text
+Created read-only account 'UnwikiBot' (rights: read).
+
+Add the following to unwiki's .env.local:
+
+MEDIAWIKI_HOSTNAME=wiki.example.com
+MEDIAWIKI_USERNAME=UnwikiBot
+MEDIAWIKI_PASSWORD=<40자리 16진수>
+ENDPOINT_PATH=/
+
+Account management (log in as an administrator):
+ - Groups       : https://wiki.example.com/index.php/Special:UserRights/UnwikiBot
+ - Group rights : https://wiki.example.com/index.php/Special:ListGroupRights
+ - Members      : https://wiki.example.com/index.php/Special:ListUsers/readonly
+ - Edits        : https://wiki.example.com/index.php/Special:Contributions/UnwikiBot
+ - Logs         : https://wiki.example.com/index.php/Special:Log?page=User:UnwikiBot
+```
+
+`ENDPOINT_PATH` 는 `MEDIAWIKI_*` 가 아니지만 함께 넣는다.
+mwfilter 의 기본값은 `/w/` 인데 이 위키는 `api.php` 가 `/` 아래에 있다.
+
+- 비밀번호는 컨테이너 안에서 만들어 한 번만 출력한다. `ps` 에 나타나지 않는다.
+- 같은 계정으로 다시 실행하면 새 비밀번호를 발급하고 이전 비밀번호는 바로 쓸 수 없다.
+- `readonly` 그룹이 아닌 기존 계정은 사람 계정일 수 있으므로 비밀번호를 바꾸지 않고 중단한다.
+- `readonly` 그룹에서 빼면 편집, 업로드 같은 일반 사용자 권한이 생긴다. 그룹을 유지한다.
+- 차단해도 읽기는 막히지 않는다. 비밀번호가 유출되면 스크립트를 다시 실행한다.
+- 2단계 인증을 등록하면 API 로그인이 실패한다. `oathauth-enable` 권한도 회수되어 있다.
+
+웹 서버는 사용자 정보를 APCu 에 최대 1시간 캐시하고, 유지보수 컨테이너는 이 캐시를 지울 수 없다.
+최근 1시간 안에 로그인한 계정의 비밀번호를 바꾸면 캐시가 만료될 때까지 이전 세션이 살아 있다.
+그동안 새 비밀번호로 로그인하면 첫 요청 뒤 세션이 끊긴다.
+바로 적용하려면 `docker compose restart mediawiki` 를 실행한다. 모든 사용자가 로그아웃된다.
 
 ### 백업 비밀번호
 

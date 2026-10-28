@@ -144,6 +144,22 @@ $wgRememberMe = 'never';
 # Bot passwords log in through the API without the second factor
 $wgEnableBotPasswords = false;
 
+## Read-only accounts (create-readonly-bot.sh)
+## Bots such as unwiki log in with a password only, so members keep just 'read'
+## and a leaked password cannot change the wiki.
+## Keep this block below the $wgGroupPermissions lines above.
+$wgGroupPermissions['readonly']['read'] = true;
+foreach (['*', 'user', 'autoconfirmed'] as $group) {
+    foreach (array_keys(array_filter($wgGroupPermissions[$group] ?? [])) as $right) {
+        if ($right !== 'read') {
+            $wgRevokePermissions['readonly'][$right] = true;
+        }
+    }
+}
+unset($group, $right);
+# Extensions add their rights after this file is loaded
+$wgRevokePermissions['readonly']['oathauth-enable'] = true;
+
 ## Maximum size of uploaded files (in bytes)
 $wgMaxUploadSize = 256 * 1024 * 1024;
 
