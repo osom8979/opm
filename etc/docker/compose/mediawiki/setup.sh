@@ -96,6 +96,7 @@ Options:
   - PdfHandler
   - ConfirmEdit
   - MultimediaViewer
+  - OATHAuth
  Images and file uploads:
   - Enable file uploads
  Personalization:
@@ -103,6 +104,9 @@ Options:
   - Sidebar logo (optional): \$wgResourceBasePath/resources/assets/logo.png
  Advanced configuration:
   - Select 'PHP object caching (APC, APCu or WinCache)'
+
+After installation:
+ - Log in and enroll two-factor authentication: https://$MEDIAWIKI_HOST/index.php/Special:OATHManage
 "
 
 echo "$ENV" | sed '/^$/d' > "$ENV_PATH"

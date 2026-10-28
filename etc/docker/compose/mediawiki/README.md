@@ -20,7 +20,7 @@ MediaWiki 이미지는 PHP 를 포함하므로 PHP 버전은 이미지 태그로
 | 파일 | 설명 |
 |---|---|
 | `docker-compose.yml` | 서비스 정의 |
-| `init.php` | `LocalSettings.php` 의 템플릿 (확장, 업로드, 권한 설정) |
+| `init.php` | `LocalSettings.php` 의 템플릿 (확장, 업로드, 권한, 2단계 인증 설정) |
 | `phpconfig.ini` | PHP 설정 (업로드 256M, 메모리 512M) |
 | `logo.png` | 위키 로고 |
 | `SimpleMathJax/` | `<math>` 렌더링 확장 (git 서브모듈) |
@@ -49,6 +49,7 @@ docker compose up -d
 
 `setup.sh` 가 출력한 안내에 따라 `https://<호스트>/mw-config/index.php` 에서
 설치를 마무리한다 (DB 테이블 생성).
+설치가 끝나면 관리자 계정으로 로그인해 [2단계 인증](#2단계-인증)을 등록한다.
 
 `init.php` 를 고쳐도 기존 `LocalSettings.php` 에는 반영되지 않는다.
 운영 중인 서버에서는 `LocalSettings.php` 에 같은 변경을 직접 적용한다.
@@ -57,13 +58,53 @@ docker compose up -d
 diff init.php LocalSettings.php   # 끝부분의 비밀 값 외 차이 확인
 ```
 
+## 2단계 인증
+
+이미지에 포함된 [OATHAuth](https://www.mediawiki.org/wiki/Extension:OATHAuth) 확장으로 TOTP 2단계 인증을 쓴다.
+TOTP 를 등록한 계정은 비밀번호로 로그인할 때마다 인증 앱의 6자리 코드를 입력해야 한다.
+
+### 등록
+
+1. 로그인 후 `https://<호스트>/index.php/Special:OATHManage` 로 이동한다.
+2. 인증 앱(Aegis, Google Authenticator, 1Password 등)으로 QR 코드를 스캔하고 코드를 입력한다.
+3. 함께 표시되는 복구 코드를 별도 장소에 보관한다. 각 코드는 한 번만 쓸 수 있다.
+4. 로그인한 창은 닫지 말고, 시크릿 창에서 다시 로그인해 코드 입력 화면이 나오는지 확인한다.
+
+설치 화면에서 OATHAuth 를 선택하지 않았다면 테이블이 없다. `./update-schema.sh` 로 만든다.
+
+### 우회 경로 차단
+
+`init.php` 는 로그인 화면을 거치지 않는 경로를 막는다.
+
+| 설정 | 효과 |
+|---|---|
+| `$wgRememberMe = 'never'` | "로그인 상태 유지" 체크박스를 없앤다. 기본값이면 체크 시 180일 동안 다시 로그인하지 않는다. |
+| `$wgEnableBotPasswords = false` | `Special:BotPasswords` 를 끈다. bot password 는 API 로그인 때 2단계 인증을 거치지 않는다. |
+
+브라우저를 닫거나 1시간 동안 요청이 없으면 다시 로그인해야 한다.
+세션은 APCu 에 저장되므로 `mediawiki` 컨테이너를 재시작해도 로그아웃된다.
+1시간이 짧으면 `$wgObjectCacheSessionExpiry` 를 초 단위로 늘린다.
+
+### 잠겼을 때
+
+인증 앱과 복구 코드를 모두 잃으면 위키 안에서는 해제할 수 없다.
+`mariadb` 가 떠 있는 상태에서 서버에서 해당 사용자의 2단계 인증을 지운다.
+
+```bash
+docker compose run --rm --no-deps --user www-data mediawiki \
+    php extensions/OATHAuth/maintenance/disableOATHAuthForUser.php <사용자명>
+```
+
+`maintenance/run.php OATHAuth:disableOATHAuthForUser` 형식은 1.43 에서 클래스 중복 오류가 나므로 스크립트를 직접 실행한다.
+다른 sysop 계정이 있다면 `Special:DisableOATHForUser` 로도 해제할 수 있다.
+
 ## 스크립트 사용법
 
 | 스크립트 | 용도 | sudo | 서비스 중단 |
 |---|---|---|---|
 | `setup.sh` | 최초 설정 파일 생성 | | |
 | `update-submodule.sh` | SimpleMathJax 서브모듈을 기록된 커밋으로 맞춤 | | |
-| `update-schema.sh` | MediaWiki 업그레이드 후 DB 스키마 갱신 | | |
+| `update-schema.sh` | MediaWiki 업그레이드나 확장 추가 후 DB 스키마 갱신 | | |
 | `run-jobs.sh` | 작업 큐 처리 | | |
 | `version.sh` | 이미지/MediaWiki/PHP 버전과 컨테이너 상태 확인 | | |
 | `backup-raw.sh` | DB 파일 그대로 백업 (복원이 가장 빠름) | ✅ | ✅ 백업 동안 |
@@ -245,7 +286,7 @@ docker compose up -d
 ./version.sh                       # 새 버전과 PHP 확인
 ```
 
-업그레이드 후 로그인, 편집, 업로드, `<math>` 수식, `Special:Version` 을 확인한다.
+업그레이드 후 로그인(2단계 인증 코드 입력 포함), 편집, 업로드, `<math>` 수식, `Special:Version` 을 확인한다.
 업그레이드 전에 [Manual:Upgrading](https://www.mediawiki.org/wiki/Manual:Upgrading) 과
 릴리스 노트에서 `LocalSettings.php` 변경 사항을 확인한다.
 
@@ -308,3 +349,5 @@ sudo rm -rf restore                # 비밀 값이 들어 있으므로 삭제
 - raw 백업은 MariaDB 버전에 묶인다. MariaDB 를 올리기 전후에는 dump 백업도 함께 만든다.
 - 유지보수 스크립트는 `www-data` 로 실행한다.
   root 로 실행하면 `images/` 에 웹 서버가 쓸 수 없는 파일이 생긴다.
+- TOTP 코드는 서버 시계로 검증한다 (허용 오차 앞뒤 2분).
+  컨테이너는 호스트 시계를 쓰므로 호스트의 NTP 동기화를 켜 둔다 (`timedatectl`).

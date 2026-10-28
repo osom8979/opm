@@ -128,6 +128,7 @@ wfLoadExtension('Cite');
 wfLoadExtension('CodeEditor');
 wfLoadExtension('ConfirmEdit');
 wfLoadExtension('MultimediaViewer');
+wfLoadExtension('OATHAuth');
 wfLoadExtension('PdfHandler');
 # wfLoadExtension('Renameuser');
 wfLoadExtension('SyntaxHighlight_GeSHi');
@@ -135,6 +136,13 @@ wfLoadExtension('WikiEditor');
 
 # Custom Extensions
 wfLoadExtension('SimpleMathJax');
+
+## Two-factor authentication (OATHAuth)
+## Users enroll a TOTP device at Special:OATHManage.
+# Hide "Keep me logged in" so that every login asks for the TOTP code
+$wgRememberMe = 'never';
+# Bot passwords log in through the API without the second factor
+$wgEnableBotPasswords = false;
 
 ## Maximum size of uploaded files (in bytes)
 $wgMaxUploadSize = 256 * 1024 * 1024;
