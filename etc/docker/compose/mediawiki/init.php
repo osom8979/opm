@@ -91,7 +91,7 @@ $wgShellLocale = "C.UTF-8";
 # $wgLocaltimezone = "UTC";
 
 # Changing this will log out all existing sessions.
-$wgAuthenticationTokenVersion = "1";
+$wgAuthenticationTokenVersion = "2";
 
 ## For attaching licensing metadata to pages, and displaying an
 ## appropriate copyright notice / icon. GNU Free Documentation
@@ -143,6 +143,10 @@ wfLoadExtension('SimpleMathJax');
 $wgRememberMe = 'never';
 # Bot passwords log in through the API without the second factor
 $wgEnableBotPasswords = false;
+# Keep sessions for a week after the last request, so the TOTP code is asked less often
+$wgObjectCacheSessionExpiry = 7 * 86400;
+# Store sessions in the database so they survive container restarts and APCu evictions
+$wgSessionCacheType = CACHE_DB;
 
 ## Read-only accounts (create-readonly-bot.sh)
 ## Bots such as unwiki log in with a password only, so members keep just 'read'

@@ -84,9 +84,11 @@ TOTP 를 등록한 계정은 비밀번호로 로그인할 때마다 인증 앱�
 예외로 [create-readonly-bot.sh](#create-readonly-botsh) 가 만드는 봇 계정은 비밀번호만으로 API 에 로그인한다.
 대신 `read` 외의 모든 권한을 회수하므로 비밀번호가 유출되어도 위키를 바꿀 수 없다.
 
-브라우저를 닫거나 1시간 동안 요청이 없으면 다시 로그인해야 한다.
-세션은 APCu 에 저장되므로 `mediawiki` 컨테이너를 재시작해도 로그아웃된다.
-1시간이 짧으면 `$wgObjectCacheSessionExpiry` 를 초 단위로 늘린다.
+브라우저를 닫거나 7일 동안 요청이 없으면 다시 로그인해야 한다.
+유지 시간은 요청할 때마다 갱신된다.
+`$wgSessionCacheType = CACHE_DB` 로 세션을 APCu 대신 DB(`objectcache` 테이블)에 저장하므로 `mediawiki` 컨테이너를 재시작해도 로그인이 유지된다.
+세션 유지 시간은 `$wgObjectCacheSessionExpiry` 로 초 단위로 바꾼다.
+세션 저장소를 바꾸면 기존 세션은 모두 로그아웃된다.
 
 ### 잠겼을 때
 
