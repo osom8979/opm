@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_WIDTH=40
+
+USAGE_MESSAGE="
+Print the platform (os/arch[/variant]) of each docker image.
+
+  Usage: opm-docker-images-platform [options] [repository[:tag]]
+
+Available options are:
+  -h, --help                Print this message.
+  -w, --width=columns       Width of the image name column (default: ${DEFAULT_WIDTH}).
+  --                        Skip handling options.
+
+Examples:
+  opm-docker-images-platform
+  opm-docker-images-platform ubuntu
+  opm-docker-images-platform -w 60
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function opm_docker_images_platform_main
+{
+    local width=$DEFAULT_WIDTH
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -w)
+            width=$2
+            shift 2
+            ;;
+        --width=*)
+            width=${1#--width=}
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        -*)
+            opm-println-error "Unknown option: $1"
+            print_usage
+            return 1
+            ;;
+        *)
+            break
+            ;;
+        esac
+    done
+
+    if [[ ! $width =~ ^[0-9]+$ ]]; then
+        opm-println-error "Invalid width: $width"
+        return 1
+    fi
+
+    if ! command -v docker &> /dev/null; then
+        opm-println-error "Not found docker command"
+        return 1
+    fi
+
+    local name id platform
+    docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' "$@" \
+        | while read -r name id; do
+            platform=$(docker image inspect --format '{{.Os}}/{{.Architecture}}{{with .Variant}}/{{.}}{{end}}' "$id")
+            printf "%-${width}s %s\n" "$name" "$platform"
+        done
+}
+
+opm_docker_images_platform_main "$@"
