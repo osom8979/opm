@@ -164,6 +164,27 @@ unset($group, $right);
 # Extensions add their rights after this file is loaded
 $wgRevokePermissions['readonly']['oathauth-enable'] = true;
 
+## MCP server account (create-mcp-bot.sh)
+## The 'mcp' service logs in with a password only, so members get just what its
+## page tools need: no delete, move, protect or upload.
+## 'autoconfirmed' keeps the edit rate limit of normal users (90/min, not 8/min),
+## and 'skipcaptcha' lets edits add external links without a CAPTCHA.
+## Keep this block below the $wgGroupPermissions lines above.
+$wgGroupPermissions['mcp'] = array_fill_keys(
+    ['read', 'edit', 'createpage', 'createtalk', 'autoconfirmed', 'skipcaptcha'],
+    true
+);
+foreach (['*', 'user', 'autoconfirmed'] as $group) {
+    foreach (array_keys(array_filter($wgGroupPermissions[$group] ?? [])) as $right) {
+        if (empty($wgGroupPermissions['mcp'][$right])) {
+            $wgRevokePermissions['mcp'][$right] = true;
+        }
+    }
+}
+unset($group, $right);
+# Extensions add their rights after this file is loaded
+$wgRevokePermissions['mcp']['oathauth-enable'] = true;
+
 ## Maximum size of uploaded files (in bytes)
 $wgMaxUploadSize = 256 * 1024 * 1024;
 

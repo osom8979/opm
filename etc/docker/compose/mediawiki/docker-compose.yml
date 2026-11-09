@@ -48,3 +48,33 @@ services:
       - "./SimpleMathJax:/var/www/html/extensions/SimpleMathJax:ro"
       - "./LocalSettings.php:/var/www/html/LocalSettings.php:ro"
       - "./images:/var/www/html/images"
+
+  # Starts only with COMPOSE_PROFILES=mcp in .env (create-mcp-bot.sh)
+  mcp:
+    image: "ghcr.io/professionalwiki/mediawiki-mcp-server:0.21.0"
+    restart: always
+    profiles:
+      - mcp
+    depends_on:
+      - mediawiki
+    environment:
+      # No value: taken from .env and left unset when it lacks them, so the
+      # server reports the missing one. A '${VAR:?err}' form would also stop the
+      # other services: Compose interpolates the whole file before it applies profiles.
+      - MCP_WIKI_USERNAME
+      - MCP_WIKI_PASSWORD
+      # Needed because mcp-config.json holds a fixed account (see README)
+      - "MCP_ALLOW_STATIC_FALLBACK=true"
+      # That account serves every client, so only these Host header values may
+      # connect. Hostnames only, the port is ignored. MCP_HOST in .env adds the
+      # internal hostname of this server (several: 'a,b'); unset leaves a trailing
+      # comma, which the server ignores.
+      - "MCP_ALLOWED_HOSTS=localhost,127.0.0.1,${MCP_HOST:-}"
+      # Let it reach the wiki at its private Docker address
+      - "MCP_TRUSTED_HOSTS=mediawiki"
+      - "MCP_LOG_LEVEL=info"
+    ports:
+      # Only this host by default. MCP_BIND_IP=0.0.0.0 in .env opens it to the network.
+      - "${MCP_BIND_IP:-127.0.0.1}:8081:8080"
+    volumes:
+      - "./mcp-config.json:/app/config.json:ro"

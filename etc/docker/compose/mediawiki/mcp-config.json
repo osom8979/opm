@@ -1,0 +1,14 @@
+{
+  "allowWikiManagement": false,
+  "defaultWiki": "osom",
+  "wikis": {
+    "osom": {
+      "sitename": "Open Source Open Mind",
+      "server": "http://mediawiki",
+      "articlepath": "/index.php",
+      "scriptpath": "",
+      "username": "${MCP_WIKI_USERNAME}",
+      "password": "${MCP_WIKI_PASSWORD}"
+    }
+  }
+}

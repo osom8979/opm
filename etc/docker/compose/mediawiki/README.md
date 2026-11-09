@@ -11,6 +11,7 @@
 | `traefik` | `traefik:v2.10` | 443 TLS 종료, 인증서 자동 발급 | `letsencrypt/` |
 | `mariadb` | `mariadb:11.0.2` | 위키 DB (`my_wiki`, 테이블 접두사 `wiki`) | `mysql/` |
 | `mediawiki` | `mediawiki:1.43.11` | Apache + mod_php (PHP 8.3) | `images/`, `LocalSettings.php` |
+| `mcp` | `ghcr.io/professionalwiki/mediawiki-mcp-server:0.21.0` | [MCP 서버](#mcp-서버). `mcp` profile 일 때만 실행 | |
 
 MediaWiki 이미지는 PHP 를 포함하므로 PHP 버전은 이미지 태그로 결정된다.
 같은 태그도 PHP 보안 패치 때 다시 빌드되므로 `docker compose pull` 로 갱신한다.
@@ -21,6 +22,7 @@ MediaWiki 이미지는 PHP 를 포함하므로 PHP 버전은 이미지 태그로
 |---|---|
 | `docker-compose.yml` | 서비스 정의 |
 | `init.php` | `LocalSettings.php` 의 템플릿 (확장, 업로드, 권한, 2단계 인증 설정) |
+| `mcp-config.json` | MCP 서버 설정. 계정은 `.env` 에서 읽는다 |
 | `phpconfig.ini` | PHP 설정 (업로드 256M, 메모리 512M) |
 | `logo.png` | 위키 로고 |
 | `SimpleMathJax/` | `<math>` 렌더링 확장 (git 서브모듈) |
@@ -31,7 +33,7 @@ git 에 포함되지 않는 파일:
 
 | 파일 | 설명 |
 |---|---|
-| `.env` | 호스트명, ACME 이메일, DB 비밀번호 |
+| `.env` | 호스트명, ACME 이메일, DB 비밀번호, MCP 계정과 접속 설정 |
 | `LocalSettings.php` | `init.php` + 비밀 값. 컨테이너에 읽기 전용으로 마운트 |
 | `mysql/` | MariaDB 데이터 |
 | `images/` | 업로드 파일. 컨테이너의 `www-data`(UID 33) 소유여야 함 |
@@ -83,6 +85,8 @@ TOTP 를 등록한 계정은 비밀번호로 로그인할 때마다 인증 앱�
 
 예외로 [create-readonly-bot.sh](#create-readonly-botsh) 가 만드는 봇 계정은 비밀번호만으로 API 에 로그인한다.
 대신 `read` 외의 모든 권한을 회수하므로 비밀번호가 유출되어도 위키를 바꿀 수 없다.
+[create-mcp-bot.sh](#create-mcp-botsh) 의 계정도 비밀번호만으로 로그인하지만 편집 권한이 있다.
+비밀번호는 서버의 `.env` 에만 두고, 유출되면 스크립트를 다시 실행한다.
 
 브라우저를 닫거나 7일 동안 요청이 없으면 다시 로그인해야 한다.
 유지 시간은 요청할 때마다 갱신된다.
@@ -103,6 +107,84 @@ docker compose run --rm --no-deps --user www-data mediawiki \
 `maintenance/run.php OATHAuth:disableOATHAuthForUser` 형식은 1.43 에서 클래스 중복 오류가 나므로 스크립트를 직접 실행한다.
 다른 sysop 계정이 있다면 `Special:DisableOATHForUser` 로도 해제할 수 있다.
 
+## MCP 서버
+
+[MediaWiki MCP Server](https://github.com/ProfessionalWiki/MediaWiki-MCP-Server) 로 Claude 같은 MCP 클라이언트가 위키를 읽고 편집한다.
+
+- `mcp` 서비스는 내부 주소 `http://mediawiki` 로 위키에 접속하고, [create-mcp-bot.sh](#create-mcp-botsh) 가 만든 계정으로 로그인한다.
+- 포트는 기본으로 서버의 `127.0.0.1:8081` 에만 열린다. 다른 PC 에서는 SSH 터널로 접속하거나, `.env` 의 `MCP_BIND_IP` 로 여는 주소를 바꾼다.
+- 요청의 `Host` 헤더가 `localhost`, `127.0.0.1`, 또는 `.env` 의 `MCP_HOST` 에 적은 호스트명이어야 한다. 그 밖의 값은 403 으로 거절한다 (DNS rebinding 방어).
+- MCP 서버에는 클라이언트 인증이 없다. 포트에 닿기만 하면 누구나 이 계정으로 편집하므로 인터넷에 공개하지 않는다.
+
+### 설정
+
+1. `init.php` 의 `MCP server account` 블록을 `LocalSettings.php` 끝에 추가한다.
+2. `./create-mcp-bot.sh` 를 실행하고 출력된 세 줄(`COMPOSE_PROFILES=mcp` 포함)을 `.env` 에 추가한다.
+3. `docker compose up -d`
+
+`COMPOSE_PROFILES=mcp` 가 없으면 `mcp` 서비스는 뜨지 않는다.
+계정 값이 `.env` 에 없으면 `mcp` 컨테이너만 `Config error: environment variable "MCP_WIKI_USERNAME" ... is not set` 으로 재시작을 반복하고, 다른 서비스는 영향을 받지 않는다.
+값이 비어 있으면(`MCP_WIKI_USERNAME=`) 오류 없이 익명으로 동작하므로 아래 [확인](#확인) 의 `/ready` 로 잡아낸다.
+
+내부 호스트명으로 접속하려면 `.env` 에 다음을 더한다. 둘 다 없어도 된다.
+
+| 변수 | 설명 | 예 |
+|---|---|---|
+| `MCP_HOST` | 허용할 호스트명. 여러 개는 쉼표로 구분한다. 포트는 적지 않는다 | `MCP_HOST=nas.lan` |
+| `MCP_BIND_IP` | 포트 8081 을 열 서버 주소. 기본 `127.0.0.1`. LAN 에서 직접 접속하려면 서버의 LAN IP 나 `0.0.0.0` | `MCP_BIND_IP=0.0.0.0` |
+
+`MCP_BIND_IP` 를 바꾸면 그 네트워크의 누구나 이 계정으로 위키를 편집할 수 있으므로 신뢰하는 내부망에서만 쓴다.
+`.env` 를 고친 뒤에는 `docker compose up -d` 로 `mcp` 컨테이너를 다시 만든다.
+
+### 접속
+
+SSH 터널 (기본 설정):
+
+```bash
+ssh -N -L 8081:127.0.0.1:8081 <서버>     # 클라이언트 PC 에서, 쓰는 동안 유지
+claude mcp add --transport http wiki http://localhost:8081/mcp
+```
+
+내부 호스트명 (`MCP_HOST=nas.lan` 과 `MCP_BIND_IP` 설정 후):
+
+```bash
+claude mcp add --transport http wiki http://nas.lan:8081/mcp
+```
+
+주소의 호스트 부분이 `localhost`, `127.0.0.1`, `MCP_HOST` 중 하나여야 한다. 포트는 비교하지 않는다.
+다른 호스트명이나 IP 로 접속하면 `Invalid Host: ...` 와 함께 403 으로 거절한다. IPv6 주소는 `[::1]` 처럼 대괄호로 적는다.
+
+### 확인
+
+```bash
+curl http://127.0.0.1:8081/health    # {"status":"ok"} : 서버가 떠 있음
+curl http://127.0.0.1:8081/ready     # {"status":"ready",...} : 위키 로그인까지 성공
+docker compose logs mcp | grep allowed_hosts
+```
+
+`/ready` 는 계정으로 실제 로그인해 본다. 비밀번호가 틀리면 `Incorrect username or password`, 계정 값이 비어 있으면 `readapidenied` 를 담은 503 을 돌려준다.
+시작 로그의 `MCP_ALLOW_STATIC_FALLBACK=true is set` 과 `no Origin allowlist` 경고는 이 구성에서 정상이다. 브라우저가 아닌 MCP 클라이언트는 `Origin` 헤더를 보내지 않는다.
+
+### 할 수 있는 일
+
+| 가능 | 불가능 (권한 없음) |
+|---|---|
+| 읽기, 검색, 문서 생성과 편집 (토론 문서 포함) | 삭제, 복구, 이동, 보호, 파일 업로드 |
+
+권한 밖의 도구도 목록에는 보이지만 호출하면 `permission_denied` 로 실패한다.
+편집 요약 끝에 `(via update-page on MediaWiki MCP Server)` 같은 표시가 붙고, 편집 기록은 `Special:Contributions/MCPBot` 에서 본다.
+권한을 바꾸려면 `init.php` 블록과 `create-mcp-bot.sh` 의 `ALLOWED_RIGHTS` 를 함께 고친다.
+
+### 설정 이유
+
+| 항목 | 이유 |
+|---|---|
+| `mcp-config.json` 에 `private` 없음 | `true` 면 OAuth 로그인을 기대해 모든 요청을 401 로 거절한다. 비공개 위키라도 계정으로 로그인하므로 필요 없다. |
+| `MCP_TRUSTED_HOSTS=mediawiki` | 없으면 SSRF 방어가 내부 주소 조회를 막아, 문서 링크가 `http://mediawiki/...` 로 나온다. 있으면 `$wgServer` 기준 링크가 나온다. |
+| `MCP_ALLOW_STATIC_FALLBACK=true` | 설정 파일에 계정을 넣은 HTTP 서버는 이 값 없이 시작하지 않는다. |
+| `MCP_WIKI_USERNAME` 에 값 없음 (`${VAR:?err}` 아님) | Compose 는 profile 을 적용하기 전에 파일 전체를 치환하므로, `:?err` 를 쓰면 `.env` 에 계정이 없을 때 `mcp` 와 무관한 `docker compose up` 도 실패한다. 값이 없는 항목은 `.env` 에서 읽고, 없으면 넘기지 않는다. |
+| `MCP_ALLOWED_HOSTS` 끝의 쉼표 | `MCP_HOST` 가 없으면 `localhost,127.0.0.1,` 이 되는데, 서버가 빈 항목을 버린다. |
+
 ## 스크립트 사용법
 
 | 스크립트 | 용도 | sudo | 서비스 중단 |
@@ -113,6 +195,7 @@ docker compose run --rm --no-deps --user www-data mediawiki \
 | `run-jobs.sh` | 작업 큐 처리 | | |
 | `version.sh` | 이미지/MediaWiki/PHP 버전과 컨테이너 상태 확인 | | |
 | `create-readonly-bot.sh` | unwiki 용 읽기 전용 봇 계정 생성, 비밀번호 재발급 | | |
+| `create-mcp-bot.sh` | MCP 서버용 편집 봇 계정 생성, 비밀번호 재발급 | | |
 | `backup-raw.sh` | DB 파일 그대로 백업 (복원이 가장 빠름) | ✅ | ✅ 백업 동안 |
 | `backup-dump.sh` | SQL 덤프 백업 (무중단, cron 용) | ✅ | |
 | `verify-backup.sh` | 백업을 임시 DB 에 띄워 검사 | ✅ | |
@@ -217,6 +300,28 @@ mwfilter 의 기본값은 `/w/` 인데 이 위키는 `api.php` 가 `/` 아래에
 최근 1시간 안에 로그인한 계정의 비밀번호를 바꾸면 캐시가 만료될 때까지 이전 세션이 살아 있다.
 그동안 새 비밀번호로 로그인하면 첫 요청 뒤 세션이 끊긴다.
 바로 적용하려면 `docker compose restart mediawiki` 를 실행한다. 모든 사용자가 로그아웃된다.
+
+### create-mcp-bot.sh
+
+```bash
+./create-mcp-bot.sh              # 계정 이름 MCPBot
+./create-mcp-bot.sh OtherBot
+```
+
+[MCP 서버](#mcp-서버) 가 로그인할 계정을 `mcp` 그룹으로 만든다.
+동작과 주의 사항은 [create-readonly-bot.sh](#create-readonly-botsh) 와 같고, 다른 점은 다음과 같다.
+
+- 먼저 `init.php` 의 `MCP server account` 블록을 `LocalSettings.php` 끝에 추가한다.
+- 권한은 `read`, `edit`, `createpage`, `createtalk`, `autoconfirmed`, `skipcaptcha` 만 남긴다.
+  - `autoconfirmed`: 없으면 신규 사용자로 취급되어 편집이 분당 8회로 제한된다 (일반 사용자는 90회).
+  - `skipcaptcha`: 없으면 외부 링크를 추가하는 편집이 ConfirmEdit 의 CAPTCHA 에 막힌다.
+- `.env` 에 넣을 `COMPOSE_PROFILES`, `MCP_WIKI_USERNAME`, `MCP_WIKI_PASSWORD` 를 출력한다.
+- 비밀번호를 다시 발급하면 `.env` 를 고친 뒤 `docker compose up -d` 로 `mcp` 컨테이너를 다시 만든다.
+  `docker compose restart` 는 `.env` 를 다시 읽지 않는다.
+- 차단(`Special:Block`)하면 편집은 막히지만 읽기는 막히지 않는다.
+
+로그인은 `action=login` 에 일반 계정 비밀번호를 쓰는 방식이라 MediaWiki 가 deprecated 경고를 남긴다.
+unwiki 와 같은 방식이며, MediaWiki 를 올릴 때 릴리스 노트에서 이 방식이 막히는지 확인한다.
 
 ### 백업 비밀번호
 
