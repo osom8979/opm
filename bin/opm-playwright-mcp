@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+DEFAULT_IMAGE=mcr.microsoft.com/playwright/mcp:v0.0.85
+CONTAINER_LABEL=opm.playwright-mcp
+SHM_SIZE=1g
+
+USAGE_MESSAGE="
+Run the Playwright MCP server (stdio) in a disposable Docker container.
+
+  Usage: opm-playwright-mcp [options] [--] [playwright-mcp-options ...]
+
+Every run starts a fresh headless Chromium container that is removed on exit.
+The workspace directory is mounted at the same path inside the container, so
+screenshots and PDFs saved by the server land in the host workspace.
+Arguments not handled here are passed to Playwright MCP as they are.
+
+stdout carries the MCP protocol, so this script only writes to stderr.
+
+Available options are:
+  -h, --help              Print this message.
+  -w, --workspace=dir     Mount this directory as the workspace (default: \$PWD).
+  -W, --no-workspace      Do not mount any host directory.
+  -H, --host-network      Share the host network, so 'localhost' is the host.
+                          Without it, the host is 'host.docker.internal'.
+  --image=image           Docker image to run.
+                          (default: \$OPM_PLAYWRIGHT_MCP_IMAGE or $DEFAULT_IMAGE)
+  -n, --dry-run           Print the docker command without running it.
+  --                      Skip handling options.
+
+Leftover containers can be removed with:
+  docker rm -f \$(docker ps -q --filter label=$CONTAINER_LABEL)
+
+Examples:
+  claude mcp add playwright -- ~/.opm/bin/opm-playwright-mcp
+  claude mcp add playwright -- ~/.opm/bin/opm-playwright-mcp -H --caps=vision
+  claude mcp add playwright -- ~/.opm/bin/opm-playwright-mcp --caps=pdf,devtools --snapshot-boxes
+  opm-playwright-mcp -- --help
+"
+
+function print_usage
+{
+    echo "$USAGE_MESSAGE"
+}
+
+function opm_playwright_mcp_main
+{
+    local image=${OPM_PLAYWRIGHT_MCP_IMAGE:-$DEFAULT_IMAGE}
+    local workspace=$PWD
+    local mount_workspace=1
+    local host_network=0
+    local dry_run=0
+
+    while [[ -n $1 ]]; do
+        case $1 in
+        -h|--help)
+            print_usage
+            return 0
+            ;;
+        -w)
+            workspace=$2
+            shift 2
+            ;;
+        --workspace=*)
+            workspace=${1:12}
+            shift
+            ;;
+        -W|--no-workspace)
+            mount_workspace=0
+            shift
+            ;;
+        -H|--host-network)
+            host_network=1
+            shift
+            ;;
+        --image=*)
+            image=${1:8}
+            shift
+            ;;
+        -n|--dry-run)
+            dry_run=1
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            # Everything else belongs to Playwright MCP.
+            break
+            ;;
+        esac
+    done
+
+    if ! command -v docker &> /dev/null; then
+        opm-println-error "Not found docker command"
+        return 1
+    fi
+
+    # Running as the host user keeps saved files owned by that user, but the
+    # image's own home directory is not writable by other users.
+    local workdir=/tmp
+    local options=(
+        --rm
+        --interactive
+        --name "opm-playwright-mcp-$$"
+        --label "$CONTAINER_LABEL=1"
+        --shm-size "$SHM_SIZE"
+        --user "$(id -u):$(id -g)"
+        --env HOME=/tmp
+    )
+
+    if [[ $host_network -ne 0 ]]; then
+        options+=(--network host)
+    else
+        options+=(--add-host host.docker.internal:host-gateway)
+    fi
+
+    if [[ $mount_workspace -ne 0 ]]; then
+        if [[ ! -d "$workspace" ]]; then
+            opm-println-error "Not a directory: $workspace"
+            return 1
+        fi
+        workspace=$(cd "$workspace" && pwd -P)
+        if [[ "$workspace" == / ]]; then
+            opm-println-error "The root directory cannot be the workspace"
+            return 1
+        fi
+        # The same path keeps the file paths reported by the server valid on
+        # the host, and matches the workspace roots sent by MCP clients.
+        options+=(--volume "$workspace:$workspace:rw")
+        workdir=$workspace
+    fi
+    options+=(--workdir "$workdir")
+
+    # The image entrypoint already passes '--headless --browser chromium --no-sandbox'.
+    local command=(docker run "${options[@]}" "$image" --isolated "$@")
+
+    if [[ $dry_run -ne 0 ]]; then
+        printf '%q ' "${command[@]}" 1>&2
+        echo 1>&2
+        return 0
+    fi
+
+    exec "${command[@]}"
+}
+
+opm_playwright_mcp_main "$@"
