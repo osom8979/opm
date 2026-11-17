@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if [[ ! -x $(which tmux 2> /dev/null ) ]]; then
+    opm-println-error "Not found tmux executable"
+    exit 1
+fi
+
+if [[ -z "$TMUX" ]]; then
+    opm-println-error "Not inside a tmux session"
+    exit 1
+fi
+
+WINDOW_PREFIX=CVP
+
+# Without -t, tmux reports the session's active window, which is not
+# always the window running this script (e.g. run via send-keys).
+CURRENT_WINDOW=
+if [[ -n "$TMUX_PANE" ]]; then
+    CURRENT_WINDOW=$(tmux display-message -p -t "$TMUX_PANE" '#{window_id}')
+fi
+
+# Kill the window running this script last, or it dies before the rest.
+KILL_CURRENT=0
+while read -r window name; do
+    [[ "$name" == "$WINDOW_PREFIX/"* ]] || continue
+    if [[ "$window" == "$CURRENT_WINDOW" ]]; then
+        KILL_CURRENT=1
+        continue
+    fi
+    tmux kill-window -t "$window"
+done < <(tmux list-windows -F '#{window_id} #{window_name}')
+
+if [[ $KILL_CURRENT -eq 1 ]]; then
+    tmux kill-window -t "$CURRENT_WINDOW"
+fi

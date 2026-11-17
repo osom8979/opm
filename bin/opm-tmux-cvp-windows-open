@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+if ! command -v opm-version &> /dev/null; then
+PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" || exit; pwd):$PATH"
+fi
+
+if [[ ! -x $(which tmux 2> /dev/null ) ]]; then
+    opm-println-error "Not found tmux executable"
+    exit 1
+fi
+
+if [[ -z "$TMUX" ]]; then
+    opm-println-error "Not inside a tmux session"
+    exit 1
+fi
+
+PROJECTS_HOME=${PROJECTS_HOME:-$HOME/Projects}
+WINDOW_PREFIX=CVP
+
+REPOS=(
+    meet
+    twin
+    collectors
+    map
+    registry
+    app
+    files
+    mlops
+    office
+    videos
+    graph
+    labeling
+    modbus
+    accounts
+    license
+    www
+    template
+)
+
+# Without -t, tmux targets the session of the pane running this script.
+EXISTING_WINDOWS=$(tmux list-windows -F '#{window_name}')
+
+for repo in "${REPOS[@]}"; do
+    dir="$PROJECTS_HOME/$repo.cvp.run"
+    name="$WINDOW_PREFIX/$repo"
+
+    if [[ ! -d "$dir" ]]; then
+        opm-println-warn "Not found directory: $dir"
+        continue
+    fi
+
+    if grep -qxF "$name" <<< "$EXISTING_WINDOWS"; then
+        continue
+    fi
+
+    # Giving -n turns off automatic-rename, so the name sticks.
+    tmux new-window -d -n "$name" -c "$dir"
+done
