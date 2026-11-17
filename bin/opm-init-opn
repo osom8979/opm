@@ -50,8 +50,10 @@ function install_node_if_not_exist
 
     opm-println "Install recommend packages"
     for i in "${RECOMMEND_PACKAGES[@]}"; do
-        opm-println "Install npm package: "
-        N_PREFIX="$n_prefix" "$N_EXE" exec "$node_version" npm install --global "$i"
+        opm-println "Install npm package: $i"
+        # Use the activated node in '$n_prefix/bin' so that the npm global prefix is '$n_prefix'.
+        # (`n exec` runs the cached node in '$n_prefix/n/versions/node/*', not the activated one)
+        PATH="$n_prefix/bin:$PATH" npm install --global "$i"
     done
 }
 
