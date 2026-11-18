@@ -26,7 +26,7 @@ fi
 # Kill the window running this script last, or it dies before the rest.
 KILL_CURRENT=0
 while read -r window name; do
-    [[ "$name" == "$WINDOW_PREFIX/"* ]] || continue
+    [[ "$name" == "$WINDOW_PREFIX" || "$name" == "$WINDOW_PREFIX/"* ]] || continue
     if [[ "$window" == "$CURRENT_WINDOW" ]]; then
         KILL_CURRENT=1
         continue

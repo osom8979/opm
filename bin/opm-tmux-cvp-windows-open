@@ -14,11 +14,12 @@ if [[ -z "$TMUX" ]]; then
     exit 1
 fi
 
-PROJECTS_HOME=${PROJECTS_HOME:-$HOME/Projects}
+PROJECTS_HOME=${PROJECTS_HOME:-$HOME/Projects/cvp.run}
 WINDOW_PREFIX=CVP
 
 REPOS=(
     meet
+    chat
     twin
     collectors
     map
@@ -40,19 +41,25 @@ REPOS=(
 # Without -t, tmux targets the session of the pane running this script.
 EXISTING_WINDOWS=$(tmux list-windows -F '#{window_name}')
 
-for repo in "${REPOS[@]}"; do
-    dir="$PROJECTS_HOME/$repo.cvp.run"
-    name="$WINDOW_PREFIX/$repo"
+open_window() {
+    local name=$1
+    local dir=$2
 
     if [[ ! -d "$dir" ]]; then
         opm-println-warn "Not found directory: $dir"
-        continue
+        return
     fi
 
     if grep -qxF "$name" <<< "$EXISTING_WINDOWS"; then
-        continue
+        return
     fi
 
     # Giving -n turns off automatic-rename, so the name sticks.
     tmux new-window -d -n "$name" -c "$dir"
+}
+
+open_window "$WINDOW_PREFIX" "$PROJECTS_HOME"
+
+for repo in "${REPOS[@]}"; do
+    open_window "$WINDOW_PREFIX/$repo" "$PROJECTS_HOME/$repo.cvp.run"
 done
