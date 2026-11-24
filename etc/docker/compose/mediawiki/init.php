@@ -201,6 +201,7 @@ $wgFileExtensions[] = "jpg";
 $wgFileExtensions[] = "mp4";
 $wgFileExtensions[] = "pdf";
 $wgFileExtensions[] = "png";
+$wgFileExtensions[] = "svg";
 $wgFileExtensions[] = "txt";
 $wgFileExtensions[] = "xz";
 $wgFileExtensions[] = "zip";
