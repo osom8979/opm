@@ -205,3 +205,6 @@ $wgFileExtensions[] = "svg";
 $wgFileExtensions[] = "txt";
 $wgFileExtensions[] = "xz";
 $wgFileExtensions[] = "zip";
+
+# SVG를 PNG로 변환하지 않고 브라우저가 직접 렌더링 (애니메이션 재생)
+$wgSVGNativeRendering = true;
